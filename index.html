@@ -346,16 +346,15 @@ function bestCommonsImage(data,c){
     if(!/2 euro|2euro|2 eur|euro coin|euro munze|euro munze/i.test(name)) continue;
     if(/album|folder|set|roll|banknote|medal|token|coincard|proof set|mint set/i.test(name)) continue;
 
-    // Deutsche A/D/F/G/J-Varianten: nur ein Treffer mit explizitem Prägebuchstaben
-    // wird akzeptiert. Fehlt der Buchstabe im Dateinamen/Titel, lieber kein Bild.
+    // Deutsche A/D/F/G/J-Varianten: das Bild muss mindestens den richtigen
+    // Jahrgang tragen. Der Prägebuchstabe steht bei vielen echten Münzbildern
+    // NICHT im Wikimedia-Dateinamen, obwohl die Suche ihn berücksichtigt.
+    // Deshalb darf er nicht mehr zwingend im Dateinamen stehen. Ein anderer
+    // Jahrgang ist dagegen niemals zulässig. Mehrfach-Sets bleiben ausgeschlossen.
     if(isGerman){
-      const mintPatterns=[
-        new RegExp(`\\b${mint}\\b`),
-        new RegExp(`\\b${year}${mint}\\b`),
-        new RegExp(`\\b${mint}${year}\\b`)
-      ];
-      if(!mintPatterns.some(re=>re.test(name))) continue;
-      // Bilder von Sets/mehreren Prägestätten sind ebenfalls nicht zulässig.
+      if(year && !name.includes(year)) continue;
+      const yearsInName=name.match(/\\b(?:19|20)\\d{2}\\b/g)||[];
+      if(yearsInName.some(y=>y!==year)) continue;
       if(/adfgj|a d f g j|a,d,f,g,j|a d f g|adf/i.test(name)) continue;
     }
 
@@ -366,11 +365,14 @@ function bestCommonsImage(data,c){
     for(const w of titleWords) if(name.includes(w)) score+=2;
     if(name.includes('2 euro')) score+=3;
     if(isGerman && name.includes(mint)) score+=12;
+    // Wenn der Prägebuchstabe im Dateinamen fehlt, ist das trotzdem ein zulässiger
+    // Treffer, weil die Commons-Suche bereits mit Jahr + Mintzeichen ausgeführt wurde.
+    if(isGerman && !name.includes(mint)) score+=4;
     if(/jpg|jpeg|png/i.test(ii.url||'')) score+=1;
     if(score>scoreBest){scoreBest=score;best=ii.thumburl||ii.url;}
   }
   // Für deutsche Mintmark-Varianten ist die Mindesthürde bewusst höher.
-  return scoreBest >= (isGerman ? 15 : 3) ? best : null;
+  return scoreBest >= (isGerman ? 14 : 3) ? best : null;
 }
 async function commonsSearch(q,c){
   const url=`https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${q}&gsrnamespace=6&gsrlimit=20&prop=imageinfo&iiprop=url&iiurlwidth=700&format=json&origin=*`;
