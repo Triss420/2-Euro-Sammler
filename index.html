@@ -303,20 +303,29 @@ function imageSearchQueries(c){
   const year=String(c.year||'').trim();
   const title=String(c.title||'').trim();
   const t=normText(title);
+  const mint=String(c.mintmark||c.code||'').trim().toUpperCase();
+  const isGerman=country==='Deutschland';
   const qs=[];
-  // Englische Varianten zuerst – Commons-Dateien sind fast immer englisch benannt.
+
+  // WICHTIG: Bei deutschen Münzen muss das Prägemerkmal Teil der Bildsuche sein.
+  // Ein allgemeines "Germany 2004" darf NICHT mehr als Ersatzbild für A/D/F/G/J dienen.
+  if(isGerman && /^[ADFGJ]$/.test(mint)){
+    qs.push(`Germany 2 euro ${year} ${mint}`);
+    qs.push(`Germany 2 euro ${year} ${mint} Bundesadler`);
+    qs.push(`Germany 2 euro ${year} ${mint} ${title}`);
+    qs.push(`Deutschland 2 Euro ${year} ${mint}`);
+    qs.push(`Deutschland 2 Euro ${year} ${mint} ${title}`);
+    if(t.includes('bundesadler')) qs.push(`Germany 2 euro ${year} ${mint} eagle`);
+    return [...new Set(qs)].map(encodeURIComponent);
+  }
+
   if(title) qs.push(`2 euro coin ${countryEn} ${year} commemorative`);
   qs.push(`2 euro coin ${countryEn} ${year}`);
   qs.push(`€2 commemorative coin ${countryEn} ${year}`);
   if(title) qs.push(`2 euro ${countryEn} ${year} ${title}`);
-  // deutsche Varianten als Fallback
   if(title) qs.push(`2 euro ${country} ${year} ${title}`);
   if(title) qs.push(`${country} 2 euro ${year} ${title}`);
   qs.push(`2 euro ${country} ${year}`);
-  if(t.includes('bundesadler')){
-    qs.unshift(`Germany 2 euro ${year} eagle`);
-    qs.push(`Germany 2 euro ${year} Bundesadler`);
-  }
   if(t.includes('bertha von suttner')) qs.unshift(`Austria 2 euro Bertha von Suttner`);
   return [...new Set(qs)].map(encodeURIComponent);
 }
@@ -326,23 +335,41 @@ function bestCommonsImage(data,c){
   const countryEn=normText(COUNTRY_EN[String(c.country||'').trim()]||'');
   const title=normText(c.title||'');
   const year=String(c.year||'');
+  const mint=String(c.mintmark||c.code||'').trim().toLowerCase();
+  const isGerman=String(c.country||'').trim()==='Deutschland' && /^[adfgj]$/.test(mint);
   const titleWords=title.split(' ').filter(x=>x.length>3);
   let best=null, scoreBest=-999;
   for(const p of pages){
     const ii=p.imageinfo?.[0]; if(!ii) continue;
     const name=normText(p.title||'');
-    if(!/2 euro|2euro|2 eur|euro coin|euro münze|euro munze/i.test(name)) continue;
+    if(!/2 euro|2euro|2 eur|euro coin|euro munze|euro munze/i.test(name)) continue;
     if(/album|folder|set|roll|banknote|medal|token|coincard|proof set|mint set/i.test(name)) continue;
+
+    // Deutsche A/D/F/G/J-Varianten: nur ein Treffer mit explizitem Prägebuchstaben
+    // wird akzeptiert. Fehlt der Buchstabe im Dateinamen/Titel, lieber kein Bild.
+    if(isGerman){
+      const mintPatterns=[
+        new RegExp(`\\b${mint}\\b`),
+        new RegExp(`\\b${year}${mint}\\b`),
+        new RegExp(`\\b${mint}${year}\\b`)
+      ];
+      if(!mintPatterns.some(re=>re.test(name))) continue;
+      // Bilder von Sets/mehreren Prägestätten sind ebenfalls nicht zulässig.
+      if(/adfgj|a d f g j|a,d,f,g,j|a d f g|adf/i.test(name)) continue;
+    }
+
     let score=0;
-    if(year && name.includes(year)) score+=8;
+    if(year && name.includes(year)) score+=10;
     if(country && name.includes(country)) score+=5;
     if(countryEn && name.includes(countryEn)) score+=5;
     for(const w of titleWords) if(name.includes(w)) score+=2;
     if(name.includes('2 euro')) score+=3;
+    if(isGerman && name.includes(mint)) score+=12;
     if(/jpg|jpeg|png/i.test(ii.url||'')) score+=1;
     if(score>scoreBest){scoreBest=score;best=ii.thumburl||ii.url;}
   }
-  return scoreBest>=3 ? best : null;
+  // Für deutsche Mintmark-Varianten ist die Mindesthürde bewusst höher.
+  return scoreBest >= (isGerman ? 15 : 3) ? best : null;
 }
 async function commonsSearch(q,c){
   const url=`https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${q}&gsrnamespace=6&gsrlimit=20&prop=imageinfo&iiprop=url&iiurlwidth=700&format=json&origin=*`;
@@ -447,7 +474,7 @@ function render(){
 function showExcel(id){
   const c=excelCollection.find(x=>x.id===id); if(!c)return;
   document.getElementById('mTitle').textContent=c.title;
-  document.getElementById('mSub').textContent=`${c.country}${c.year?' · '+c.year:''}`;
+  document.getElementById('mSub').textContent=`${c.country}${c.year?' · '+c.year:''}${c.mintmark?' · Prägestätte '+c.mintmark+(DE_MINT_NAMES[c.mintmark]?' ('+DE_MINT_NAMES[c.mintmark]+')':''):''}`;
   document.getElementById('mImage').innerHTML=coinVisual(c,true); if(!c.image) setTimeout(()=>resolveCoinImage(c,document.getElementById('mImage')),0);
   document.getElementById('mPills').innerHTML=`<span class="pill">${c.complete?'✓ vollständig':'❌ noch offen'}</span>${c.qty?`<span class="pill">${c.qty}× vorhanden</span>`:''}${c.mintmarks.length?`<span class="pill">Prägestätten: ${esc(c.mintmarks.join(' · '))}</span>`:''}`;
   const missing=(c.mintmarks.length&&!c.complete)?c.mintmarks.filter(x=>!c.ownedMintmarks.includes(x)):[];
@@ -642,7 +669,13 @@ async function load(){
     excelCollection.forEach(x=>{
       if(x.image || !x.year || x.year<=0 || !x.title) return;
       const cc=String(x.country||'').trim();
-      const candidates=all.filter(c=>c.country===cc && c.year===Number(x.year) && c.image);
+      let candidates=all.filter(c=>c.country===cc && c.year===Number(x.year) && c.image);
+      if(cc==='Deutschland' && x.ownedMintmarks?.length){
+        // Bei Deutschland nicht irgendein Jahresbild übernehmen. Wenn der Excel-Eintrag
+        // mehrere Mintzeichen enthält, bleibt das Bild hier bewusst leer; die einzelnen
+        // A/D/F/G/J-Katalogeinträge bekommen ihre Bilder separat.
+        return;
+      }
       if(!candidates.length) return;
       if(candidates.length===1){ x.image=candidates[0].image; return; }
       let best=null, score=-1;
