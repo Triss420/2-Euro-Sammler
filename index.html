@@ -40,6 +40,9 @@ button{cursor:pointer}
 .heroMain{padding:25px}.heroMain h1{margin:0 0 8px;font-size:32px;color:var(--text)}.heroMain p{margin:0;color:var(--muted)}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:22px}.stat{padding:15px;border-radius:15px;background:var(--panel2);border:1px solid var(--line)}.stat strong{font-size:25px;display:block;color:var(--text)}.stat span{color:var(--muted);font-size:13px}
 .progress{height:12px;background:var(--panel2);border-radius:99px;overflow:hidden;margin-top:12px;border:1px solid var(--line)}.progress>div{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));width:0;transition:width .3s}
+.progressWrap{display:flex;align-items:center;gap:12px;margin-top:12px}
+.progressWrap .progress{flex:1;margin-top:0}
+.progressLabel{font-weight:800;font-size:15px;color:var(--text);min-width:4.5em;text-align:right;white-space:nowrap}
 .heroSide{padding:20px}.heroSide h3{margin:0 0 12px}.quick{display:grid;grid-template-columns:1fr 1fr;gap:10px}.quick button{padding:13px;border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:13px;text-align:left}.quick button:hover{border-color:var(--accent)}
 .tabs{display:flex;gap:8px;margin:8px 0 15px;overflow:auto}.tab{border:0;background:var(--panel2);color:var(--text);border-radius:999px;padding:10px 16px;white-space:nowrap}.tab.active{background:var(--accent);color:#fff}
 .filters{display:grid;grid-template-columns:1.6fr .8fr .8fr .8fr;gap:10px;margin-bottom:16px}.filters input,.filters select{padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--text);outline:0}
@@ -89,7 +92,10 @@ button{cursor:pointer}
         <div class="stat"><strong id="missingCount">0</strong><span>Stück fehlen noch</span></div>
         <div class="stat"><strong id="valueCount">0 €</strong><span>Nennwert im Bestand</span></div>
       </div>
-      <div class="progress"><div id="progressBar"></div></div>
+      <div class="progressWrap">
+  <div class="progress"><div id="progressBar"></div></div>
+  <div class="progressLabel" id="progressLabel">0 %</div>
+</div>
     </div>
     <div class="panel heroSide">
       <h3>Schnellzugriff</h3>
@@ -458,6 +464,8 @@ function stats(){
   document.getElementById('missingCount').textContent = missing;
   document.getElementById('valueCount').textContent = faceValue.toLocaleString('de-DE') + ' €';
   document.getElementById('progressBar').style.width = pct.toFixed(1) + '%';
+    const pl = document.getElementById('progressLabel');
+  if(pl) pl.textContent = pct.toLocaleString('de-DE',{maximumFractionDigits:1}) + ' %';
 }
 function toggle(id){
   const c=all.find(x=>x.id===id);if(!c)return;c.owned=!c.owned;c.qty=c.owned?(c.qty||1):0;saveState();stats();render();
