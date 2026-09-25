@@ -128,6 +128,9 @@ button{cursor:pointer}
 </div>
 
 <script>
+const COMM_URL='https://raw.githubusercontent.com/Liebeck/two-euro-coins-data/main/2euro-coins.json';
+const STORE='twoEuroCollectorV1';
+
 // --- 1. KURSMÜNZEN-GENERATOR (2002 bis 2026) ---
 const euroCountries = [
   { name: "Deutschland", code: "DE", startYear: 2002, mints: ["A", "D", "F", "G", "J"] },
@@ -222,6 +225,5 @@ async function loadCommemorativeCoins() {
 document.addEventListener("DOMContentLoaded", () => {
   loadCommemorativeCoins();
 });
-</script>
 </body>
 </html>
