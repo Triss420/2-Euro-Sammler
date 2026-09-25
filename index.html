@@ -205,6 +205,7 @@ function expandMintVariants(list){
         id: c.id + '-' + m,
         code: m,
         mintmark: m,
+        image: null,
         title: String(c.title||'').replace(/\s·\s*[ADFGJ]\b/gi,'').trim() + ' · ' + m,
         desc: (c.desc ? c.desc + ' ' : '') + 'Prägestätte ' + m + (DE_MINT_NAMES[m] ? ' (' + DE_MINT_NAMES[m] + ')' : ''),
         parentId: c.id,
@@ -600,7 +601,7 @@ function buildRegularCatalog(){
   ];
   const out=[]; let id=0;
   cfg.forEach(g=>{for(let y=g[1];y<=g[2];y++){
-    let image=IMG[g[0]]; if(image&&typeof image==='object') image=image[g[5]]||null;
+    let image = g[0] === 'Deutschland' ? null : IMG[g[0]]; if(image&&typeof image==='object') image=image[g[5]]||null;
     out.push({id:'regcat'+(id++),type:'regular',country:g[0],year:y,title:g[3]+' ('+y+')',code:g[4],desc:'Reguläre 2-€-Umlaufmünze; nationales Motiv.',volume:'–',release:String(y),image,owned:0,qty:0,catalog:true});
   }}); return out;
 }
