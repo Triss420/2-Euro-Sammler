@@ -379,8 +379,26 @@ async function commonsSearch(q,c){
   const r=await fetch(url,{cache:'force-cache'}); if(!r.ok) throw new Error('commons');
   return bestCommonsImage(await r.json(),c);
 }
+const GERMAN_BUNDESADLER_YEAR_IMAGES={2002: "https://i.etsystatic.com/59567843/r/il/add335/7022020733/il_570xN.7022020733_ffql.jpg", 2003: "https://i.ebayimg.com/thumbs/images/g/f2sAAeSwAsFn8wu5/s-l1200.jpg", 2004: "https://i.ebayimg.com/images/g/s74AAOSwK3pji7ig/s-l1600.jpg", 2005: "https://www.historia-hamburg.de/media/product/dc0/deutschland-2-euro-2005-stgl-mzz-a-bis-j-bundesadler-bba.jpg", 2006: "https://www.euro-muenzen.tv/img04/Germany-2-Euro-Coin-2006-A-4500-145787241062792.jpg", 2008: "https://i.ebayimg.com/images/g/-sAAAOSwwwhm9mDP/s-l1200.jpg", 2010: "https://cdn.monetnik.ru/storage/market-lot/63/42/806363/2839422_mainViewLot_2x.jpg", 2011: "https://www.numismaticnews.net/uploads/MjA5MzUyNzU1MjI2MDkzMzQ5/1_beispiele-fehlpraegungen-dezentrierung.jpg", 2014: "https://www.eurofischer.de/WebRoot/Store7/Shops/61426499/531E/0CEB/2D8E/5DD3/8FEB/C0A8/2ABB/545B/Deutschland_2_Euro_2014_D-1.jpg", 2016: "https://cdn.monetnik.ru/storage/market-lot/12/86/584812/2069863_mainViewLot_2x.jpg", 2017: "https://www.historia-hamburg.de/media/product/7a7/deutschland-2-euro-2017-stgl-mzz-f-bundesadler-138.jpg", 2019: "https://www.historia-hamburg.de/media/product/a71/deutschland-2-euro-2019-stgl-mzz-d-bundesadler-6b0.jpg", 2020: "https://i.ebayimg.com/images/g/r6MAAOSwBfVfkZKR/s-l1200.jpg", 2021: "https://www.historia-hamburg.de/media/product/50c/deutschland-2-euro-2021-stgl-bundesadler-mzz-a-b78.jpg", 2022: "https://www.eurofischer.de/WebRoot/Store7/Shops/61426499/61E0/0774/24F7/F6CB/A27D/0A0C/6D10/5AC5/Deutschland_2_Euro_2022_A-1.jpg", 2023: "https://www.eurofischer.de/WebRoot/Store7/Shops/61426499/63FF/3CBD/A4A1/6764/2DE3/0A0C/6D11/E7B8/Deutschland_2_Euro_2023_D-1.jpg", 2024: "https://www.historia-hamburg.de/media/product/68b/deutschland-2-euro-2024-bundesadler-muenzzeichen-a-40c.jpg", 2025: "https://karomuenzen.de/storage/images/image?height=2560&remote=https%3A%2F%2Fkaromuenzen.de%2FWebRoot%2FStore21%2FShops%2Fd921a247-bf88-4611-82a4-3448c13af65e%2F684D%2FD5C9%2F96D1%2F5677%2FE5FE%2F0A48%2F3520%2F2DCB%2Fimg20250614-21580715.jpg&shop=d921a247-bf88-4611-82a4-3448c13af65e&width=600"};
+function germanBundesadlerStaticImage(c){
+  if(String(c?.country||'').trim()!=='Deutschland') return null;
+  if(!/bundesadler/i.test(String(c?.title||''))) return null;
+  const y=Number(c?.year);
+  return GERMAN_BUNDESADLER_YEAR_IMAGES[y]||null;
+}
 async function resolveCoinImage(c,target){
   if(!c || c.image || imageBusy.has(c.id)) return;
+  const staticImg=germanBundesadlerStaticImage(c);
+  if(staticImg){
+    c.image=staticImg; imageCache[c.id]=staticImg;
+    if(target){
+      const old=target.querySelector('.auto-coin-img');
+      const fallback=target.querySelector('.fallbackCoin');
+      if(old){old.src=staticImg;old.style.display='block';}
+      if(fallback)fallback.style.display='none';
+    }
+    return;
+  }
   imageBusy.add(c.id);
   try{
     const qs=imageSearchQueries(c);
