@@ -202,6 +202,7 @@ function expandMintVariants(list){
     mints.forEach(m=>{
       out.push({
         ...c,
+        image: null,
         id: c.id + '-' + m,
         code: m,
         mintmark: m,
@@ -303,20 +304,28 @@ function imageSearchQueries(c){
   const year=String(c.year||'').trim();
   const title=String(c.title||'').trim();
   const t=normText(title);
+  const mint=country==='Deutschland' && /^[ADFGJ]$/.test(String(c.mintmark||'').trim()) ? String(c.mintmark).trim().toUpperCase() : '';
   const qs=[];
-  // Englische Varianten zuerst – Commons-Dateien sind fast immer englisch benannt.
+
+  // Deutschland: Prägestätte IMMER in die Suche aufnehmen.
+  // Wichtig: keine allgemeine Deutschland/Jahr-Suche als erste Wahl, damit z.B. 2003 G
+  // nicht für 2004 A/D/F/G/J wiederverwendet wird.
+  if(mint){
+    qs.push(`Germany 2 euro ${year} ${mint} Bundesadler`);
+    qs.push(`Germany 2 euro coin ${year} ${mint}`);
+    qs.push(`Deutschland 2 Euro ${year} ${mint} Bundesadler`);
+    qs.push(`Deutschland 2 Euro ${year} ${mint}`);
+    qs.push(`2 euro ${year} ${mint} Germany eagle`);
+    return [...new Set(qs)].map(encodeURIComponent);
+  }
+
   if(title) qs.push(`2 euro coin ${countryEn} ${year} commemorative`);
   qs.push(`2 euro coin ${countryEn} ${year}`);
   qs.push(`€2 commemorative coin ${countryEn} ${year}`);
   if(title) qs.push(`2 euro ${countryEn} ${year} ${title}`);
-  // deutsche Varianten als Fallback
   if(title) qs.push(`2 euro ${country} ${year} ${title}`);
-  if(title) qs.push(`${country} 2 euro ${year} ${title}`);
   qs.push(`2 euro ${country} ${year}`);
-  if(t.includes('bundesadler')){
-    qs.unshift(`Germany 2 euro ${year} eagle`);
-    qs.push(`Germany 2 euro ${year} Bundesadler`);
-  }
+  if(t.includes('bundesadler')) qs.unshift(`Germany 2 euro ${year} eagle`);
   if(t.includes('bertha von suttner')) qs.unshift(`Austria 2 euro Bertha von Suttner`);
   return [...new Set(qs)].map(encodeURIComponent);
 }
@@ -326,22 +335,40 @@ function bestCommonsImage(data,c){
   const countryEn=normText(COUNTRY_EN[String(c.country||'').trim()]||'');
   const title=normText(c.title||'');
   const year=String(c.year||'');
+  const mint=String(c.mintmark||'').trim().toUpperCase();
+  const isDE=String(c.country||'').trim()==='Deutschland' && /^[ADFGJ]$/.test(mint);
   const titleWords=title.split(' ').filter(x=>x.length>3);
   let best=null, scoreBest=-999;
+
   for(const p of pages){
     const ii=p.imageinfo?.[0]; if(!ii) continue;
-    const name=normText(p.title||'');
-    if(!/2 euro|2euro|2 eur|euro coin|euro münze|euro munze/i.test(name)) continue;
+    const raw=String(p.title||'');
+    const name=normText(raw);
+    if(!/2 euro|2euro|2 eur|euro coin|euro munze|euro munze/i.test(name)) continue;
     if(/album|folder|set|roll|banknote|medal|token|coincard|proof set|mint set/i.test(name)) continue;
+
     let score=0;
-    if(year && name.includes(year)) score+=8;
-    if(country && name.includes(country)) score+=5;
-    if(countryEn && name.includes(countryEn)) score+=5;
-    for(const w of titleWords) if(name.includes(w)) score+=2;
+    const hasYear=!!year && name.includes(year);
+    const hasMint=isDE && new RegExp('(^|[^a-z])'+mint.toLowerCase()+'([^a-z]|$)').test(name);
+
+    // Bei deutschen Varianten ist ein falsches Jahr grundsätzlich verboten.
+    if(isDE && !hasYear) continue;
+
+    if(hasYear) score+=10;
+    if(country && name.includes(country)) score+=4;
+    if(countryEn && name.includes(countryEn)) score+=4;
+    if(isDE && hasMint) score+=12;
+    for(const w of titleWords) if(name.includes(w)) score+=1;
     if(name.includes('2 euro')) score+=3;
-    if(/jpg|jpeg|png/i.test(ii.url||'')) score+=1;
+    if(/jpg|jpeg|png|webp/i.test(ii.url||'')) score+=1;
+
     if(score>scoreBest){scoreBest=score;best=ii.thumburl||ii.url;}
   }
+
+  // Deutschland: bevorzugt echtes Jahr+Prägestätte-Bild. Falls Commons den
+  // Buchstaben nicht im Dateinamen führt, darf ein Bild desselben Jahrgangs
+  // als Fallback verwendet werden – niemals aber ein anderes Jahr.
+  if(isDE) return scoreBest>=14 ? best : (scoreBest>=13 ? best : null);
   return scoreBest>=3 ? best : null;
 }
 async function commonsSearch(q,c){
@@ -527,7 +554,7 @@ function buildRegularCatalog(){
     "Estland":"https://www.ecb.europa.eu/euro/coins/common/shared/img/et/Estonia_2Euro.jpg",
     "Finnland":"https://www.ecb.europa.eu/euro/coins/common/shared/img/fi/Finland_2euro.jpg",
     "Frankreich":{1:"https://www.ecb.europa.eu/euro/coins/common/shared/img/fr/France_2euro.jpg",2:"https://www.ecb.europa.eu/euro/coins/common/shared/img/fr/France_2euro_2022.jpg"},
-    "Deutschland":"https://www.ecb.europa.eu/euro/coins/common/shared/img/de/Germany_2euro.jpg",
+    "Deutschland":null,
     "Griechenland":"https://www.ecb.europa.eu/euro/coins/common/shared/img/gr/Greece_2euro.jpg",
     "Irland":"https://www.ecb.europa.eu/euro/coins/common/shared/img/ie/Ireland_2euro.jpg",
     "Italien":"https://www.ecb.europa.eu/euro/coins/common/shared/img/it/Italy_2euro.jpg",
@@ -574,7 +601,7 @@ function buildRegularCatalog(){
   const out=[]; let id=0;
   cfg.forEach(g=>{for(let y=g[1];y<=g[2];y++){
     let image=IMG[g[0]]; if(image&&typeof image==='object') image=image[g[5]]||null;
-    out.push({id:'regcat'+(id++),type:'regular',country:g[0],year:y,title:g[3]+' ('+y+')',code:g[4],desc:'Reguläre 2-€-Umlaufmünze; nationales Motiv.',volume:'–',release:String(y),image,owned:0,qty:0,catalog:true});
+    out.push({id:'regcat'+(id++),type:'regular',country:g[0],year:y,title:g[3]+' ('+y+')',code:g[4],desc:'Reguläre 2-€-Umlaufmünze; nationales Motiv.',volume:'–',release:String(y),image:(g[0]==='Deutschland'?null:image),owned:0,qty:0,catalog:true});
   }}); return out;
 }
 
@@ -642,6 +669,7 @@ async function load(){
     excelCollection.forEach(x=>{
       if(x.image || !x.year || x.year<=0 || !x.title) return;
       const cc=String(x.country||'').trim();
+      if(cc==='Deutschland') return;
       const candidates=all.filter(c=>c.country===cc && c.year===Number(x.year) && c.image);
       if(!candidates.length) return;
       if(candidates.length===1){ x.image=candidates[0].image; return; }
@@ -665,6 +693,7 @@ async function load(){
     document.getElementById('dataNote').innerHTML=`<b>${all.length}</b> reguläre 2-€-Ausgaben geladen. Die Gedenkmünzen werden bei bestehender Internetverbindung ergänzt.`;
   }
     all = expandMintVariants(all);
+    all.forEach(c=>{ if(String(c.country||'').trim()==='Deutschland' && /^[ADFGJ]$/.test(String(c.mintmark||''))) c.image=null; });
   applyExcelOwnership();
     // Falls expand noch nicht lief (z.B. Fehler beim Comm-Laden):
   if(!all.some(c => c.mintmark)) all = expandMintVariants(all);
