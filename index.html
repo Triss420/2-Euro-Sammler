@@ -114,9 +114,10 @@ button{cursor:pointer}
     <button class="tab" data-tab="comm">Gedenkmünzen</button>
     <button class="tab" data-tab="owned">Gesammelt</button><button class="tab" data-tab="mine">Meine Excel-Liste</button>
     <button class="tab" data-tab="missing">Fehlen</button>
+    <button class="tab" data-tab="overview">Übersicht</button>
   </div>
 
-  <div class="filters">
+  <div class="filters" id="filters">
     <input id="search" placeholder="🔎 Suche im Katalog …">
     <select id="country"><option value="">Alle Länder</option></select>
     <select id="year"><option value="">Alle Jahre</option></select>
@@ -126,6 +127,17 @@ button{cursor:pointer}
   <div class="note" id="dataNote">Gedenkmünzen werden aus einer öffentlichen Datensammlung geladen. Die Sammlung selbst bleibt lokal auf deinem Gerät.</div>
   <div class="sectionHead"><h2 id="heading">Katalog</h2><div class="count" id="resultCount"></div></div>
   <div class="grid" id="grid"></div>
+    <div id="overviewPanel" style="display:none">
+    <div class="tabs" id="overviewSubTabs" style="margin-top:0">
+      <button class="tab active" data-ov="countries">Länder</button>
+      <button class="tab" data-ov="years">Jahre</button>
+      <button class="tab" data-ov="stats">Statistik</button>
+      <button class="tab" data-ov="series">Serien</button>
+      <button class="tab" data-ov="joint">Gemeinschaft</button>
+      <button class="tab" data-ov="mints">DE-Stempel</button>
+    </div>
+    <div id="overviewBody"></div>
+  </div>
   <div class="footer">2€ Sammler – private Sammlung. Katalogquellen: Europäische Zentralbank / Europäische Kommission; Bilder: offizielle Euro-Seiten bzw. Wikimedia Commons als Bild-Fallback.</div>
 </main>
 
