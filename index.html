@@ -128,10 +128,24 @@ button{cursor:pointer}
 </div>
 
 <script>
-const COMM_URL='https://raw.githubusercontent.com/Liebeck/two-euro-coins-data/main/2euro-coins.json';
-const STORE='twoEuroCollectorV1';
+// --- 1. LOKALE SPEICHERUNG (LOCAL STORAGE) ---
+const STORAGE_KEY = '2euro_collection_v1';
 
-// --- 1. KURSMÜNZEN-GENERATOR (2002 bis 2026) ---
+function getSavedState() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+  } catch (e) {
+    return {};
+  }
+}
+
+function saveState(state) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+let userState = getSavedState();
+
+// --- 2. KURSMÜNZEN-GENERATOR (2002 bis 2026) ---
 const euroCountries = [
   { name: "Deutschland", code: "DE", startYear: 2002, mints: ["A", "D", "F", "G", "J"] },
   { name: "Österreich", code: "AT", startYear: 2002 },
@@ -192,18 +206,131 @@ function generateRegularCoins() {
   return coins;
 }
 
-// Globales Münzen-Array
 let allCoins = [...generateRegularCoins()];
+let activeTab = 'all';
 
-// --- 2. AUTOMATISCHES LADEN DER GEDENKMÜNZEN (2004 - 2026) ---
+// --- 3. ANZEIGE UND FILTERUNG ---
+function renderApp() {
+  const searchVal = (document.getElementById('searchInput')?.value || '').toLowerCase();
+  const countryVal = document.getElementById('countryFilter')?.value || '';
+  const yearVal = document.getElementById('yearFilter')?.value || '';
+  const sortVal = document.getElementById('sortFilter')?.value || 'year-desc';
+
+  let filtered = allCoins.filter(coin => {
+    const isCollected = !!userState[coin.id]?.collected;
+
+    // Tab Filter
+    if (activeTab === 'commemorative' && coin.type !== 'commemorative') return false;
+    if (activeTab === 'regular' && coin.type !== 'regular') return false;
+    if (activeTab === 'collected' && !isCollected) return false;
+    if (activeTab === 'missing' && isCollected) return false;
+
+    // Dropdown Filter
+    if (countryVal && coin.country !== countryVal) return false;
+    if (yearVal && coin.year.toString() !== yearVal) return false;
+
+    // Suchfeld Filter
+    if (searchVal) {
+      const matchTitle = coin.title.toLowerCase().includes(searchVal);
+      const matchCountry = coin.country.toLowerCase().includes(searchVal);
+      const matchYear = coin.year.toString().includes(searchVal);
+      if (!matchTitle && !matchCountry && !matchYear) return false;
+    }
+
+    return true;
+  });
+
+  // Sortierung
+  filtered.sort((a, b) => {
+    if (sortVal === 'year-desc') return b.year - a.year;
+    if (sortVal === 'year-asc') return a.year - b.year;
+    if (sortVal === 'country') return a.country.localeCompare(b.country);
+    return 0;
+  });
+
+  // Render Grid
+  const grid = document.getElementById('coinGrid');
+  if (grid) {
+    grid.innerHTML = filtered.map(coin => {
+      const collected = !!userState[coin.id]?.collected;
+      const count = userState[coin.id]?.count || (collected ? 1 : 0);
+
+      return `
+        <div class="card ${collected ? 'collected' : ''}" onclick="toggleCoin('${coin.id}')">
+          <div class="coinmock">${coin.country.substring(0,2).toUpperCase()}</div>
+          <div class="title">${coin.title}</div>
+          <div class="subtitle">${coin.country} • ${coin.year}</div>
+          <div style="margin-top: 10px; font-size: 0.85rem; font-weight: bold;">
+            ${collected ? '✓ Vorhanden (' + count + 'x)' : '✗ Fehlt'}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  updateStats();
+}
+
+function toggleCoin(id) {
+  if (!userState[id]) {
+    userState[id] = { collected: true, count: 1 };
+  } else {
+    userState[id].collected = !userState[id].collected;
+    if (!userState[id].collected) userState[id].count = 0;
+    else if (userState[id].count === 0) userState[id].count = 1;
+  }
+  saveState(userState);
+  renderApp();
+}
+
+function updateStats() {
+  const total = allCoins.length;
+  const collectedCount = allCoins.filter(c => userState[c.id]?.collected).length;
+  const missingCount = total - collectedCount;
+  const percent = total > 0 ? Math.round((collectedCount / total) * 100) : 0;
+
+  const elCollected = document.getElementById('statCollected');
+  const elMissing = document.getElementById('statMissing');
+  const elTotal = document.getElementById('statTotal');
+  const elProgress = document.getElementById('progressBar');
+
+  if (elCollected) elCollected.innerText = collectedCount;
+  if (elMissing) elMissing.innerText = missingCount;
+  if (elTotal) elTotal.innerText = total;
+  if (elProgress) elProgress.style.width = percent + '%';
+}
+
+// --- 4. GEDENKMÜNZEN UND DROPDOWNS INITIALISIEREN ---
+function populateFilterDropdowns() {
+  const countrySelect = document.getElementById('countryFilter');
+  const yearSelect = document.getElementById('yearFilter');
+
+  if (countrySelect && countrySelect.options.length <= 1) {
+    const countries = [...new Set(euroCountries.map(c => c.name))].sort();
+    countries.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c;
+      opt.innerText = c;
+      countrySelect.appendChild(opt);
+    });
+  }
+
+  if (yearSelect && yearSelect.options.length <= 1) {
+    for (let y = 2026; y >= 2002; y--) {
+      const opt = document.createElement('option');
+      opt.value = y;
+      opt.innerText = y;
+      yearSelect.appendChild(opt);
+    }
+  }
+}
+
 async function loadCommemorativeCoins() {
   try {
-    // Lädt die aktuellste Community-Datenbank für 2-Euro-Gedenkmünzen
     const response = await fetch('https://raw.githubusercontent.com/martinj/two-euro-coins-data/master/coins.json');
     if (response.ok) {
       const commCoins = await response.json();
-      
-      const formattedCommCoins = commCoins.map((c, index) => ({
+      const formatted = commCoins.map((c, index) => ({
         id: c.id || `comm_${c.country}_${c.year}_${index}`,
         country: c.country,
         year: parseInt(c.year),
@@ -211,19 +338,42 @@ async function loadCommemorativeCoins() {
         type: 'commemorative',
         image: c.image || ''
       }));
-
-      allCoins = [...allCoins, ...formattedCommCoins];
+      allCoins = [...allCoins, ...formatted];
     }
-  } catch (error) {
-    console.warn("Gedenkmünzen konnten nicht von extern geladen werden. Nutze lokale Daten.", error);
+  } catch (e) {
+    console.warn("Gedenkmünzen-API nicht erreichbar.", e);
   } finally {
     renderApp();
   }
 }
 
-// App-Initialisierung
+// --- 5. EVENT LISTENER ---
 document.addEventListener("DOMContentLoaded", () => {
+  populateFilterDropdowns();
+
+  // Tab Listener
+  document.querySelectorAll('.tab, .chip').forEach(tab => {
+    tab.addEventListener('click', (e) => {
+      document.querySelectorAll('.tab, .chip').forEach(t => t.classList.remove('active'));
+      e.target.classList.add('active');
+      activeTab = e.target.dataset.tab || 'all';
+      renderApp();
+    });
+  });
+
+  // Filter Listener
+  ['searchInput', 'countryFilter', 'yearFilter', 'sortFilter'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('input', renderApp);
+      el.addEventListener('change', renderApp);
+    }
+  });
+
+  // Daten laden und rendern
+  renderApp();
   loadCommemorativeCoins();
 });
+</script>
 </body>
 </html>
