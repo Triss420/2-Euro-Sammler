@@ -205,7 +205,6 @@ function expandMintVariants(list){
         id: c.id + '-' + m,
         code: m,
         mintmark: m,
-        image: isDE ? null : c.image,
         title: String(c.title||'').replace(/\s·\s*[ADFGJ]\b/gi,'').trim() + ' · ' + m,
         desc: (c.desc ? c.desc + ' ' : '') + 'Prägestätte ' + m + (DE_MINT_NAMES[m] ? ' (' + DE_MINT_NAMES[m] + ')' : ''),
         parentId: c.id,
@@ -298,7 +297,6 @@ function normText(s){
   return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
     .replace(/[^a-z0-9]+/g,' ').trim();
 }
-const germanResolvedImages = new Map();
 function imageSearchQueries(c){
   const country=String(c.country||'').trim();
   const countryEn=COUNTRY_EN[country]||country;
@@ -306,21 +304,14 @@ function imageSearchQueries(c){
   const title=String(c.title||'').trim();
   const t=normText(title);
   const qs=[];
-  if(country==='Deutschland' && /^[ADFGJ]$/i.test(String(c.mintmark||''))){
-    const m=String(c.mintmark).toUpperCase();
-    // For Germany the mintmark is part of the identity. Do not use the generic
-    // Germany_2euro.jpg image and do not fall back to a different mint.
-    qs.push(`Germany 2 euro ${year} ${m} Bundesadler`);
-    qs.push(`Germany 2 euro ${year} ${m} eagle`);
-    qs.push(`Deutschland 2 Euro ${year} ${m} Bundesadler`);
-    qs.push(`2 euro Germany ${year} mint ${m}`);
-    return [...new Set(qs)].map(encodeURIComponent);
-  }
+  // Englische Varianten zuerst – Commons-Dateien sind fast immer englisch benannt.
   if(title) qs.push(`2 euro coin ${countryEn} ${year} commemorative`);
   qs.push(`2 euro coin ${countryEn} ${year}`);
   qs.push(`€2 commemorative coin ${countryEn} ${year}`);
   if(title) qs.push(`2 euro ${countryEn} ${year} ${title}`);
+  // deutsche Varianten als Fallback
   if(title) qs.push(`2 euro ${country} ${year} ${title}`);
+  if(title) qs.push(`${country} 2 euro ${year} ${title}`);
   qs.push(`2 euro ${country} ${year}`);
   if(t.includes('bundesadler')){
     qs.unshift(`Germany 2 euro ${year} eagle`);
@@ -335,45 +326,23 @@ function bestCommonsImage(data,c){
   const countryEn=normText(COUNTRY_EN[String(c.country||'').trim()]||'');
   const title=normText(c.title||'');
   const year=String(c.year||'');
-  const isDE=String(c.country||'').trim()==='Deutschland' && /^[ADFGJ]$/i.test(String(c.mintmark||''));
-  const mint=isDE?String(c.mintmark).toLowerCase():'';
   const titleWords=title.split(' ').filter(x=>x.length>3);
   let best=null, scoreBest=-999;
   for(const p of pages){
     const ii=p.imageinfo?.[0]; if(!ii) continue;
     const name=normText(p.title||'');
-    const url=normText(ii.url||'');
-    if(!/2 euro|2euro|2 eur|euro coin|euro munze|euro munze/i.test(name)) continue;
+    if(!/2 euro|2euro|2 eur|euro coin|euro münze|euro munze/i.test(name)) continue;
     if(/album|folder|set|roll|banknote|medal|token|coincard|proof set|mint set/i.test(name)) continue;
-    // Never accept the generic ECB Germany image or a generic Cnumis type image
-    // for a mint-specific German entry.
-    if(isDE && (/germany_2euro|2848 coin des monnaies germany 2 euro eagle allemand/i.test(url+' '+name))) continue;
-    if(year && !name.includes(year) && !url.includes(year)) continue;
     let score=0;
-    if(year && (name.includes(year)||url.includes(year))) score+=10;
+    if(year && name.includes(year)) score+=8;
     if(country && name.includes(country)) score+=5;
     if(countryEn && name.includes(countryEn)) score+=5;
     for(const w of titleWords) if(name.includes(w)) score+=2;
     if(name.includes('2 euro')) score+=3;
     if(/jpg|jpeg|png/i.test(ii.url||'')) score+=1;
-    if(isDE){
-      // Strong preference for an explicitly named mintmark. If the source does
-      // not put the letter in its filename, accept it only if this exact URL
-      // has not already been assigned to another German mintmark.
-      const explicitMint = new RegExp(`(?:^|[^a-z])${mint}(?:[^a-z]|$)|${year}[^a-z0-9]*${mint}|${mint}[^a-z0-9]*${year}`,'i').test(name+' '+url);
-      if(explicitMint) score+=20;
-      if(germanResolvedImages.has(url) && germanResolvedImages.get(url)!==mint) continue;
-      // An exact-mint search can still return a correctly matching image whose
-      // filename omits the letter. Give that result a smaller score than an
-      // explicitly named mint image, but allow it if it is unique.
-      score+=2;
-    }
     if(score>scoreBest){scoreBest=score;best=ii.thumburl||ii.url;}
   }
-  if(isDE && best){
-    germanResolvedImages.set(best,mint);
-  }
-  return scoreBest>= (isDE?12:3) ? best : null;
+  return scoreBest>=3 ? best : null;
 }
 async function commonsSearch(q,c){
   const url=`https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${q}&gsrnamespace=6&gsrlimit=20&prop=imageinfo&iiprop=url&iiurlwidth=700&format=json&origin=*`;
@@ -558,7 +527,7 @@ function buildRegularCatalog(){
     "Estland":"https://www.ecb.europa.eu/euro/coins/common/shared/img/et/Estonia_2Euro.jpg",
     "Finnland":"https://www.ecb.europa.eu/euro/coins/common/shared/img/fi/Finland_2euro.jpg",
     "Frankreich":{1:"https://www.ecb.europa.eu/euro/coins/common/shared/img/fr/France_2euro.jpg",2:"https://www.ecb.europa.eu/euro/coins/common/shared/img/fr/France_2euro_2022.jpg"},
-    "Deutschland":null,
+    "Deutschland":"https://www.ecb.europa.eu/euro/coins/common/shared/img/de/Germany_2euro.jpg",
     "Griechenland":"https://www.ecb.europa.eu/euro/coins/common/shared/img/gr/Greece_2euro.jpg",
     "Irland":"https://www.ecb.europa.eu/euro/coins/common/shared/img/ie/Ireland_2euro.jpg",
     "Italien":"https://www.ecb.europa.eu/euro/coins/common/shared/img/it/Italy_2euro.jpg",
