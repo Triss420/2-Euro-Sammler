@@ -3,48 +3,63 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0b1220">
+<meta name="theme-color" content="#3d5a6c">
 <title>2€ Sammler</title>
 <style>
 :root{
-  --bg:#f4f6f9;--panel:#fff;--text:#172033;--muted:#667085;--line:#e6e9ef;
-  --accent:#1769ff;--accent2:#0d47b5;--good:#16834b;--warn:#b77900;--bad:#b42318;
-  --shadow:0 8px 28px rgba(15,23,42,.08);--r:18px
+  --bg:#f3f1ea;--panel:#fffdf8;--text:#3a3630;--muted:#7c7568;--line:#e6e1d5;
+  --accent:#5c8a8a;--accent2:#466e6e;--good:#5f8f5a;--warn:#b98a3d;--bad:#c1604f;
+  --top:#3d5a6c;--top2:#2f4652;--panel2:#f7f4ec;--coinbg1:#faf7f0;--coinbg2:#e9e3d4;--coinring:#d8d0bd;--coinface:#5a5346;
+  --shadow:0 8px 28px rgba(58,54,48,.08);--r:18px
 }
+:root[data-theme="dark"]{
+  --bg:#20242a;--panel:#2a2f37;--text:#e7e4dc;--muted:#a3a099;--line:#3a3f47;
+  --accent:#7aa8a8;--accent2:#5c8a8a;--good:#7fb679;--warn:#d9a35c;--bad:#d9806e;
+  --top:#171a1f;--top2:#12151a;--panel2:#252a31;--coinbg1:#333940;--coinbg2:#262b31;--coinring:#454b53;--coinface:#d8d4c8;
+  --shadow:0 8px 28px rgba(0,0,0,.35)
+}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#20242a;--panel:#2a2f37;--text:#e7e4dc;--muted:#a3a099;--line:#3a3f47;
+  --accent:#7aa8a8;--accent2:#5c8a8a;--good:#7fb679;--warn:#d9a35c;--bad:#d9806e;
+  --top:#171a1f;--top2:#12151a;--panel2:#252a31;--coinbg1:#333940;--coinbg2:#262b31;--coinring:#454b53;--coinface:#d8d4c8;
+  --shadow:0 8px 28px rgba(0,0,0,.35)
+}}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;transition:background .2s,color .2s}
 button,input,select{font:inherit}
 button{cursor:pointer}
-.top{position:sticky;top:0;z-index:5;background:rgba(11,18,32,.97);color:#fff;padding:14px 18px;display:flex;gap:14px;align-items:center}
-.logo{font-weight:800;font-size:20px;white-space:nowrap}.logo span{color:#ffd54a}
-.search{flex:1;max-width:760px;margin:auto;position:relative}.search input{width:100%;padding:13px 16px 13px 42px;border-radius:14px;border:0;outline:0;background:#fff;color:#172033}
-.search b{position:absolute;left:15px;top:11px;color:#667085}
-.actions{display:flex;gap:8px}.iconbtn{border:1px solid rgba(255,255,255,.15);background:#182238;color:#fff;border-radius:12px;padding:10px 12px}
+.top{position:sticky;top:0;z-index:5;background:linear-gradient(135deg,var(--top),var(--top2));color:#fbf9f4;padding:14px 18px;display:flex;gap:14px;align-items:center}
+.logo{font-weight:800;font-size:20px;white-space:nowrap}.logo span{color:#e8c468}
+.search{flex:1;max-width:760px;margin:auto;position:relative}.search input{width:100%;padding:13px 16px 13px 42px;border-radius:14px;border:0;outline:0;background:var(--panel);color:var(--text)}
+.search b{position:absolute;left:15px;top:11px;color:var(--muted)}
+.actions{display:flex;gap:8px}.iconbtn{border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fbf9f4;border-radius:12px;padding:10px 12px}
+.iconbtn:hover{background:rgba(255,255,255,.16)}
 .wrap{max-width:1450px;margin:auto;padding:22px}
 .hero{display:grid;grid-template-columns:1.25fr .75fr;gap:18px;margin-bottom:18px}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
-.heroMain{padding:25px}.heroMain h1{margin:0 0 8px;font-size:32px}.heroMain p{margin:0;color:var(--muted)}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:22px}.stat{padding:15px;border-radius:15px;background:#f7f8fb;border:1px solid var(--line)}.stat strong{font-size:25px;display:block}.stat span{color:var(--muted);font-size:13px}
-.progress{height:12px;background:#e8ecf2;border-radius:99px;overflow:hidden;margin-top:12px}.progress>div{height:100%;background:var(--accent);width:0}
-.heroSide{padding:20px}.heroSide h3{margin:0 0 12px}.quick{display:grid;grid-template-columns:1fr 1fr;gap:10px}.quick button{padding:13px;border:1px solid var(--line);background:#fff;border-radius:13px;text-align:left}.quick button:hover{border-color:var(--accent)}
-.tabs{display:flex;gap:8px;margin:8px 0 15px;overflow:auto}.tab{border:0;background:#e9edf4;color:#344054;border-radius:999px;padding:10px 16px;white-space:nowrap}.tab.active{background:var(--accent);color:#fff}
-.filters{display:grid;grid-template-columns:1.6fr .8fr .8fr .8fr;gap:10px;margin-bottom:16px}.filters input,.filters select{padding:12px;border:1px solid var(--line);border-radius:12px;background:#fff;outline:0}
+.heroMain{padding:25px}.heroMain h1{margin:0 0 8px;font-size:32px;color:var(--text)}.heroMain p{margin:0;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:22px}.stat{padding:15px;border-radius:15px;background:var(--panel2);border:1px solid var(--line)}.stat strong{font-size:25px;display:block;color:var(--text)}.stat span{color:var(--muted);font-size:13px}
+.progress{height:12px;background:var(--panel2);border-radius:99px;overflow:hidden;margin-top:12px;border:1px solid var(--line)}.progress>div{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));width:0;transition:width .3s}
+.heroSide{padding:20px}.heroSide h3{margin:0 0 12px}.quick{display:grid;grid-template-columns:1fr 1fr;gap:10px}.quick button{padding:13px;border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:13px;text-align:left}.quick button:hover{border-color:var(--accent)}
+.tabs{display:flex;gap:8px;margin:8px 0 15px;overflow:auto}.tab{border:0;background:var(--panel2);color:var(--text);border-radius:999px;padding:10px 16px;white-space:nowrap}.tab.active{background:var(--accent);color:#fff}
+.filters{display:grid;grid-template-columns:1.6fr .8fr .8fr .8fr;gap:10px;margin-bottom:16px}.filters input,.filters select{padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--text);outline:0}
 .sectionHead{display:flex;justify-content:space-between;align-items:center;margin:10px 0 12px}.sectionHead h2{margin:0}.count{color:var(--muted);font-size:14px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(245px,1fr));gap:14px}
-.card{background:#fff;border:1px solid var(--line);border-radius:17px;overflow:hidden;box-shadow:0 4px 16px rgba(15,23,42,.05);transition:.15s}.card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
-.coinpic{height:190px;background:linear-gradient(145deg,#f8fafc,#e9edf4);display:flex;align-items:center;justify-content:center;position:relative}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:17px;overflow:hidden;box-shadow:0 4px 16px rgba(58,54,48,.06);transition:.15s}.card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.coinpic{height:190px;background:linear-gradient(145deg,var(--coinbg1),var(--coinbg2));display:flex;align-items:center;justify-content:center;position:relative}
 .coinpic img{max-width:90%;max-height:175px;object-fit:contain;border-radius:50%;filter:drop-shadow(0 8px 10px rgba(0,0,0,.16))}
-.coinmock{width:138px;height:138px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#f5f6f7,#c5cad0 55%,#9098a2);border:7px solid #b9bec5;box-shadow:0 10px 18px rgba(0,0,0,.22);display:flex;align-items:center;justify-content:center;flex-direction:column;color:#313843;font-weight:800}
-.coinmock .e{font-size:42px;line-height:1}.coinmock small{font-size:11px;letter-spacing:1px}
-.badge{position:absolute;top:10px;left:10px;padding:6px 9px;border-radius:999px;font-size:12px;background:#fff;border:1px solid var(--line)}
+.coinmock{width:138px;height:138px;border-radius:50%;background:radial-gradient(circle at 35% 30%,var(--coinbg1),var(--coinring) 55%,var(--coinring));border:7px solid var(--coinring);box-shadow:0 10px 18px rgba(0,0,0,.14);display:flex;align-items:center;justify-content:center;flex-direction:column;color:var(--coinface);font-weight:800}
+.coinmock .flag{font-size:34px;line-height:1;margin-bottom:2px}
+.coinmock .e{font-size:30px;line-height:1}.coinmock small{font-size:10.5px;letter-spacing:.5px;margin-top:2px}
+.badge{position:absolute;top:10px;left:10px;padding:6px 9px;border-radius:999px;font-size:12px;background:var(--panel);color:var(--text);border:1px solid var(--line)}
 .owned{position:absolute;top:10px;right:10px;background:var(--good);color:#fff;border-radius:999px;padding:6px 9px;font-size:12px;font-weight:700}
-.cardbody{padding:14px}.country{font-size:13px;color:var(--muted);font-weight:700}.title{font-weight:800;margin:4px 0 7px;line-height:1.25}.year{font-size:13px;color:var(--muted)}.cardfoot{display:flex;gap:7px;margin-top:12px}.smallbtn{flex:1;border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px}.smallbtn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
-.empty{padding:45px;text-align:center;color:var(--muted);background:#fff;border:1px dashed #ccd2dc;border-radius:17px}
-.note{background:#fff8e6;border:1px solid #f1d48b;border-radius:14px;padding:12px 14px;color:#6d5200;margin-bottom:15px}
-.modal{position:fixed;inset:0;background:rgba(3,8,20,.65);display:none;align-items:center;justify-content:center;padding:18px;z-index:20}.modal.open{display:flex}.modalbox{background:#fff;border-radius:22px;max-width:850px;width:100%;max-height:92vh;overflow:auto}.modalhead{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:15px}.close{border:0;background:#eef1f5;border-radius:10px;padding:8px 11px}.modalgrid{display:grid;grid-template-columns:340px 1fr;gap:20px;padding:20px}.bigimg{width:100%;height:330px;display:flex;align-items:center;justify-content:center;background:#f4f6f9;border-radius:18px}.bigimg img{max-width:96%;max-height:315px;border-radius:50%}.detail p{line-height:1.55}.row{display:flex;gap:8px;flex-wrap:wrap}.pill{padding:7px 10px;background:#f1f3f7;border-radius:999px;font-size:13px}
-.footer{color:#8a94a6;font-size:12px;text-align:center;padding:30px 0}
+.cardbody{padding:14px}.country{font-size:13px;color:var(--muted);font-weight:700}.title{font-weight:800;margin:4px 0 7px;line-height:1.25;color:var(--text)}.year{font-size:13px;color:var(--muted)}.cardfoot{display:flex;gap:7px;margin-top:12px}.smallbtn{flex:1;border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:10px;padding:9px}.smallbtn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.empty{padding:45px;text-align:center;color:var(--muted);background:var(--panel);border:1px dashed var(--line);border-radius:17px}
+.note{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:12px 14px;color:var(--muted);margin-bottom:15px}
+.modal{position:fixed;inset:0;background:rgba(20,20,18,.55);display:none;align-items:center;justify-content:center;padding:18px;z-index:20}.modal.open{display:flex}.modalbox{background:var(--panel);color:var(--text);border-radius:22px;max-width:850px;width:100%;max-height:92vh;overflow:auto}.modalhead{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:15px}.close{border:0;background:var(--panel2);color:var(--text);border-radius:10px;padding:8px 11px}.modalgrid{display:grid;grid-template-columns:340px 1fr;gap:20px;padding:20px}.bigimg{width:100%;height:330px;display:flex;align-items:center;justify-content:center;background:var(--panel2);border-radius:18px}.bigimg img{max-width:96%;max-height:315px;border-radius:50%}.detail p{line-height:1.55}.row{display:flex;gap:8px;flex-wrap:wrap}.pill{padding:7px 10px;background:var(--panel2);color:var(--text);border-radius:999px;font-size:13px}
+.footer{color:var(--muted);font-size:12px;text-align:center;padding:30px 0}
 @media(max-width:900px){.hero{grid-template-columns:1fr}.filters{grid-template-columns:1fr 1fr}.modalgrid{grid-template-columns:1fr}}
-@media(max-width:600px){.top{flex-wrap:wrap}.search{order:3;flex-basis:100%}.wrap{padding:14px}.stats{grid-template-columns:1fr}.filters{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.coinpic{height:145px}.coinmock{width:100px;height:100px}.coinmock .e{font-size:30px}.cardbody{padding:10px}.title{font-size:14px}}
+@media(max-width:600px){.top{flex-wrap:wrap}.search{order:3;flex-basis:100%}.wrap{padding:14px}.stats{grid-template-columns:1fr}.filters{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.coinpic{height:145px}.coinmock{width:100px;height:100px}.coinmock .e{font-size:24px}.coinmock .flag{font-size:26px}.cardbody{padding:10px}.title{font-size:14px}}
 
 .coin-real-img,.auto-coin-img{max-width:90%;max-height:175px;object-fit:contain;border-radius:50%;filter:drop-shadow(0 8px 10px rgba(0,0,0,.16))}
 .bigimg .coin-real-img,.bigimg .auto-coin-img{max-width:96%;max-height:315px}
@@ -55,6 +70,7 @@ button{cursor:pointer}
   <div class="logo">2€ <span>Sammler</span></div>
   <div class="search"><b>⌕</b><input id="globalSearch" placeholder="Land, Jahr, Motiv, Stichwort …"></div>
   <div class="actions">
+    <button class="iconbtn" id="themeBtn" title="Hell/Dunkel umschalten">🌓</button>
     <button class="iconbtn" id="exportBtn" title="Sicherung exportieren">↥</button>
     <button class="iconbtn" id="importBtn" title="Sicherung importieren">↧</button>
     <input type="file" id="fileInput" accept=".json" hidden>
@@ -130,6 +146,36 @@ button{cursor:pointer}
 <script>
 const COMM_URL='https://raw.githubusercontent.com/Liebeck/two-euro-coins-data/main/2euro-coins.json';
 const STORE='twoEuroCollectorV1';
+const THEME_STORE='twoEuroCollectorTheme';
+
+// Länderflaggen + englische Namen (verbessert die Trefferquote bei der Bildersuche auf Wikimedia Commons,
+// wo Dateien meist unter dem englischen Ländernamen abgelegt sind).
+const COUNTRY_FLAG={"Andorra":"🇦🇩","Österreich":"🇦🇹","Belgien":"🇧🇪","Bulgarien":"🇧🇬","Kroatien":"🇭🇷","Zypern":"🇨🇾",
+"Estland":"🇪🇪","Finnland":"🇫🇮","Frankreich":"🇫🇷","Deutschland":"🇩🇪","Griechenland":"🇬🇷","Irland":"🇮🇪",
+"Italien":"🇮🇹","Lettland":"🇱🇻","Litauen":"🇱🇹","Luxemburg":"🇱🇺","Malta":"🇲🇹","Monaco":"🇲🇨","Niederlande":"🇳🇱",
+"Portugal":"🇵🇹","San Marino":"🇸🇲","Slowakei":"🇸🇰","Slowenien":"🇸🇮","Spanien":"🇪🇸","Vatikan":"🇻🇦","Vatikanstadt":"🇻🇦","Zypern ":"🇨🇾"};
+const COUNTRY_EN={"Österreich":"Austria","Belgien":"Belgium","Bulgarien":"Bulgaria","Kroatien":"Croatia","Zypern":"Cyprus",
+"Estland":"Estonia","Finnland":"Finland","Frankreich":"France","Deutschland":"Germany","Griechenland":"Greece","Irland":"Ireland",
+"Italien":"Italy","Lettland":"Latvia","Litauen":"Lithuania","Luxemburg":"Luxembourg","Niederlande":"Netherlands","Portugal":"Portugal",
+"Slowakei":"Slovakia","Slowenien":"Slovenia","Spanien":"Spain","Vatikan":"Vatican City","Vatikanstadt":"Vatican City",
+"Andorra":"Andorra","Malta":"Malta","Monaco":"Monaco","San Marino":"San Marino"};
+function flagFor(country){return COUNTRY_FLAG[String(country||'').trim()]||'🇪🇺';}
+
+// Dunkelmodus: gespeicherte Präferenz anwenden und Umschalter aktivieren
+(function initTheme(){
+  const saved=localStorage.getItem(THEME_STORE);
+  if(saved==='dark'||saved==='light') document.documentElement.setAttribute('data-theme',saved);
+})();
+document.addEventListener('DOMContentLoaded',()=>{
+  const btn=document.getElementById('themeBtn');
+  if(btn) btn.onclick=()=>{
+    const cur=document.documentElement.getAttribute('data-theme')
+      || (window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
+    const next=cur==='dark'?'light':'dark';
+    document.documentElement.setAttribute('data-theme',next);
+    localStorage.setItem(THEME_STORE,next);
+  };
+});
 
 const regular = [
 ["Andorra",2014,"Wappen Andorras","AD","Reguläre nationale 2-€-Seite; Andorra gibt Euro-Münzen seit 2014 aus."],
@@ -190,10 +236,17 @@ function normText(s){
 }
 function imageSearchQueries(c){
   const country=String(c.country||'').trim();
+  const countryEn=COUNTRY_EN[country]||country;
   const year=String(c.year||'').trim();
   const title=String(c.title||'').trim();
   const t=normText(title);
   const qs=[];
+  // Englische Varianten zuerst – Commons-Dateien sind fast immer englisch benannt.
+  if(title) qs.push(`2 euro coin ${countryEn} ${year} commemorative`);
+  qs.push(`2 euro coin ${countryEn} ${year}`);
+  qs.push(`€2 commemorative coin ${countryEn} ${year}`);
+  if(title) qs.push(`2 euro ${countryEn} ${year} ${title}`);
+  // deutsche Varianten als Fallback
   if(title) qs.push(`2 euro ${country} ${year} ${title}`);
   if(title) qs.push(`${country} 2 euro ${year} ${title}`);
   qs.push(`2 euro ${country} ${year}`);
@@ -207,6 +260,7 @@ function imageSearchQueries(c){
 function bestCommonsImage(data,c){
   const pages=Object.values(data?.query?.pages||{});
   const country=normText(c.country||'');
+  const countryEn=normText(COUNTRY_EN[String(c.country||'').trim()]||'');
   const title=normText(c.title||'');
   const year=String(c.year||'');
   const titleWords=title.split(' ').filter(x=>x.length>3);
@@ -219,6 +273,7 @@ function bestCommonsImage(data,c){
     let score=0;
     if(year && name.includes(year)) score+=8;
     if(country && name.includes(country)) score+=5;
+    if(countryEn && name.includes(countryEn)) score+=5;
     for(const w of titleWords) if(name.includes(w)) score+=2;
     if(name.includes('2 euro')) score+=3;
     if(/jpg|jpeg|png/i.test(ii.url||'')) score+=1;
@@ -254,8 +309,10 @@ async function resolveCoinImage(c,target){
   }finally{ imageBusy.delete(c.id); }
 }
 function coinVisual(c,big=false){
-  if(c.image) return `<img class="coin-real-img" src="${esc(c.image)}" alt="${esc(c.title)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="coinmock fallbackCoin" style="display:none"><div class="e">2€</div><small>${esc(c.code||c.country||'EURO')}</small></div>`;
-  return `<img class="auto-coin-img" data-coin-id="${esc(c.id)}" src="" alt="${esc(c.title)}" loading="lazy" style="display:none"><div class="coinmock fallbackCoin"><div class="e">2€</div><small>${esc(c.code||c.country||'EURO')}</small></div>`;
+  const flag=flagFor(c.country);
+  const fallback=`<div class="coinmock fallbackCoin"${c.image?' style="display:none"':''}><div class="flag">${flag}</div><div class="e">2€</div><small>${esc(c.code||c.country||'EURO')}</small></div>`;
+  if(c.image) return `<img class="coin-real-img" src="${esc(c.image)}" alt="${esc(c.title)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">${fallback}`;
+  return `<img class="auto-coin-img" data-coin-id="${esc(c.id)}" src="" alt="${esc(c.title)}" loading="lazy" style="display:none">${fallback}`;
 }
 function loadVisibleCoinImages(){
   const els=[...document.querySelectorAll('.auto-coin-img[data-coin-id]')];
