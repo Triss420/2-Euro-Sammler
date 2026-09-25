@@ -195,43 +195,42 @@
     </style>
 </head>
 <body>
-
-<div class="container">
-    <header>
-        <h1>
-            <svg width="32" height="32" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="45" fill="#C0C0C0" stroke="#D4AF37" stroke-width="8"/>
-                <circle cx="50" cy="50" r="30" fill="#D4AF37"/>
-                <text x="50" y="60" font-size="30" font-weight="bold" fill="#12131C" text-anchor="middle">2€</text>
-            </svg>
-            2€ Münzsammler Pro
-        </h1>
-        <div class="stats">
-            <div class="stat-box">
-                <div class="stat-value" id="stat-count">0 / 0</div>
-                <div class="stat-label">Münzen Gesammelt</div>
-                <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    <div class="container">
+        <header>
+            <h1>
+                <svg width="32" height="32" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="45" fill="#C0C0C0" stroke="#D4AF37" stroke-width="8"/>
+                    <circle cx="50" cy="50" r="30" fill="#D4AF37"/>
+                    <text x="50" y="60" font-size="30" font-weight="bold" fill="#12131C" text-anchor="middle">2€</text>
+                </svg>
+                2€ Münzsammler Pro
+            </h1>
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="stat-value" id="stat-count">0 / 0</div>
+                    <div class="stat-label">Münzen Gesammelt</div>
+                    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+                </div>
             </div>
-        </div>
-    </header>
+        </header>
 
-    <div class="controls">
-        <input type="text" id="search" placeholder="Suche (z.B. Deutschland, Erasmus, 2022)...">
-        <select id="filter-country">
-            <option value="all">Alle Länder</option>
-        </select>
-        <select id="filter-status">
-            <option value="all">Alle Status</option>
-            <option value="collected">In Sammlung</option>
-            <option value="missing">Fehlend</option>
-        </select>
+        <div class="controls">
+            <input type="text" id="search" placeholder="Suche (z.B. Deutschland, Erasmus, 2022)...">
+            <select id="filter-country">
+                <option value="all">Alle Länder</option>
+            </select>
+            <select id="filter-status">
+                <option value="all">Alle Status</option>
+                <option value="collected">In Sammlung</option>
+                <option value="missing">Fehlend</option>
+            </select>
+        </div>
+
+        <div class="grid" id="coin-grid"></div>
     </div>
 
-    <div class="grid" id="coin-grid"></div>
-</div>
-
-<script>
-    // Münz-Datenbank (Kombination aus Kursmünzen & allen wichtigen Gedenkmünzen von 2004-2026)
+    <script>
+    // Münz-Datenbank (Kursmünzen & Vollständige deutsche 2-Euro-Gedenkmünzen bis 2026)
     const coinsData = [
         // Kursmünzen Typen
         { id: 'k_de', country: 'Deutschland', name: 'Bundesadler (Kursmünze)', year: 'Seit 2002', type: 'Kursmünze' },
@@ -245,27 +244,57 @@
         { id: 'k_sm', country: 'San Marino', name: 'St. Marinus (Gemälde)', year: 'Seit 2017', type: 'Kursmünze' },
         { id: 'k_ad', country: 'Andorra', name: 'Wappen Andorras', year: 'Seit 2014', type: 'Kursmünze' },
 
-        // Historische Gemeinschaftsausgaben (Alle Länder)
+        // Historische Gemeinschaftsausgaben
         { id: 'g_2007', country: 'Gemeinschaftsausgabe', name: '50 Jahre Römische Verträge', year: '2007', type: 'Gedenkmünze' },
         { id: 'g_2009', country: 'Gemeinschaftsausgabe', name: '10 Jahre Wirtschafts- und Währungsunion (WWU)', year: '2009', type: 'Gedenkmünze' },
         { id: 'g_2012', country: 'Gemeinschaftsausgabe', name: '10 Jahre Euro-Bargeld', year: '2012', type: 'Gedenkmünze' },
         { id: 'g_2015', country: 'Gemeinschaftsausgabe', name: '30 Jahre EU-Flagge', year: '2015', type: 'Gedenkmünze' },
         { id: 'g_2022', country: 'Gemeinschaftsausgabe', name: '35 Jahre Erasmus-Programm', year: '2022', type: 'Gedenkmünze' },
 
-        // Auswahl bekannter Gedenkmünzen (Früher bis Aktuell)
+        // Internationale Highlights
         { id: 'm_2004_gr', country: 'Griechenland', name: 'Olympische Spiele Athen', year: '2004', type: 'Gedenkmünze' },
         { id: 'm_2004_fi', country: 'Finnland', name: 'EU-Erweiterung 2004', year: '2004', type: 'Gedenkmünze' },
         { id: 'm_2005_at', country: 'Österreich', name: '50 Jahre Staatsvertrag', year: '2005', type: 'Gedenkmünze' },
-        { id: 'm_2006_de', country: 'Deutschland', name: 'Holstentor Lübeck (Schleswig-Holstein)', year: '2006', type: 'Gedenkmünze' },
         { id: 'm_2007_mc', country: 'Monaco', name: 'Grace Kelly (25. Todestag)', year: '2007', type: 'Gedenkmünze' },
-        { id: 'm_2009_de', country: 'Deutschland', name: 'Ludwigskirche Saarbrücken', year: '2009', type: 'Gedenkmünze' },
         { id: 'm_2015_fr', country: 'Frankreich', name: '225 Jahre Föderationsfest', year: '2015', type: 'Gedenkmünze' },
-        { id: 'm_2020_de', country: 'Deutschland', name: 'Kniefall von Warschau', year: '2020', type: 'Gedenkmünze' },
-        { id: 'm_2023_de', country: 'Deutschland', name: '1275. Geburtstag Karl der Große', year: '2023', type: 'Gedenkmünze' },
         { id: 'm_2024_fr', country: 'Frankreich', name: 'Olympische Spiele Paris 2024', year: '2024', type: 'Gedenkmünze' },
-        { id: 'm_2024_de', country: 'Deutschland', name: '175 Jahre Paulskirchenverfassung', year: '2024', type: 'Gedenkmünze' },
-        { id: 'm_2025_de', country: 'Deutschland', name: '35 Jahre Deutsche Einheit', year: '2025', type: 'Gedenkmünze' },
-        { id: 'm_2026_de', country: 'Deutschland', name: 'Saarland – Saarschleife', year: '2026', type: 'Gedenkmünze' }
+
+        // DEUTSCHLAND: Alle 2-Euro-Gedenkmünzen (Bundesländer Serie I & II + Sonderanlässe)
+        { id: 'm_2006_de', country: 'Deutschland', name: 'Schleswig-Holstein (Holstentor Lübeck)', year: '2006', type: 'Gedenkmünze' },
+        { id: 'm_2007_de_rv', country: 'Deutschland', name: '50 Jahre Römische Verträge', year: '2007', type: 'Gedenkmünze' },
+        { id: 'm_2007_de', country: 'Deutschland', name: 'Mecklenburg-Vorpommern (Schweriner Schloss)', year: '2007', type: 'Gedenkmünze' },
+        { id: 'm_2008_de', country: 'Deutschland', name: 'Hamburg (St. Michaelis Kirche)', year: '2008', type: 'Gedenkmünze' },
+        { id: 'm_2009_de_wwu', country: 'Deutschland', name: '10 Jahre Wirtschafts- und Währungsunion (WWU)', year: '2009', type: 'Gedenkmünze' },
+        { id: 'm_2009_de', country: 'Deutschland', name: 'Saarland (Ludwigskirche Saarbrücken)', year: '2009', type: 'Gedenkmünze' },
+        { id: 'm_2010_de', country: 'Deutschland', name: 'Bremen (Bremer Rathaus und Roland)', year: '2010', type: 'Gedenkmünze' },
+        { id: 'm_2011_de', country: 'Deutschland', name: 'Nordrhein-Westfalen (Kölner Dom)', year: '2011', type: 'Gedenkmünze' },
+        { id: 'm_2012_de_euro', country: 'Deutschland', name: '10 Jahre Euro-Bargeld', year: '2012', type: 'Gedenkmünze' },
+        { id: 'm_2012_de', country: 'Deutschland', name: 'Bayern (Schloss Neuschwanstein)', year: '2012', type: 'Gedenkmünze' },
+        { id: 'm_2013_de_elysee', country: 'Deutschland', name: '50 Jahre Élysée-Vertrag', year: '2013', type: 'Gedenkmünze' },
+        { id: 'm_2013_de', country: 'Deutschland', name: 'Baden-Württemberg (Kloster Maulbronn)', year: '2013', type: 'Gedenkmünze' },
+        { id: 'm_2014_de', country: 'Deutschland', name: 'Niedersachsen (St. Michaelis Hildesheim)', year: '2014', type: 'Gedenkmünze' },
+        { id: 'm_2015_de_einheit', country: 'Deutschland', name: '25 Jahre Deutsche Einheit', year: '2015', type: 'Gedenkmünze' },
+        { id: 'm_2015_de_flagge', country: 'Deutschland', name: '30 Jahre EU-Flagge', year: '2015', type: 'Gedenkmünze' },
+        { id: 'm_2015_de', country: 'Deutschland', name: 'Hessen (Paulskirche Frankfurt)', year: '2015', type: 'Gedenkmünze' },
+        { id: 'm_2016_de', country: 'Deutschland', name: 'Sachsen (Dresdner Zwinger)', year: '2016', type: 'Gedenkmünze' },
+        { id: 'm_2017_de', country: 'Deutschland', name: 'Rheinland-Pfalz (Porta Nigra Trier)', year: '2017', type: 'Gedenkmünze' },
+        { id: 'm_2018_de_schmidt', country: 'Deutschland', name: '100. Geburtstag Helmut Schmidt', year: '2018', type: 'Gedenkmünze' },
+        { id: 'm_2018_de', country: 'Deutschland', name: 'Berlin (Schloss Charlottenburg)', year: '2018', type: 'Gedenkmünze' },
+        { id: 'm_2019_de_mauerfall', country: 'Deutschland', name: '30 Jahre Mauerfall', year: '2019', type: 'Gedenkmünze' },
+        { id: 'm_2019_de', country: 'Deutschland', name: '70 Jahre Bundesrat', year: '2019', type: 'Gedenkmünze' },
+        { id: 'm_2020_de_kniefall', country: 'Deutschland', name: '50 Jahre Kniefall von Warschau', year: '2020', type: 'Gedenkmünze' },
+        { id: 'm_2020_de', country: 'Deutschland', name: 'Brandenburg (Schloss Sanssouci)', year: '2020', type: 'Gedenkmünze' },
+        { id: 'm_2021_de', country: 'Deutschland', name: 'Sachsen-Anhalt (Magdeburger Dom)', year: '2021', type: 'Gedenkmünze' },
+        { id: 'm_2022_de_erasmus', country: 'Deutschland', name: '35 Jahre Erasmus-Programm', year: '2022', type: 'Gedenkmünze' },
+        { id: 'm_2022_de', country: 'Deutschland', name: 'Thüringen (Wartburg Eisenach)', year: '2022', type: 'Gedenkmünze' },
+        { id: 'm_2023_de_karl', country: 'Deutschland', name: '1275. Geburtstag Karl der Große', year: '2023', type: 'Gedenkmünze' },
+        { id: 'm_2023_de', country: 'Deutschland', name: 'Hamburg (Elbphilharmonie - Bundesländer II)', year: '2023', type: 'Gedenkmünze' },
+        { id: 'm_2024_de_paulskirche', country: 'Deutschland', name: '175 Jahre Paulskirchenverfassung', year: '2024', type: 'Gedenkmünze' },
+        { id: 'm_2024_de', country: 'Deutschland', name: 'Mecklenburg-Vorpommern (Königsstuhl - Bundesländer II)', year: '2024', type: 'Gedenkmünze' },
+        { id: 'm_2025_de_einheit', country: 'Deutschland', name: '35 Jahre Deutsche Einheit', year: '2025', type: 'Gedenkmünze' },
+        { id: 'm_2025_de', country: 'Deutschland', name: 'Saarland (Saarschleife - Bundesländer II)', year: '2025', type: 'Gedenkmünze' },
+        { id: 'm_2026_de_adenauer', country: 'Deutschland', name: '150. Geburtstag Konrad Adenauer', year: '2026', type: 'Gedenkmünze' },
+        { id: 'm_2026_de', country: 'Deutschland', name: 'Bremen (Klimahaus Bremerhaven - Bundesländer II)', year: '2026', type: 'Gedenkmünze' }
     ];
 
     // LocalStorage Initialisierung
@@ -371,7 +400,6 @@
     // Init
     initFilters();
     render();
-</script>
+    </script>
 </body>
-</html>
 </html>
