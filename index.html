@@ -164,6 +164,40 @@ const COUNTRY_EN={"Österreich":"Austria","Belgien":"Belgium","Bulgarien":"Bulga
 "Slowakei":"Slovakia","Slowenien":"Slovenia","Spanien":"Spain","Vatikan":"Vatican City","Vatikanstadt":"Vatican City",
 "Andorra":"Andorra","Malta":"Malta","Monaco":"Monaco","San Marino":"San Marino"};
 function flagFor(country){return COUNTRY_FLAG[String(country||'').trim()]||'🇪🇺';}
+const DE_MINTS = ['A','D','F','G','J'];
+const DE_MINT_NAMES = {A:'Berlin',D:'München',F:'Stuttgart',G:'Karlsruhe',J:'Hamburg'};
+
+function expandMintVariants(list){
+  const out = [];
+  list.forEach(c=>{
+    const isDE = String(c.country||'').trim() === 'Deutschland';
+    const code = String(c.code||'').trim();
+    const mm = String(c.mintmark||'').trim();
+    const already = /^[ADFGJ]$/i.test(code) || /^[ADFGJ]$/i.test(mm);
+    if(!isDE || already){
+      out.push(c);
+      return;
+    }
+    let mints = DE_MINTS.slice();
+    const fromCode = code.split(/[·,/\s]+/).map(x=>x.trim().toUpperCase()).filter(x=>DE_MINTS.includes(x));
+    if(fromCode.length) mints = fromCode;
+
+    mints.forEach(m=>{
+      out.push({
+        ...c,
+        id: c.id + '-' + m,
+        code: m,
+        mintmark: m,
+        title: String(c.title||'').replace(/\s·\s*[ADFGJ]\b/gi,'').trim() + ' · ' + m,
+        desc: (c.desc ? c.desc + ' ' : '') + 'Prägestätte ' + m + (DE_MINT_NAMES[m] ? ' (' + DE_MINT_NAMES[m] + ')' : ''),
+        parentId: c.id,
+        owned: 0,
+        qty: 0
+      });
+    });
+  });
+  return out;
+}
 
 function ebaySoldUrl(c){
   const parts=['2 Euro',c.country,c.year||'',c.title||'']
@@ -387,7 +421,7 @@ function render(){
   const grid=document.getElementById('grid');
   if(!list.length){grid.innerHTML='<div class="empty">Keine Münzen gefunden.<br>Ändere Suche oder Filter.</div>';return}
   grid.innerHTML=list.map(c=>`<article class="card">
-    <div class="coinpic"><span class="badge">${c.type==='comm'?'Gedenkmünze':'Umlaufmünze'}</span>${c.owned?`<span class="owned">✓ ${c.qty||1}×</span>`:''}${coinVisual(c)}</div>
+    <div class="coinpic"><span class="badge">${c.mintmark ? ((c.type==='comm'?'Gedenk':'Umlauf')+' · '+c.mintmark) : (c.type==='comm'?'Gedenkmünze':'Umlaufmünze')}</span>${c.owned?`<span class="owned">✓ ${c.qty||1}×</span>`:''}${coinVisual(c)}</div>
     <div class="cardbody"><div class="country">${esc(c.country)}</div><div class="title">${esc(c.title)}</div><div class="year">${c.year?esc(c.year):'–'}</div>
     <div class="cardfoot"><button class="smallbtn" onclick="openCoin('${c.id}')">Details</button><button class="smallbtn primary" onclick="toggle('${c.id}')">${c.owned?'✓ Vorhanden':'＋ Sammeln'}</button><a class="smallbtn" href="${ebaySoldUrl(c)}" target="_blank" rel="noopener" title="Zuletzt verkauft auf eBay">eBay</a></div></div>
   </article>`).join('');
@@ -415,20 +449,20 @@ function rebuildFilters(){
   document.getElementById('year').innerHTML='<option value="">Alle Jahre</option>'+ys.map(y=>`<option>${y}</option>`).join('');
 }
 function stats(){
-  const total=all.length;
-  const ownedTypes=all.filter(c=>c.owned).length;
-  const pieces=all.reduce((sum,c)=>sum+(c.owned?(Number(c.qty)||1):0),0);
-  const faceValue=pieces*2;
-  const pct=total?ownedTypes/total*100:0;
+  const total = all.length;
+  const ownedTypes = all.filter(c => c.owned).length;
+  const pieces = all.reduce((sum,c) => sum + (c.owned ? (Number(c.qty)||1) : 0), 0);
+  const missingPieces = all.reduce((sum,c) => sum + (c.owned ? 0 : 1), 0);
+  const faceValue = pieces * 2;
+  const pct = total ? ownedTypes / total * 100 : 0;
 
-  // Fehlende Einzelstücke aus dem Gesamtkatalog (1 pro noch nicht gesammeltem Eintrag)
-  const missingPieces=all.reduce((sum,c)=>sum+(c.owned?0:1),0);
-
-  document.getElementById('ownedCount').textContent=ownedTypes+' / '+total;
-  document.getElementById('piecesCount').textContent=pieces;
-  document.getElementById('missingCount').textContent=missingPieces;
-  document.getElementById('valueCount').textContent=faceValue.toLocaleString('de-DE')+' €';
-  document.getElementById('progressBar').style.width=pct.toFixed(1)+'%';
+  document.getElementById('ownedCount').textContent = ownedTypes + ' / ' + total;
+  const pc = document.getElementById('piecesCount');
+  if(pc) pc.textContent = pieces;
+  document.getElementById('missingCount').textContent = missingPieces;
+  const vc = document.getElementById('valueCount');
+  if(vc) vc.textContent = faceValue.toLocaleString('de-DE') + ' €';
+  document.getElementById('progressBar').style.width = pct.toFixed(1) + '%';
 }
 function toggle(id){
   const c=all.find(x=>x.id===id);if(!c)return;c.owned=!c.owned;c.qty=c.owned?(c.qty||1):0;saveState();stats();render();
@@ -532,17 +566,58 @@ function buildRegularCatalog(){
 async function load(){
   const excel=excelCollection;
   all=buildRegularCatalog();
-  // Übernehme den Sammlungsstatus aus Excel in die kanonischen Umlaufmünzen.
-  excel.filter(x=>x.year && x.year>0 && x.title).forEach(x=>{
-    const candidates=all.filter(c=>c.type===x.complete!==undefined?'regular':'regular');
-    const cc=String(x.country||'').trim();
-    const same=all.filter(c=>c.country===cc && c.year===Number(x.year));
-    if(x.mintmarks.length){
-      const c=same.find(c=>c.type==='regular'); if(c){c.owned=!!x.complete;c.qty=x.ownedMintmarks.length;c.code=x.mintmarks.join(' · ');c.excelId=x.id;}
-    }else if(x.title.toLowerCase().includes('bundesadler')){
-      const c=same.find(c=>c.type==='regular'); if(c){c.owned=!!x.complete;c.qty=x.ownedMintmarks.length;c.code=x.mintmarks.join(' · ')||'A · D · F · G · J';c.excelId=x.id;}
-    }
-  });
+  function applyExcelOwnership(){
+    excel.forEach(x=>{
+      const cc = String(x.country||'').trim();
+      const yy = Number(x.year)||0;
+      if(!yy || !x.title) return;
+
+      if(cc === 'Deutschland'){
+        const marks = (x.mintmarks && x.mintmarks.length)
+          ? x.mintmarks.map(m => String(m).toUpperCase())
+          : DE_MINTS.slice();
+        const ownedMarks = (x.ownedMintmarks||[]).map(m => String(m).toUpperCase());
+        const stripY = s => String(s||'')
+          .replace(/\b(19|20)\d{2}\b/g,' ')
+          .replace(/\s·\s*[ADFGJ]\b/gi,' ');
+
+        marks.forEach(m=>{
+          const candidates = all.filter(c =>
+            c.country === 'Deutschland'
+            && c.year === yy
+            && (c.mintmark === m || c.code === m)
+          );
+          let best = null, score = 0;
+          candidates.forEach(c=>{
+            const s = titleSimilarity(stripY(x.title), stripY(c.title));
+            if(s > score){ score = s; best = c; }
+          });
+          if(!best && candidates.length === 1) best = candidates[0];
+          if(!best && /bundesadler/i.test(x.title))
+            best = candidates.find(c => /bundesadler/i.test(c.title)) || null;
+
+          if(best && ownedMarks.includes(m)){
+            best.owned = 1;
+            best.qty = 1;
+            best.excelId = x.id;
+          }
+        });
+        return;
+      }
+
+      const same = all.filter(c => c.country === cc && c.year === yy);
+      let best = null, score = 0;
+      same.forEach(c=>{
+        const s = titleSimilarity(x.title, c.title);
+        if(s > score){ score = s; best = c; }
+      });
+      if(best && score >= 0.28 && (x.complete || (x.qty||0) > 0)){
+        best.owned = 1;
+        best.qty = x.qty || 1;
+        best.excelId = x.id;
+      }
+    });
+  }
   function attachExcelImages(){
     // Ordnet jedem Excel-Eintrag ohne eigenes Bild das passende (bereits bekannte) Katalogbild zu –
     // Übereinstimmung nur bei gleichem Land+Jahr UND ausreichender Titel-Ähnlichkeit (Jahreszahl wird beim
@@ -574,6 +649,11 @@ async function load(){
   }catch(e){
     document.getElementById('dataNote').innerHTML=`<b>${all.length}</b> reguläre 2-€-Ausgaben geladen. Die Gedenkmünzen werden bei bestehender Internetverbindung ergänzt.`;
   }
+    all = expandMintVariants(all);
+  applyExcelOwnership();
+    // Falls expand noch nicht lief (z.B. Fehler beim Comm-Laden):
+  if(!all.some(c => c.mintmark)) all = expandMintVariants(all);
+  applyExcelOwnership();
   attachExcelImages();
   applySaved();rebuildFilters();stats();render();
 }
