@@ -1,405 +1,227 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2-Euro Münzsammlung Pro</title>
-    <style>
-        :root {
-            --bg-color: #12131C;
-            --card-bg: #1A1C29;
-            --card-border: #2A2D3E;
-            --accent-gold: #E5A93C;
-            --accent-gold-soft: rgba(229, 169, 60, 0.15);
-            --text-primary: #E2E4EC;
-            --text-secondary: #8E92A8;
-            --success: #2E7D32;
-            --success-bg: rgba(46, 125, 50, 0.2);
-            --missing: #C62828;
-            --missing-bg: rgba(198, 40, 40, 0.2);
-            --radius: 16px;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1220">
+<title>2€ Sammler</title>
+<style>
+:root{
+  --bg:#f4f6f9;--panel:#fff;--text:#172033;--muted:#667085;--line:#e6e9ef;
+  --accent:#1769ff;--accent2:#0d47b5;--good:#16834b;--warn:#b77900;--bad:#b42318;
+  --shadow:0 8px 28px rgba(15,23,42,.08);--r:18px
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.top{position:sticky;top:0;z-index:5;background:rgba(11,18,32,.97);color:#fff;padding:14px 18px;display:flex;gap:14px;align-items:center}
+.logo{font-weight:800;font-size:20px;white-space:nowrap}.logo span{color:#ffd54a}
+.search{flex:1;max-width:760px;margin:auto;position:relative}.search input{width:100%;padding:13px 16px 13px 42px;border-radius:14px;border:0;outline:0;background:#fff;color:#172033}
+.search b{position:absolute;left:15px;top:11px;color:#667085}
+.actions{display:flex;gap:8px}.iconbtn{border:1px solid rgba(255,255,255,.15);background:#182238;color:#fff;border-radius:12px;padding:10px 12px}
+.wrap{max-width:1450px;margin:auto;padding:22px}
+.hero{display:grid;grid-template-columns:1.25fr .75fr;gap:18px;margin-bottom:18px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.heroMain{padding:25px}.heroMain h1{margin:0 0 8px;font-size:32px}.heroMain p{margin:0;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:22px}.stat{padding:15px;border-radius:15px;background:#f7f8fb;border:1px solid var(--line)}.stat strong{font-size:25px;display:block}.stat span{color:var(--muted);font-size:13px}
+.progress{height:12px;background:#e8ecf2;border-radius:99px;overflow:hidden;margin-top:12px}.progress>div{height:100%;background:var(--accent);width:0}
+.heroSide{padding:20px}.heroSide h3{margin:0 0 12px}.quick{display:grid;grid-template-columns:1fr 1fr;gap:10px}.quick button{padding:13px;border:1px solid var(--line);background:#fff;border-radius:13px;text-align:left}.quick button:hover{border-color:var(--accent)}
+.tabs{display:flex;gap:8px;margin:8px 0 15px;overflow:auto}.tab{border:0;background:#e9edf4;color:#344054;border-radius:999px;padding:10px 16px;white-space:nowrap}.tab.active{background:var(--accent);color:#fff}
+.filters{display:grid;grid-template-columns:1.6fr .8fr .8fr .8fr;gap:10px;margin-bottom:16px}.filters input,.filters select{padding:12px;border:1px solid var(--line);border-radius:12px;background:#fff;outline:0}
+.sectionHead{display:flex;justify-content:space-between;align-items:center;margin:10px 0 12px}.sectionHead h2{margin:0}.count{color:var(--muted);font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(245px,1fr));gap:14px}
+.card{background:#fff;border:1px solid var(--line);border-radius:17px;overflow:hidden;box-shadow:0 4px 16px rgba(15,23,42,.05);transition:.15s}.card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.coinpic{height:190px;background:linear-gradient(145deg,#f8fafc,#e9edf4);display:flex;align-items:center;justify-content:center;position:relative}
+.coinpic img{max-width:90%;max-height:175px;object-fit:contain;border-radius:50%;filter:drop-shadow(0 8px 10px rgba(0,0,0,.16))}
+.coinmock{width:138px;height:138px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#f5f6f7,#c5cad0 55%,#9098a2);border:7px solid #b9bec5;box-shadow:0 10px 18px rgba(0,0,0,.22);display:flex;align-items:center;justify-content:center;flex-direction:column;color:#313843;font-weight:800}
+.coinmock .e{font-size:42px;line-height:1}.coinmock small{font-size:11px;letter-spacing:1px}
+.badge{position:absolute;top:10px;left:10px;padding:6px 9px;border-radius:999px;font-size:12px;background:#fff;border:1px solid var(--line)}
+.owned{position:absolute;top:10px;right:10px;background:var(--good);color:#fff;border-radius:999px;padding:6px 9px;font-size:12px;font-weight:700}
+.cardbody{padding:14px}.country{font-size:13px;color:var(--muted);font-weight:700}.title{font-weight:800;margin:4px 0 7px;line-height:1.25}.year{font-size:13px;color:var(--muted)}.cardfoot{display:flex;gap:7px;margin-top:12px}.smallbtn{flex:1;border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px}.smallbtn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.empty{padding:45px;text-align:center;color:var(--muted);background:#fff;border:1px dashed #ccd2dc;border-radius:17px}
+.note{background:#fff8e6;border:1px solid #f1d48b;border-radius:14px;padding:12px 14px;color:#6d5200;margin-bottom:15px}
+.modal{position:fixed;inset:0;background:rgba(3,8,20,.65);display:none;align-items:center;justify-content:center;padding:18px;z-index:20}.modal.open{display:flex}.modalbox{background:#fff;border-radius:22px;max-width:850px;width:100%;max-height:92vh;overflow:auto}.modalhead{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:15px}.close{border:0;background:#eef1f5;border-radius:10px;padding:8px 11px}.modalgrid{display:grid;grid-template-columns:340px 1fr;gap:20px;padding:20px}.bigimg{width:100%;height:330px;display:flex;align-items:center;justify-content:center;background:#f4f6f9;border-radius:18px}.bigimg img{max-width:96%;max-height:315px;border-radius:50%}.detail p{line-height:1.55}.row{display:flex;gap:8px;flex-wrap:wrap}.pill{padding:7px 10px;background:#f1f3f7;border-radius:999px;font-size:13px}
+.footer{color:#8a94a6;font-size:12px;text-align:center;padding:30px 0}
+@media(max-width:900px){.hero{grid-template-columns:1fr}.filters{grid-template-columns:1fr 1fr}.modalgrid{grid-template-columns:1fr}}
+@media(max-width:600px){.top{flex-wrap:wrap}.search{order:3;flex-basis:100%}.wrap{padding:14px}.stats{grid-template-columns:1fr}.filters{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.coinpic{height:145px}.coinmock{width:100px;height:100px}.coinmock .e{font-size:30px}.cardbody{padding:10px}.title{font-size:14px}}
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-primary);
-            padding: 24px;
-            min-height: 100vh;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        /* Header & Dashboard */
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-            background: var(--card-bg);
-            padding: 20px 28px;
-            border-radius: var(--radius);
-            border: 1px solid var(--card-border);
-        }
-
-        h1 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--accent-gold);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .stats {
-            display: flex;
-            gap: 20px;
-        }
-
-        .stat-box {
-            text-align: right;
-        }
-
-        .stat-value {
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: var(--text-primary);
-        }
-
-        .stat-label {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-        }
-
-        /* Controls / Filter */
-        .controls {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr;
-            gap: 16px;
-            margin-bottom: 28px;
-        }
-
-        input, select {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            color: var(--text-primary);
-            padding: 14px 18px;
-            border-radius: 12px;
-            font-size: 1rem;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        input:focus, select:focus {
-            border-color: var(--accent-gold);
-        }
-
-        /* Coin Grid - Optimized for 12" Tablet */
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 20px;
-        }
-
-        .coin-card {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: var(--radius);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            position: relative;
-            cursor: pointer;
-            user-select: none;
-            transition: transform 0.15s, border-color 0.2s;
-        }
-
-        .coin-card:active {
-            transform: scale(0.98);
-        }
-
-        .coin-card.collected {
-            border-color: var(--accent-gold);
-            background: linear-gradient(180deg, var(--card-bg) 0%, var(--accent-gold-soft) 100%);
-        }
-
-        /* 2-Euro SVG Graphic */
-        .coin-img {
-            width: 130px;
-            height: 130px;
-            margin-bottom: 16px;
-            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
-        }
-
-        .coin-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 6px;
-            color: var(--text-primary);
-        }
-
-        .coin-meta {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            margin-bottom: 16px;
-        }
-
-        .badge {
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .badge.collected {
-            background: var(--success-bg);
-            color: #81C784;
-            border: 1px solid var(--success);
-        }
-
-        .badge.missing {
-            background: var(--missing-bg);
-            color: #E57373;
-            border: 1px solid var(--missing);
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: var(--card-border);
-            border-radius: 4px;
-            overflow: hidden;
-            margin-top: 8px;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: var(--accent-gold);
-            width: 0%;
-            transition: width 0.3s ease;
-        }
-    </style>
+.coin-real-img,.auto-coin-img{max-width:90%;max-height:175px;object-fit:contain;border-radius:50%;filter:drop-shadow(0 8px 10px rgba(0,0,0,.16))}
+.bigimg .coin-real-img,.bigimg .auto-coin-img{max-width:96%;max-height:315px}
+</style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>
-                <svg width="32" height="32" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="45" fill="#C0C0C0" stroke="#D4AF37" stroke-width="8"/>
-                    <circle cx="50" cy="50" r="30" fill="#D4AF37"/>
-                    <text x="50" y="60" font-size="30" font-weight="bold" fill="#12131C" text-anchor="middle">2€</text>
-                </svg>
-                2€ Münzsammler Pro
-            </h1>
-            <div class="stats">
-                <div class="stat-box">
-                    <div class="stat-value" id="stat-count">0 / 0</div>
-                    <div class="stat-label">Münzen Gesammelt</div>
-                    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
-                </div>
-            </div>
-        </header>
+<header class="top">
+  <div class="logo">2€ <span>Sammler</span></div>
+  <div class="search"><b>⌕</b><input id="globalSearch" placeholder="Land, Jahr, Motiv, Stichwort …"></div>
+  <div class="actions">
+    <button class="iconbtn" id="exportBtn" title="Sicherung exportieren">↥</button>
+    <button class="iconbtn" id="importBtn" title="Sicherung importieren">↧</button>
+    <input type="file" id="fileInput" accept=".json" hidden>
+  </div>
+</header>
 
-        <div class="controls">
-            <input type="text" id="search" placeholder="Suche (z.B. Deutschland, Erasmus, 2022)...">
-            <select id="filter-country">
-                <option value="all">Alle Länder</option>
-            </select>
-            <select id="filter-status">
-                <option value="all">Alle Status</option>
-                <option value="collected">In Sammlung</option>
-                <option value="missing">Fehlend</option>
-            </select>
-        </div>
-
-        <div class="grid" id="coin-grid"></div>
+<main class="wrap">
+  <section class="hero">
+    <div class="panel heroMain">
+      <h1>Meine 2-Euro-Sammlung</h1>
+      <p>Umlaufmünzen und 2-Euro-Gedenkmünzen – ohne Abo und mit Speicherung direkt auf dem Gerät.</p>
+      <div class="stats">
+        <div class="stat"><strong id="ownedCount">0</strong><span>vollständig</span></div>
+        <div class="stat"><strong id="totalCount">0</strong><span>Einträge</span></div>
+        <div class="stat"><strong id="missingCount">0</strong><span>noch offen</span></div>
+      </div>
+      <div class="progress"><div id="progressBar"></div></div>
     </div>
+    <div class="panel heroSide">
+      <h3>Schnellzugriff</h3>
+      <div class="quick">
+        <button data-filter="missing">❌<br><b>Fehlende</b></button>
+        <button data-filter="owned">✅<br><b>Meine Münzen</b></button>
+        <button data-filter="comm">🏛️<br><b>Gedenkmünzen</b></button>
+        <button data-filter="regular">🪙<br><b>Umlaufmünzen</b></button>
+      </div>
+    </div>
+  </section>
 
-    <script>
-    // Münz-Datenbank (Kursmünzen & Vollständige deutsche 2-Euro-Gedenkmünzen bis 2026)
-    const coinsData = [
-        // Kursmünzen Typen
-        { id: 'k_de', country: 'Deutschland', name: 'Bundesadler (Kursmünze)', year: 'Seit 2002', type: 'Kursmünze' },
-        { id: 'k_at', country: 'Österreich', name: 'Bertha von Suttner', year: 'Seit 2002', type: 'Kursmünze' },
-        { id: 'k_fr', country: 'Frankreich', name: 'Lebensbaum / Eichenblatt', year: '2002-2021', type: 'Kursmünze' },
-        { id: 'k_fr2', country: 'Frankreich', name: 'Eichen- und Olivenbaum', year: 'Seit 2022', type: 'Kursmünze' },
-        { id: 'k_it', country: 'Italien', name: 'Dante Alighieri', year: 'Seit 2002', type: 'Kursmünze' },
-        { id: 'k_es', country: 'Spanien', name: 'König Felipe VI', year: 'Seit 2015', type: 'Kursmünze' },
-        { id: 'k_vat', country: 'Vatikan', name: 'Wappen Papst Franziskus', year: 'Seit 2017', type: 'Kursmünze' },
-        { id: 'k_mc', country: 'Monaco', name: 'Fürst Albert II.', year: 'Seit 2006', type: 'Kursmünze' },
-        { id: 'k_sm', country: 'San Marino', name: 'St. Marinus (Gemälde)', year: 'Seit 2017', type: 'Kursmünze' },
-        { id: 'k_ad', country: 'Andorra', name: 'Wappen Andorras', year: 'Seit 2014', type: 'Kursmünze' },
+  <div class="tabs">
+    <button class="tab active" data-tab="all">Alle</button>
+    <button class="tab" data-tab="regular">Umlaufmünzen</button>
+    <button class="tab" data-tab="comm">Gedenkmünzen</button>
+    <button class="tab" data-tab="owned">Gesammelt</button><button class="tab" data-tab="mine">Meine Excel-Liste</button>
+    <button class="tab" data-tab="missing">Fehlen</button>
+  </div>
 
-        // Historische Gemeinschaftsausgaben
-        { id: 'g_2007', country: 'Gemeinschaftsausgabe', name: '50 Jahre Römische Verträge', year: '2007', type: 'Gedenkmünze' },
-        { id: 'g_2009', country: 'Gemeinschaftsausgabe', name: '10 Jahre Wirtschafts- und Währungsunion (WWU)', year: '2009', type: 'Gedenkmünze' },
-        { id: 'g_2012', country: 'Gemeinschaftsausgabe', name: '10 Jahre Euro-Bargeld', year: '2012', type: 'Gedenkmünze' },
-        { id: 'g_2015', country: 'Gemeinschaftsausgabe', name: '30 Jahre EU-Flagge', year: '2015', type: 'Gedenkmünze' },
-        { id: 'g_2022', country: 'Gemeinschaftsausgabe', name: '35 Jahre Erasmus-Programm', year: '2022', type: 'Gedenkmünze' },
+  <div class="filters">
+    <input id="search" placeholder="🔎 Suche im Katalog …">
+    <select id="country"><option value="">Alle Länder</option></select>
+    <select id="year"><option value="">Alle Jahre</option></select>
+    <select id="sort"><option value="yearDesc">Neueste zuerst</option><option value="yearAsc">Älteste zuerst</option><option value="country">Land</option><option value="title">Motiv</option></select>
+  </div>
 
-        // Internationale Highlights
-        { id: 'm_2004_gr', country: 'Griechenland', name: 'Olympische Spiele Athen', year: '2004', type: 'Gedenkmünze' },
-        { id: 'm_2004_fi', country: 'Finnland', name: 'EU-Erweiterung 2004', year: '2004', type: 'Gedenkmünze' },
-        { id: 'm_2005_at', country: 'Österreich', name: '50 Jahre Staatsvertrag', year: '2005', type: 'Gedenkmünze' },
-        { id: 'm_2007_mc', country: 'Monaco', name: 'Grace Kelly (25. Todestag)', year: '2007', type: 'Gedenkmünze' },
-        { id: 'm_2015_fr', country: 'Frankreich', name: '225 Jahre Föderationsfest', year: '2015', type: 'Gedenkmünze' },
-        { id: 'm_2024_fr', country: 'Frankreich', name: 'Olympische Spiele Paris 2024', year: '2024', type: 'Gedenkmünze' },
+  <div class="note" id="dataNote">Gedenkmünzen werden aus einer öffentlichen Datensammlung geladen. Die Sammlung selbst bleibt lokal auf deinem Gerät.</div>
+  <div class="sectionHead"><h2 id="heading">Katalog</h2><div class="count" id="resultCount"></div></div>
+  <div class="grid" id="grid"></div>
+  <div class="footer">2€ Sammler – private Sammlung. Katalogquellen: Europäische Zentralbank / Europäische Kommission; Bilder: offizielle Euro-Seiten bzw. Wikimedia Commons als Bild-Fallback.</div>
+</main>
 
-        // DEUTSCHLAND: Alle 2-Euro-Gedenkmünzen (Bundesländer Serie I & II + Sonderanlässe)
-        { id: 'm_2006_de', country: 'Deutschland', name: 'Schleswig-Holstein (Holstentor Lübeck)', year: '2006', type: 'Gedenkmünze' },
-        { id: 'm_2007_de_rv', country: 'Deutschland', name: '50 Jahre Römische Verträge', year: '2007', type: 'Gedenkmünze' },
-        { id: 'm_2007_de', country: 'Deutschland', name: 'Mecklenburg-Vorpommern (Schweriner Schloss)', year: '2007', type: 'Gedenkmünze' },
-        { id: 'm_2008_de', country: 'Deutschland', name: 'Hamburg (St. Michaelis Kirche)', year: '2008', type: 'Gedenkmünze' },
-        { id: 'm_2009_de_wwu', country: 'Deutschland', name: '10 Jahre Wirtschafts- und Währungsunion (WWU)', year: '2009', type: 'Gedenkmünze' },
-        { id: 'm_2009_de', country: 'Deutschland', name: 'Saarland (Ludwigskirche Saarbrücken)', year: '2009', type: 'Gedenkmünze' },
-        { id: 'm_2010_de', country: 'Deutschland', name: 'Bremen (Bremer Rathaus und Roland)', year: '2010', type: 'Gedenkmünze' },
-        { id: 'm_2011_de', country: 'Deutschland', name: 'Nordrhein-Westfalen (Kölner Dom)', year: '2011', type: 'Gedenkmünze' },
-        { id: 'm_2012_de_euro', country: 'Deutschland', name: '10 Jahre Euro-Bargeld', year: '2012', type: 'Gedenkmünze' },
-        { id: 'm_2012_de', country: 'Deutschland', name: 'Bayern (Schloss Neuschwanstein)', year: '2012', type: 'Gedenkmünze' },
-        { id: 'm_2013_de_elysee', country: 'Deutschland', name: '50 Jahre Élysée-Vertrag', year: '2013', type: 'Gedenkmünze' },
-        { id: 'm_2013_de', country: 'Deutschland', name: 'Baden-Württemberg (Kloster Maulbronn)', year: '2013', type: 'Gedenkmünze' },
-        { id: 'm_2014_de', country: 'Deutschland', name: 'Niedersachsen (St. Michaelis Hildesheim)', year: '2014', type: 'Gedenkmünze' },
-        { id: 'm_2015_de_einheit', country: 'Deutschland', name: '25 Jahre Deutsche Einheit', year: '2015', type: 'Gedenkmünze' },
-        { id: 'm_2015_de_flagge', country: 'Deutschland', name: '30 Jahre EU-Flagge', year: '2015', type: 'Gedenkmünze' },
-        { id: 'm_2015_de', country: 'Deutschland', name: 'Hessen (Paulskirche Frankfurt)', year: '2015', type: 'Gedenkmünze' },
-        { id: 'm_2016_de', country: 'Deutschland', name: 'Sachsen (Dresdner Zwinger)', year: '2016', type: 'Gedenkmünze' },
-        { id: 'm_2017_de', country: 'Deutschland', name: 'Rheinland-Pfalz (Porta Nigra Trier)', year: '2017', type: 'Gedenkmünze' },
-        { id: 'm_2018_de_schmidt', country: 'Deutschland', name: '100. Geburtstag Helmut Schmidt', year: '2018', type: 'Gedenkmünze' },
-        { id: 'm_2018_de', country: 'Deutschland', name: 'Berlin (Schloss Charlottenburg)', year: '2018', type: 'Gedenkmünze' },
-        { id: 'm_2019_de_mauerfall', country: 'Deutschland', name: '30 Jahre Mauerfall', year: '2019', type: 'Gedenkmünze' },
-        { id: 'm_2019_de', country: 'Deutschland', name: '70 Jahre Bundesrat', year: '2019', type: 'Gedenkmünze' },
-        { id: 'm_2020_de_kniefall', country: 'Deutschland', name: '50 Jahre Kniefall von Warschau', year: '2020', type: 'Gedenkmünze' },
-        { id: 'm_2020_de', country: 'Deutschland', name: 'Brandenburg (Schloss Sanssouci)', year: '2020', type: 'Gedenkmünze' },
-        { id: 'm_2021_de', country: 'Deutschland', name: 'Sachsen-Anhalt (Magdeburger Dom)', year: '2021', type: 'Gedenkmünze' },
-        { id: 'm_2022_de_erasmus', country: 'Deutschland', name: '35 Jahre Erasmus-Programm', year: '2022', type: 'Gedenkmünze' },
-        { id: 'm_2022_de', country: 'Deutschland', name: 'Thüringen (Wartburg Eisenach)', year: '2022', type: 'Gedenkmünze' },
-        { id: 'm_2023_de_karl', country: 'Deutschland', name: '1275. Geburtstag Karl der Große', year: '2023', type: 'Gedenkmünze' },
-        { id: 'm_2023_de', country: 'Deutschland', name: 'Hamburg (Elbphilharmonie - Bundesländer II)', year: '2023', type: 'Gedenkmünze' },
-        { id: 'm_2024_de_paulskirche', country: 'Deutschland', name: '175 Jahre Paulskirchenverfassung', year: '2024', type: 'Gedenkmünze' },
-        { id: 'm_2024_de', country: 'Deutschland', name: 'Mecklenburg-Vorpommern (Königsstuhl - Bundesländer II)', year: '2024', type: 'Gedenkmünze' },
-        { id: 'm_2025_de_einheit', country: 'Deutschland', name: '35 Jahre Deutsche Einheit', year: '2025', type: 'Gedenkmünze' },
-        { id: 'm_2025_de', country: 'Deutschland', name: 'Saarland (Saarschleife - Bundesländer II)', year: '2025', type: 'Gedenkmünze' },
-        { id: 'm_2026_de_adenauer', country: 'Deutschland', name: '150. Geburtstag Konrad Adenauer', year: '2026', type: 'Gedenkmünze' },
-        { id: 'm_2026_de', country: 'Deutschland', name: 'Bremen (Klimahaus Bremerhaven - Bundesländer II)', year: '2026', type: 'Gedenkmünze' }
-    ];
+<div class="modal" id="modal">
+  <div class="modalbox">
+    <div class="modalhead"><div><b id="mTitle">Münze</b><div id="mSub" class="country"></div></div><button class="close" onclick="closeModal()">✕</button></div>
+    <div class="modalgrid">
+      <div class="bigimg" id="mImage"></div>
+      <div class="detail">
+        <div class="row" id="mPills"></div>
+        <p id="mDesc"></p>
+        <p><b>Auflage:</b> <span id="mVolume">–</span></p>
+        <p><b>Ausgabe:</b> <span id="mRelease">–</span></p>
+        <label style="display:block;margin:15px 0"><b>In meiner Sammlung</b><br>
+          <select id="mOwned" style="margin-top:7px;width:100%;padding:12px;border:1px solid var(--line);border-radius:12px">
+            <option value="0">❌ Fehlt</option><option value="1">✅ Vorhanden</option>
+          </select>
+        </label>
+        <label style="display:block"><b>Anzahl</b><br><input id="mQty" type="number" min="1" max="999" value="1" style="margin-top:7px;width:100%;padding:12px;border:1px solid var(--line);border-radius:12px"></label>
+        <button class="smallbtn primary" style="width:100%;margin-top:12px;padding:12px" onclick="saveModal()">Speichern</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-    // LocalStorage Initialisierung
-    let userStorage = JSON.parse(localStorage.getItem('euro_coins_collection')) || {};
+<script>
+// --- 1. KURSMÜNZEN-GENERATOR (2002 bis 2026) ---
+const euroCountries = [
+  { name: "Deutschland", code: "DE", startYear: 2002, mints: ["A", "D", "F", "G", "J"] },
+  { name: "Österreich", code: "AT", startYear: 2002 },
+  { name: "Belgien", code: "BE", startYear: 2002 },
+  { name: "Zypern", code: "CY", startYear: 2008 },
+  { name: "Estland", code: "EE", startYear: 2011 },
+  { name: "Finnland", code: "FI", startYear: 2002 },
+  { name: "Frankreich", code: "FR", startYear: 2002 },
+  { name: "Griechenland", code: "GR", startYear: 2002 },
+  { name: "Irland", code: "IE", startYear: 2002 },
+  { name: "Italien", code: "IT", startYear: 2002 },
+  { name: "Lettland", code: "LV", startYear: 2014 },
+  { name: "Litauen", code: "LT", startYear: 2015 },
+  { name: "Luxemburg", code: "LU", startYear: 2002 },
+  { name: "Malta", code: "MT", startYear: 2008 },
+  { name: "Niederlande", code: "NL", startYear: 2002 },
+  { name: "Portugal", code: "PT", startYear: 2002 },
+  { name: "Slowakei", code: "SK", startYear: 2009 },
+  { name: "Slowenien", code: "SI", startYear: 2007 },
+  { name: "Spanien", code: "ES", startYear: 2002 },
+  { name: "Kroatien", code: "HR", startYear: 2023 },
+  { name: "Andorra", code: "AD", startYear: 2014 },
+  { name: "Monaco", code: "MC", startYear: 2002 },
+  { name: "San Marino", code: "SM", startYear: 2002 },
+  { name: "Vatikanstadt", code: "VA", startYear: 2002 }
+];
 
-    const grid = document.getElementById('coin-grid');
-    const searchInput = document.getElementById('search');
-    const countrySelect = document.getElementById('filter-country');
-    const statusSelect = document.getElementById('filter-status');
+function generateRegularCoins() {
+  const currentYear = 2026;
+  const coins = [];
 
-    // Dynamische Vektor-Grafik für Münzen generieren
-    function createCoinSVG(text) {
-        return `
-        <svg class="coin-img" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r="48" fill="#D1D5DB" stroke="#9CA3AF" stroke-width="2"/>
-            <circle cx="50" cy="50" r="34" fill="#F3C649" stroke="#E5A93C" stroke-width="2"/>
-            <!-- Sterne auf dem äußeren Ring -->
-            <g fill="#4B5563">
-                <circle cx="50" cy="8" r="1.5"/><circle cx="50" cy="92" r="1.5"/>
-                <circle cx="8" cy="50" r="1.5"/><circle cx="92" cy="50" r="1.5"/>
-                <circle cx="20" cy="20" r="1.5"/><circle cx="80" cy="80" r="1.5"/>
-                <circle cx="80" cy="20" r="1.5"/><circle cx="20" cy="80" r="1.5"/>
-            </g>
-            <text x="50" y="54" font-size="11" font-weight="bold" fill="#5B4110" text-anchor="middle">${text}</text>
-        </svg>`;
-    }
-
-    // Filter-Optionen befüllen
-    function initFilters() {
-        const countries = [...new Set(coinsData.map(c => c.country))].sort();
-        countries.forEach(country => {
-            const opt = document.createElement('option');
-            opt.value = country;
-            opt.textContent = country;
-            countrySelect.appendChild(opt);
+  euroCountries.forEach(country => {
+    for (let year = country.startYear; year <= currentYear; year++) {
+      if (country.mints) {
+        country.mints.forEach(mint => {
+          coins.push({
+            id: `reg_${country.code}_${year}_${mint}`,
+            country: country.name,
+            year: year,
+            title: `2 Euro Kursmünze ${country.name} (${mint})`,
+            type: 'regular',
+            mint: mint,
+            image: ''
+          });
         });
-    }
-
-    // App Rendern
-    function render() {
-        const searchVal = searchInput.value.toLowerCase();
-        const countryVal = countrySelect.value;
-        const statusVal = statusSelect.value;
-
-        grid.innerHTML = '';
-        let collectedCount = 0;
-
-        const filtered = coinsData.filter(coin => {
-            const isCollected = !!userStorage[coin.id];
-            if (isCollected) collectedCount++;
-
-            const matchesSearch = coin.name.toLowerCase().includes(searchVal) || 
-                                  coin.country.toLowerCase().includes(searchVal) || 
-                                  coin.year.includes(searchVal);
-            const matchesCountry = countryVal === 'all' || coin.country === countryVal;
-            const matchesStatus = statusVal === 'all' || 
-                                 (statusVal === 'collected' && isCollected) || 
-                                 (statusVal === 'missing' && !isCollected);
-
-            return matchesSearch && matchesCountry && matchesStatus;
+      } else {
+        coins.push({
+          id: `reg_${country.code}_${year}`,
+          country: country.name,
+          year: year,
+          title: `2 Euro Kursmünze ${country.name}`,
+          type: 'regular',
+          image: ''
         });
-
-        filtered.forEach(coin => {
-            const isCollected = !!userStorage[coin.id];
-            const card = document.createElement('div');
-            card.className = `coin-card ${isCollected ? 'collected' : ''}`;
-            
-            // Abkürzung für das Münzzentrum
-            const shortCode = coin.country.substring(0, 3).toUpperCase();
-
-            card.innerHTML = `
-                ${createCoinSVG(shortCode)}
-                <div class="coin-title">${coin.name}</div>
-                <div class="coin-meta">${coin.country} • ${coin.year}</div>
-                <div class="badge ${isCollected ? 'collected' : 'missing'}">
-                    ${isCollected ? 'In Sammlung' : 'Fehlt'}
-                </div>
-            `;
-
-            card.onclick = () => toggleCoin(coin.id);
-            grid.appendChild(card);
-        });
-
-        // Statistik aktualisieren
-        const total = coinsData.length;
-        const percent = total > 0 ? Math.round((collectedCount / total) * 100) : 0;
-        document.getElementById('stat-count').textContent = `${collectedCount} / ${total}`;
-        document.getElementById('progress-fill').style.width = `${percent}%`;
+      }
     }
+  });
+  return coins;
+}
 
-    function toggleCoin(id) {
-        userStorage[id] = !userStorage[id];
-        if (!userStorage[id]) delete userStorage[id];
-        localStorage.setItem('euro_coins_collection', JSON.stringify(userStorage));
-        render();
+// Globales Münzen-Array
+let allCoins = [...generateRegularCoins()];
+
+// --- 2. AUTOMATISCHES LADEN DER GEDENKMÜNZEN (2004 - 2026) ---
+async function loadCommemorativeCoins() {
+  try {
+    // Lädt die aktuellste Community-Datenbank für 2-Euro-Gedenkmünzen
+    const response = await fetch('https://raw.githubusercontent.com/martinj/two-euro-coins-data/master/coins.json');
+    if (response.ok) {
+      const commCoins = await response.json();
+      
+      const formattedCommCoins = commCoins.map((c, index) => ({
+        id: c.id || `comm_${c.country}_${c.year}_${index}`,
+        country: c.country,
+        year: parseInt(c.year),
+        title: c.title || c.name || `Gedenkmünze ${c.country} ${c.year}`,
+        type: 'commemorative',
+        image: c.image || ''
+      }));
+
+      allCoins = [...allCoins, ...formattedCommCoins];
     }
+  } catch (error) {
+    console.warn("Gedenkmünzen konnten nicht von extern geladen werden. Nutze lokale Daten.", error);
+  } finally {
+    renderApp();
+  }
+}
 
-    // Event Listener
-    searchInput.oninput = render;
-    countrySelect.onchange = render;
-    statusSelect.onchange = render;
-
-    // Init
-    initFilters();
-    render();
-    </script>
+// App-Initialisierung
+document.addEventListener("DOMContentLoaded", () => {
+  loadCommemorativeCoins();
+});
+</script>
 </body>
 </html>
