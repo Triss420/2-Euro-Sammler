@@ -205,7 +205,7 @@ function expandMintVariants(list){
         id: c.id + '-' + m,
         code: m,
         mintmark: m,
-        image: null,
+        image: isDE ? null : c.image,
         title: String(c.title||'').replace(/\s·\s*[ADFGJ]\b/gi,'').trim() + ' · ' + m,
         desc: (c.desc ? c.desc + ' ' : '') + 'Prägestätte ' + m + (DE_MINT_NAMES[m] ? ' (' + DE_MINT_NAMES[m] + ')' : ''),
         parentId: c.id,
@@ -298,35 +298,34 @@ function normText(s){
   return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
     .replace(/[^a-z0-9]+/g,' ').trim();
 }
+const germanResolvedImages = new Map();
 function imageSearchQueries(c){
   const country=String(c.country||'').trim();
   const countryEn=COUNTRY_EN[country]||country;
   const year=String(c.year||'').trim();
   const title=String(c.title||'').trim();
   const t=normText(title);
-  const mint=String(c.mintmark||c.code||'').trim().toUpperCase();
-  const isGerman=country==='Deutschland';
   const qs=[];
-
-  // WICHTIG: Bei deutschen Münzen muss das Prägemerkmal Teil der Bildsuche sein.
-  // Ein allgemeines "Germany 2004" darf NICHT mehr als Ersatzbild für A/D/F/G/J dienen.
-  if(isGerman && /^[ADFGJ]$/.test(mint)){
-    qs.push(`Germany 2 euro ${year} ${mint}`);
-    qs.push(`Germany 2 euro ${year} ${mint} Bundesadler`);
-    qs.push(`Germany 2 euro ${year} ${mint} ${title}`);
-    qs.push(`Deutschland 2 Euro ${year} ${mint}`);
-    qs.push(`Deutschland 2 Euro ${year} ${mint} ${title}`);
-    if(t.includes('bundesadler')) qs.push(`Germany 2 euro ${year} ${mint} eagle`);
+  if(country==='Deutschland' && /^[ADFGJ]$/i.test(String(c.mintmark||''))){
+    const m=String(c.mintmark).toUpperCase();
+    // For Germany the mintmark is part of the identity. Do not use the generic
+    // Germany_2euro.jpg image and do not fall back to a different mint.
+    qs.push(`Germany 2 euro ${year} ${m} Bundesadler`);
+    qs.push(`Germany 2 euro ${year} ${m} eagle`);
+    qs.push(`Deutschland 2 Euro ${year} ${m} Bundesadler`);
+    qs.push(`2 euro Germany ${year} mint ${m}`);
     return [...new Set(qs)].map(encodeURIComponent);
   }
-
   if(title) qs.push(`2 euro coin ${countryEn} ${year} commemorative`);
   qs.push(`2 euro coin ${countryEn} ${year}`);
   qs.push(`€2 commemorative coin ${countryEn} ${year}`);
   if(title) qs.push(`2 euro ${countryEn} ${year} ${title}`);
   if(title) qs.push(`2 euro ${country} ${year} ${title}`);
-  if(title) qs.push(`${country} 2 euro ${year} ${title}`);
   qs.push(`2 euro ${country} ${year}`);
+  if(t.includes('bundesadler')){
+    qs.unshift(`Germany 2 euro ${year} eagle`);
+    qs.push(`Germany 2 euro ${year} Bundesadler`);
+  }
   if(t.includes('bertha von suttner')) qs.unshift(`Austria 2 euro Bertha von Suttner`);
   return [...new Set(qs)].map(encodeURIComponent);
 }
@@ -336,69 +335,53 @@ function bestCommonsImage(data,c){
   const countryEn=normText(COUNTRY_EN[String(c.country||'').trim()]||'');
   const title=normText(c.title||'');
   const year=String(c.year||'');
-  const mint=String(c.mintmark||c.code||'').trim().toLowerCase();
-  const isGerman=String(c.country||'').trim()==='Deutschland' && /^[adfgj]$/.test(mint);
+  const isDE=String(c.country||'').trim()==='Deutschland' && /^[ADFGJ]$/i.test(String(c.mintmark||''));
+  const mint=isDE?String(c.mintmark).toLowerCase():'';
   const titleWords=title.split(' ').filter(x=>x.length>3);
   let best=null, scoreBest=-999;
   for(const p of pages){
     const ii=p.imageinfo?.[0]; if(!ii) continue;
     const name=normText(p.title||'');
+    const url=normText(ii.url||'');
     if(!/2 euro|2euro|2 eur|euro coin|euro munze|euro munze/i.test(name)) continue;
     if(/album|folder|set|roll|banknote|medal|token|coincard|proof set|mint set/i.test(name)) continue;
-
-    // Deutsche A/D/F/G/J-Varianten: das Bild muss mindestens den richtigen
-    // Jahrgang tragen. Der Prägebuchstabe steht bei vielen echten Münzbildern
-    // NICHT im Wikimedia-Dateinamen, obwohl die Suche ihn berücksichtigt.
-    // Deshalb darf er nicht mehr zwingend im Dateinamen stehen. Ein anderer
-    // Jahrgang ist dagegen niemals zulässig. Mehrfach-Sets bleiben ausgeschlossen.
-    if(isGerman){
-      if(year && !name.includes(year)) continue;
-      const yearsInName=name.match(/\\b(?:19|20)\\d{2}\\b/g)||[];
-      if(yearsInName.some(y=>y!==year)) continue;
-      if(/adfgj|a d f g j|a,d,f,g,j|a d f g|adf/i.test(name)) continue;
-    }
-
+    // Never accept the generic ECB Germany image or a generic Cnumis type image
+    // for a mint-specific German entry.
+    if(isDE && (/germany_2euro|2848 coin des monnaies germany 2 euro eagle allemand/i.test(url+' '+name))) continue;
+    if(year && !name.includes(year) && !url.includes(year)) continue;
     let score=0;
-    if(year && name.includes(year)) score+=10;
+    if(year && (name.includes(year)||url.includes(year))) score+=10;
     if(country && name.includes(country)) score+=5;
     if(countryEn && name.includes(countryEn)) score+=5;
     for(const w of titleWords) if(name.includes(w)) score+=2;
     if(name.includes('2 euro')) score+=3;
-    if(isGerman && name.includes(mint)) score+=12;
-    // Wenn der Prägebuchstabe im Dateinamen fehlt, ist das trotzdem ein zulässiger
-    // Treffer, weil die Commons-Suche bereits mit Jahr + Mintzeichen ausgeführt wurde.
-    if(isGerman && !name.includes(mint)) score+=4;
     if(/jpg|jpeg|png/i.test(ii.url||'')) score+=1;
+    if(isDE){
+      // Strong preference for an explicitly named mintmark. If the source does
+      // not put the letter in its filename, accept it only if this exact URL
+      // has not already been assigned to another German mintmark.
+      const explicitMint = new RegExp(`(?:^|[^a-z])${mint}(?:[^a-z]|$)|${year}[^a-z0-9]*${mint}|${mint}[^a-z0-9]*${year}`,'i').test(name+' '+url);
+      if(explicitMint) score+=20;
+      if(germanResolvedImages.has(url) && germanResolvedImages.get(url)!==mint) continue;
+      // An exact-mint search can still return a correctly matching image whose
+      // filename omits the letter. Give that result a smaller score than an
+      // explicitly named mint image, but allow it if it is unique.
+      score+=2;
+    }
     if(score>scoreBest){scoreBest=score;best=ii.thumburl||ii.url;}
   }
-  // Für deutsche Mintmark-Varianten ist die Mindesthürde bewusst höher.
-  return scoreBest >= (isGerman ? 14 : 3) ? best : null;
+  if(isDE && best){
+    germanResolvedImages.set(best,mint);
+  }
+  return scoreBest>= (isDE?12:3) ? best : null;
 }
 async function commonsSearch(q,c){
   const url=`https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${q}&gsrnamespace=6&gsrlimit=20&prop=imageinfo&iiprop=url&iiurlwidth=700&format=json&origin=*`;
   const r=await fetch(url,{cache:'force-cache'}); if(!r.ok) throw new Error('commons');
   return bestCommonsImage(await r.json(),c);
 }
-const GERMAN_BUNDESADLER_YEAR_IMAGES={2002: "https://i.etsystatic.com/59567843/r/il/add335/7022020733/il_570xN.7022020733_ffql.jpg", 2003: "https://i.ebayimg.com/thumbs/images/g/f2sAAeSwAsFn8wu5/s-l1200.jpg", 2004: "https://i.ebayimg.com/images/g/s74AAOSwK3pji7ig/s-l1600.jpg", 2005: "https://www.historia-hamburg.de/media/product/dc0/deutschland-2-euro-2005-stgl-mzz-a-bis-j-bundesadler-bba.jpg", 2006: "https://www.euro-muenzen.tv/img04/Germany-2-Euro-Coin-2006-A-4500-145787241062792.jpg", 2008: "https://i.ebayimg.com/images/g/-sAAAOSwwwhm9mDP/s-l1200.jpg", 2010: "https://cdn.monetnik.ru/storage/market-lot/63/42/806363/2839422_mainViewLot_2x.jpg", 2011: "https://www.numismaticnews.net/uploads/MjA5MzUyNzU1MjI2MDkzMzQ5/1_beispiele-fehlpraegungen-dezentrierung.jpg", 2014: "https://www.eurofischer.de/WebRoot/Store7/Shops/61426499/531E/0CEB/2D8E/5DD3/8FEB/C0A8/2ABB/545B/Deutschland_2_Euro_2014_D-1.jpg", 2016: "https://cdn.monetnik.ru/storage/market-lot/12/86/584812/2069863_mainViewLot_2x.jpg", 2017: "https://www.historia-hamburg.de/media/product/7a7/deutschland-2-euro-2017-stgl-mzz-f-bundesadler-138.jpg", 2019: "https://www.historia-hamburg.de/media/product/a71/deutschland-2-euro-2019-stgl-mzz-d-bundesadler-6b0.jpg", 2020: "https://i.ebayimg.com/images/g/r6MAAOSwBfVfkZKR/s-l1200.jpg", 2021: "https://www.historia-hamburg.de/media/product/50c/deutschland-2-euro-2021-stgl-bundesadler-mzz-a-b78.jpg", 2022: "https://www.eurofischer.de/WebRoot/Store7/Shops/61426499/61E0/0774/24F7/F6CB/A27D/0A0C/6D10/5AC5/Deutschland_2_Euro_2022_A-1.jpg", 2023: "https://www.eurofischer.de/WebRoot/Store7/Shops/61426499/63FF/3CBD/A4A1/6764/2DE3/0A0C/6D11/E7B8/Deutschland_2_Euro_2023_D-1.jpg", 2024: "https://www.historia-hamburg.de/media/product/68b/deutschland-2-euro-2024-bundesadler-muenzzeichen-a-40c.jpg", 2025: "https://karomuenzen.de/storage/images/image?height=2560&remote=https%3A%2F%2Fkaromuenzen.de%2FWebRoot%2FStore21%2FShops%2Fd921a247-bf88-4611-82a4-3448c13af65e%2F684D%2FD5C9%2F96D1%2F5677%2FE5FE%2F0A48%2F3520%2F2DCB%2Fimg20250614-21580715.jpg&shop=d921a247-bf88-4611-82a4-3448c13af65e&width=600"};
-function germanBundesadlerStaticImage(c){
-  if(String(c?.country||'').trim()!=='Deutschland') return null;
-  if(!/bundesadler/i.test(String(c?.title||''))) return null;
-  const y=Number(c?.year);
-  return GERMAN_BUNDESADLER_YEAR_IMAGES[y]||null;
-}
 async function resolveCoinImage(c,target){
   if(!c || c.image || imageBusy.has(c.id)) return;
-  const staticImg=germanBundesadlerStaticImage(c);
-  if(staticImg){
-    c.image=staticImg; imageCache[c.id]=staticImg;
-    if(target){
-      const old=target.querySelector('.auto-coin-img');
-      const fallback=target.querySelector('.fallbackCoin');
-      if(old){old.src=staticImg;old.style.display='block';}
-      if(fallback)fallback.style.display='none';
-    }
-    return;
-  }
   imageBusy.add(c.id);
   try{
     const qs=imageSearchQueries(c);
@@ -495,7 +478,7 @@ function render(){
 function showExcel(id){
   const c=excelCollection.find(x=>x.id===id); if(!c)return;
   document.getElementById('mTitle').textContent=c.title;
-  document.getElementById('mSub').textContent=`${c.country}${c.year?' · '+c.year:''}${c.mintmark?' · Prägestätte '+c.mintmark+(DE_MINT_NAMES[c.mintmark]?' ('+DE_MINT_NAMES[c.mintmark]+')':''):''}`;
+  document.getElementById('mSub').textContent=`${c.country}${c.year?' · '+c.year:''}`;
   document.getElementById('mImage').innerHTML=coinVisual(c,true); if(!c.image) setTimeout(()=>resolveCoinImage(c,document.getElementById('mImage')),0);
   document.getElementById('mPills').innerHTML=`<span class="pill">${c.complete?'✓ vollständig':'❌ noch offen'}</span>${c.qty?`<span class="pill">${c.qty}× vorhanden</span>`:''}${c.mintmarks.length?`<span class="pill">Prägestätten: ${esc(c.mintmarks.join(' · '))}</span>`:''}`;
   const missing=(c.mintmarks.length&&!c.complete)?c.mintmarks.filter(x=>!c.ownedMintmarks.includes(x)):[];
@@ -575,7 +558,7 @@ function buildRegularCatalog(){
     "Estland":"https://www.ecb.europa.eu/euro/coins/common/shared/img/et/Estonia_2Euro.jpg",
     "Finnland":"https://www.ecb.europa.eu/euro/coins/common/shared/img/fi/Finland_2euro.jpg",
     "Frankreich":{1:"https://www.ecb.europa.eu/euro/coins/common/shared/img/fr/France_2euro.jpg",2:"https://www.ecb.europa.eu/euro/coins/common/shared/img/fr/France_2euro_2022.jpg"},
-    "Deutschland":"https://www.ecb.europa.eu/euro/coins/common/shared/img/de/Germany_2euro.jpg",
+    "Deutschland":null,
     "Griechenland":"https://www.ecb.europa.eu/euro/coins/common/shared/img/gr/Greece_2euro.jpg",
     "Irland":"https://www.ecb.europa.eu/euro/coins/common/shared/img/ie/Ireland_2euro.jpg",
     "Italien":"https://www.ecb.europa.eu/euro/coins/common/shared/img/it/Italy_2euro.jpg",
@@ -621,7 +604,7 @@ function buildRegularCatalog(){
   ];
   const out=[]; let id=0;
   cfg.forEach(g=>{for(let y=g[1];y<=g[2];y++){
-    let image = g[0] === 'Deutschland' ? null : IMG[g[0]]; if(image&&typeof image==='object') image=image[g[5]]||null;
+    let image=IMG[g[0]]; if(image&&typeof image==='object') image=image[g[5]]||null;
     out.push({id:'regcat'+(id++),type:'regular',country:g[0],year:y,title:g[3]+' ('+y+')',code:g[4],desc:'Reguläre 2-€-Umlaufmünze; nationales Motiv.',volume:'–',release:String(y),image,owned:0,qty:0,catalog:true});
   }}); return out;
 }
@@ -690,13 +673,7 @@ async function load(){
     excelCollection.forEach(x=>{
       if(x.image || !x.year || x.year<=0 || !x.title) return;
       const cc=String(x.country||'').trim();
-      let candidates=all.filter(c=>c.country===cc && c.year===Number(x.year) && c.image);
-      if(cc==='Deutschland' && x.ownedMintmarks?.length){
-        // Bei Deutschland nicht irgendein Jahresbild übernehmen. Wenn der Excel-Eintrag
-        // mehrere Mintzeichen enthält, bleibt das Bild hier bewusst leer; die einzelnen
-        // A/D/F/G/J-Katalogeinträge bekommen ihre Bilder separat.
-        return;
-      }
+      const candidates=all.filter(c=>c.country===cc && c.year===Number(x.year) && c.image);
       if(!candidates.length) return;
       if(candidates.length===1){ x.image=candidates[0].image; return; }
       let best=null, score=-1;
