@@ -38,7 +38,7 @@ button{cursor:pointer}
 .hero{display:grid;grid-template-columns:1.25fr .75fr;gap:18px;margin-bottom:18px}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
 .heroMain{padding:25px}.heroMain h1{margin:0 0 8px;font-size:32px;color:var(--text)}.heroMain p{margin:0;color:var(--muted)}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:22px}.stat{padding:15px;border-radius:15px;background:var(--panel2);border:1px solid var(--line)}.stat strong{font-size:25px;display:block;color:var(--text)}.stat span{color:var(--muted);font-size:13px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:22px}.stat{padding:15px;border-radius:15px;background:var(--panel2);border:1px solid var(--line)}.stat strong{font-size:25px;display:block;color:var(--text)}.stat span{color:var(--muted);font-size:13px}
 .progress{height:12px;background:var(--panel2);border-radius:99px;overflow:hidden;margin-top:12px;border:1px solid var(--line)}.progress>div{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));width:0;transition:width .3s}
 .heroSide{padding:20px}.heroSide h3{margin:0 0 12px}.quick{display:grid;grid-template-columns:1fr 1fr;gap:10px}.quick button{padding:13px;border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:13px;text-align:left}.quick button:hover{border-color:var(--accent)}
 .tabs{display:flex;gap:8px;margin:8px 0 15px;overflow:auto}.tab{border:0;background:var(--panel2);color:var(--text);border-radius:999px;padding:10px 16px;white-space:nowrap}.tab.active{background:var(--accent);color:#fff}
@@ -85,8 +85,7 @@ button{cursor:pointer}
       <h1>Meine 2-Euro-Sammlung</h1>
       <p>Umlaufmünzen und 2-Euro-Gedenkmünzen – ohne Abo und mit Speicherung direkt auf dem Gerät.</p>
             <div class="stats">
-        <div class="stat"><strong id="ownedCount">0 / 0</strong><span>Typen gesammelt</span></div>
-        <div class="stat"><strong id="piecesCount">0</strong><span>Münzen im Bestand</span></div>
+        <div class="stat"><strong id="ownedCount">0 / 0</strong><span>Münzen gesammelt</span></div>
         <div class="stat"><strong id="missingCount">0</strong><span>Stück fehlen noch</span></div>
         <div class="stat"><strong id="valueCount">0 €</strong><span>Nennwert im Bestand</span></div>
       </div>
@@ -450,18 +449,14 @@ function rebuildFilters(){
 }
 function stats(){
   const total = all.length;
-  const ownedTypes = all.filter(c => c.owned).length;
-  const pieces = all.reduce((sum,c) => sum + (c.owned ? (Number(c.qty)||1) : 0), 0);
-  const missingPieces = all.reduce((sum,c) => sum + (c.owned ? 0 : 1), 0);
-  const faceValue = pieces * 2;
-  const pct = total ? ownedTypes / total * 100 : 0;
+  const owned = all.filter(c => c.owned).length;
+  const missing = total - owned;
+  const faceValue = owned * 2;
+  const pct = total ? owned / total * 100 : 0;
 
-  document.getElementById('ownedCount').textContent = ownedTypes + ' / ' + total;
-  const pc = document.getElementById('piecesCount');
-  if(pc) pc.textContent = pieces;
-  document.getElementById('missingCount').textContent = missingPieces;
-  const vc = document.getElementById('valueCount');
-  if(vc) vc.textContent = faceValue.toLocaleString('de-DE') + ' €';
+  document.getElementById('ownedCount').textContent = owned + ' / ' + total;
+  document.getElementById('missingCount').textContent = missing;
+  document.getElementById('valueCount').textContent = faceValue.toLocaleString('de-DE') + ' €';
   document.getElementById('progressBar').style.width = pct.toFixed(1) + '%';
 }
 function toggle(id){
