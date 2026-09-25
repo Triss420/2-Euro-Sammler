@@ -520,6 +520,23 @@ async function load(){
       const c=same.find(c=>c.type==='regular'); if(c){c.owned=!!x.complete;c.qty=x.ownedMintmarks.length;c.code=x.mintmarks.join(' · ')||'A · D · F · G · J';c.excelId=x.id;}
     }
   });
+  function attachExcelImages(){
+    // Ordnet jedem Excel-Eintrag ohne eigenes Bild das passende (bereits bekannte) Katalogbild zu –
+    // Übereinstimmung nur bei gleichem Land+Jahr UND ausreichender Titel-Ähnlichkeit (Jahreszahl wird beim
+    // Textvergleich ignoriert, damit z.B. eine Bundesländer-Gedenkmünze nicht versehentlich das Bild der
+    // normalen Umlaufmünze bekommt, nur weil beide zufällig dasselbe Jahr im Titel tragen).
+    const stripYear=s=>String(s||'').replace(/\b(19|20)\d{2}\b/g,' ');
+    excelCollection.forEach(x=>{
+      if(x.image || !x.year || x.year<=0 || !x.title) return;
+      const cc=String(x.country||'').trim();
+      const candidates=all.filter(c=>c.country===cc && c.year===Number(x.year) && c.image);
+      if(!candidates.length) return;
+      if(candidates.length===1){ x.image=candidates[0].image; return; }
+      let best=null, score=-1;
+      candidates.forEach(c=>{ const s=titleSimilarity(stripYear(x.title),stripYear(c.title)); if(s>score){score=s;best=c;} });
+      if(best && score>=0.2) x.image=best.image;
+    });
+  }
   try{
     const r=await fetch(COMM_URL,{cache:'no-store'}); if(!r.ok)throw new Error('HTTP '+r.status); const data=await r.json();
     data.forEach((c,i)=>{
@@ -534,6 +551,7 @@ async function load(){
   }catch(e){
     document.getElementById('dataNote').innerHTML=`<b>${all.length}</b> reguläre 2-€-Ausgaben geladen. Die Gedenkmünzen werden bei bestehender Internetverbindung ergänzt.`;
   }
+  attachExcelImages();
   applySaved();rebuildFilters();stats();render();
 }
 
