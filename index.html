@@ -657,9 +657,64 @@ document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelect
 document.querySelectorAll('.quick button').forEach(b=>b.onclick=()=>{activeTab=b.dataset.filter;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===activeTab));render()});
 ['search','globalSearch','country','year','sort'].forEach(id=>document.getElementById(id).addEventListener('input',render));
 document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal()});
-document.getElementById('exportBtn').onclick=()=>{
-  const payload={app:'2€ Sammler',version:1,exported:new Date().toISOString(),owned:{}};all.forEach(c=>payload.owned[c.id]={owned:c.owned?1:0,qty:c.qty||0,country:c.country,year:c.year,title:c.title});
-  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='2euro-sammlung-backup.json';a.click();URL.revokeObjectURL(a.href);
+function downloadBlob(filename, content, mime){
+  const blob = new Blob([content], {type: mime});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function exportJSON(){
+  const payload = {
+    app: '2€ Sammler',
+    version: 1,
+    exported: new Date().toISOString(),
+    owned: {}
+  };
+  all.forEach(c => {
+    payload.owned[c.id] = {
+      owned: c.owned ? 1 : 0,
+      qty: c.qty || 0,
+      country: c.country,
+      year: c.year,
+      title: c.title,
+      mintmark: c.mintmark || c.code || ''
+    };
+  });
+  const d = new Date().toISOString().slice(0,10);
+  downloadBlob('2euro-backup-' + d + '.json', JSON.stringify(payload, null, 2), 'application/json');
+}
+
+function exportCSV(){
+  const sep = ';'; // Excel DE erkennt Semikolon besser
+  const lines = [['Land','Jahr','Titel','Prägestätte','Typ','Vorhanden','Anzahl'].join(sep)];
+  all.forEach(c => {
+    const row = [
+      c.country,
+      c.year || '',
+      '"' + String(c.title||'').replace(/"/g,'""') + '"',
+      c.mintmark || c.code || '',
+      c.type === 'comm' ? 'Gedenkmünze' : 'Umlaufmünze',
+      c.owned ? 'ja' : 'nein',
+      c.owned ? (c.qty || 1) : 0
+    ];
+    lines.push(row.join(sep));
+  });
+  // BOM damit Excel Umlaute richtig liest
+  const csv = '\uFEFF' + lines.join('\r\n');
+  const d = new Date().toISOString().slice(0,10);
+  downloadBlob('2euro-liste-' + d + '.csv', csv, 'text/csv;charset=utf-8');
+}
+
+document.getElementById('exportBtn').onclick = () => {
+  const w = confirm(
+    'OK = JSON-Backup (zum Wiederherstellen in der App)\n\n' +
+    'Abbrechen = CSV-Datei (für Excel / Tabellen)'
+  );
+  if (w) exportJSON();
+  else exportCSV();
 };
 document.getElementById('importBtn').onclick=()=>document.getElementById('fileInput').click();
 document.getElementById('fileInput').onchange=e=>{
