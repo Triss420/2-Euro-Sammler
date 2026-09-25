@@ -392,6 +392,24 @@ function loadVisibleCoinImages(){
 }
 
 function render(){
+    const isOv = activeTab === 'overview';
+  const gridEl = document.getElementById('grid');
+  const ovPanel = document.getElementById('overviewPanel');
+  const filtersEl = document.getElementById('filters');
+  if(gridEl) gridEl.style.display = isOv ? 'none' : '';
+  if(ovPanel) ovPanel.style.display = isOv ? 'block' : 'none';
+  if(filtersEl) filtersEl.style.display = isOv ? 'none' : '';
+  if(isOv){
+    document.getElementById('heading').textContent = 'Übersicht';
+    const rc = document.getElementById('resultCount');
+    if(rc) rc.textContent = '';
+    if(typeof renderOverview === 'function') renderOverview();
+    else {
+      const body = document.getElementById('overviewBody');
+      if(body) body.innerHTML = '<div class="note">Übersicht wird geladen, sobald die Statistik-Funktionen eingebaut sind.</div>';
+    }
+    return;
+  }
   const q=(document.getElementById('search').value+' '+document.getElementById('globalSearch').value).trim().toLowerCase();
   const country=document.getElementById('country').value, year=document.getElementById('year').value, sort=document.getElementById('sort').value;
 
@@ -673,7 +691,12 @@ async function load(){
   applySaved();rebuildFilters();stats();render();
 }
 
-document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');activeTab=b.dataset.tab;render()});
+document.querySelectorAll('.tabs:not(#overviewSubTabs) .tab').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.tabs:not(#overviewSubTabs) .tab').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  activeTab = b.dataset.tab;
+  render();
+});
 document.querySelectorAll('.quick button').forEach(b=>b.onclick=()=>{activeTab=b.dataset.filter;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===activeTab));render()});
 ['search','globalSearch','country','year','sort'].forEach(id=>document.getElementById(id).addEventListener('input',render));
 document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal()});
@@ -775,6 +798,17 @@ document.getElementById('importBtn').onclick=()=>document.getElementById('fileIn
 document.getElementById('fileInput').onchange=e=>{
   const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const p=JSON.parse(rd.result);Object.assign(saved,p.owned||{});all.forEach(c=>{if(saved[c.id]){c.owned=!!saved[c.id].owned;c.qty=saved[c.id].qty||0}});saveState();stats();render();alert('Sammlung importiert.')}catch(_){alert('Die Datei konnte nicht gelesen werden.')}};rd.readAsText(f);
 };
+let overviewMode = 'countries';
+
+document.getElementById('overviewSubTabs')?.addEventListener('click', e=>{
+  const btn = e.target.closest('[data-ov]');
+  if(!btn) return;
+  document.querySelectorAll('#overviewSubTabs .tab').forEach(t=>{
+    t.classList.toggle('active', t === btn);
+  });
+  overviewMode = btn.dataset.ov;
+  if(typeof renderOverview === 'function') renderOverview();
+});  
 load();
 </script>
 </body>
