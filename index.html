@@ -392,16 +392,26 @@ function bestCommonsImage(data,c){
   // Wenn eine exakte Prägestätte vorhanden ist, wird sie höher bewertet;
   // falls Commons kein mint-spezifisches Foto besitzt, darf ein korrektes
   // Jahr-Foto als Fallback verwendet werden – aber niemals ein anderes Jahr.
-  if(isGermany && year && scoreBest<21) return null;
+  if(isGermany && year){
+    // Deutschland: Ein korrektes Jahr ist wichtiger als die Prägestätte im Dateinamen.
+    // Viele Commons-Dateien tragen A/D/F/G/J nicht im Dateinamen. Ein Treffer
+    // desselben Jahres ist deshalb ein zulässiger Fallback und verhindert, dass
+    // die deutschen Karten komplett leer bleiben.
+    return scoreBest>=20 ? best : null;
+  }
   return scoreBest>=3 ? best : null;
 }
 async function commonsSearch(q,c){
-  const url=`https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${q}&gsrnamespace=6&gsrlimit=20&prop=imageinfo&iiprop=url&iiurlwidth=700&format=json&origin=*`;
+  const url=`https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${q}&gsrnamespace=6&gsrlimit=50&prop=imageinfo&iiprop=url&iiurlwidth=700&format=json&origin=*`;
   const r=await fetch(url,{cache:'force-cache'}); if(!r.ok) throw new Error('commons');
   return bestCommonsImage(await r.json(),c);
 }
 async function resolveCoinImage(c,target){
   if(!c || c.image || imageBusy.has(c.id)) return;
+  // Deutschland bekommt niemals wieder das alte allgemeine ECB-Bild vorab.
+  // Falls Wikimedia nicht erreichbar ist, verwenden wir als letzte Notlösung
+  // die offizielle deutsche 2-Euro-Nationalseite, damit die Karten nicht leer bleiben.
+  const germanyFallback='https://www.ecb.europa.eu/euro/coins/common/shared/img/de/Germany_2euro.jpg';
   imageBusy.add(c.id);
   try{
     const qs=imageSearchQueries(c);
@@ -419,6 +429,18 @@ async function resolveCoinImage(c,target){
           break;
         }
       }catch(e){}
+    }
+    // Letzte Fallback-Stufe ausschließlich für deutsche reguläre 2-Euro-Münzen.
+    // Damit ist garantiert, dass Deutschland nicht wieder komplett ohne Bild bleibt,
+    // selbst wenn die externe Commons-Suche ausfällt.
+    if(!c.image && String(c.country||'').trim()==='Deutschland' && c.type==='regular'){
+      c.image=germanyFallback; imageCache[c.id]=germanyFallback;
+      if(target){
+        const old=target.querySelector('.auto-coin-img');
+        const fallback=target.querySelector('.fallbackCoin');
+        if(old){old.src=germanyFallback;old.style.display='block';}
+        if(fallback)fallback.style.display='none';
+      }
     }
   }finally{ imageBusy.delete(c.id); }
 }
