@@ -18,12 +18,6 @@
   --top:#171a1f;--top2:#12151a;--panel2:#252a31;--coinbg1:#333940;--coinbg2:#262b31;--coinring:#454b53;--coinface:#d8d4c8;
   --shadow:0 8px 28px rgba(0,0,0,.35)
 }
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#20242a;--panel:#2a2f37;--text:#e7e4dc;--muted:#a3a099;--line:#3a3f47;
-  --accent:#7aa8a8;--accent2:#5c8a8a;--good:#7fb679;--warn:#d9a35c;--bad:#d9806e;
-  --top:#171a1f;--top2:#12151a;--panel2:#252a31;--coinbg1:#333940;--coinbg2:#262b31;--coinring:#454b53;--coinface:#d8d4c8;
-  --shadow:0 8px 28px rgba(0,0,0,.35)
-}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;transition:background .2s,color .2s}
 button,input,select{font:inherit}
@@ -50,28 +44,17 @@ button{cursor:pointer}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(245px,1fr));gap:14px}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:17px;overflow:hidden;box-shadow:0 4px 16px rgba(58,54,48,.06);transition:.15s}.card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
 .coinpic{height:190px;background:linear-gradient(145deg,var(--coinbg1),var(--coinbg2));display:flex;align-items:center;justify-content:center;position:relative}
-.coinpic img{max-width:90%;max-height:175px;object-fit:contain;border-radius:50%;filter:drop-shadow(0 8px 10px rgba(0,0,0,.16))}
 .coinmock{width:138px;height:138px;border-radius:50%;background:radial-gradient(circle at 35% 30%,var(--coinbg1),var(--coinring) 55%,var(--coinring));border:7px solid var(--coinring);box-shadow:0 10px 18px rgba(0,0,0,.14);display:flex;align-items:center;justify-content:center;flex-direction:column;color:var(--coinface);font-weight:800}
 .coinmock .flag{font-size:34px;line-height:1;margin-bottom:2px}
-.coinmock .e{font-size:30px;line-height:1}.coinmock small{font-size:10.5px;letter-spacing:.5px;margin-top:2px}
+.coinmock .e{font-size:30px;line-height:1}<small>{font-size:10.5px;letter-spacing:.5px;margin-top:2px}</small>
 .badge{position:absolute;top:10px;left:10px;z-index:2;padding:6px 9px;border-radius:999px;font-size:12px;background:var(--panel);color:var(--text);border:1px solid var(--line);pointer-events:none}
 .owned{position:absolute;top:10px;right:10px;z-index:2;background:var(--good);color:#fff;border-radius:999px;padding:6px 9px;font-size:12px;font-weight:700;pointer-events:none}
-.coinpic img,.coin-real-img,.auto-coin-img{position:relative;z-index:1}
-.cardfoot a.smallbtn{text-decoration:none;text-align:center;display:flex;align-items:center;justify-content:center}
+.coin-real-img{max-width:90%;max-height:175px;object-fit:contain;border-radius:50%;filter:drop-shadow(0 8px 10px rgba(0,0,0,.16))}
 .cardbody{padding:14px}.country{font-size:13px;color:var(--muted);font-weight:700}.title{font-weight:800;margin:4px 0 7px;line-height:1.25;color:var(--text)}.year{font-size:13px;color:var(--muted)}.cardfoot{display:flex;gap:7px;margin-top:12px}.smallbtn{flex:1;border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:10px;padding:9px}.smallbtn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
 .empty{padding:45px;text-align:center;color:var(--muted);background:var(--panel);border:1px dashed var(--line);border-radius:17px}
 .note{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:12px 14px;color:var(--muted);margin-bottom:15px}
 .modal{position:fixed;inset:0;background:rgba(20,20,18,.55);display:none;align-items:center;justify-content:center;padding:18px;z-index:20}.modal.open{display:flex}.modalbox{background:var(--panel);color:var(--text);border-radius:22px;max-width:850px;width:100%;max-height:92vh;overflow:auto}.modalhead{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:15px}.close{border:0;background:var(--panel2);color:var(--text);border-radius:10px;padding:8px 11px}.modalgrid{display:grid;grid-template-columns:340px 1fr;gap:20px;padding:20px}.bigimg{width:100%;height:330px;display:flex;align-items:center;justify-content:center;background:var(--panel2);border-radius:18px}.bigimg img{max-width:96%;max-height:315px;border-radius:50%}.detail p{line-height:1.55}.row{display:flex;gap:8px;flex-wrap:wrap}.pill{padding:7px 10px;background:var(--panel2);color:var(--text);border-radius:999px;font-size:13px}
 .footer{color:var(--muted);font-size:12px;text-align:center;padding:30px 0}
-@media(max-width:900px){.hero{grid-template-columns:1fr}.filters{grid-template-columns:1fr 1fr}.modalgrid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}}
-@media(max-width:600px){.top{flex-wrap:wrap}.search{order:3;flex-basis:100%}.wrap{padding:14px}.stats{grid-template-columns:1fr}.filters{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.coinpic{height:145px}.coinmock{width:100px;height:100px}.coinmock .e{font-size:24px}.coinmock .flag{font-size:26px}.cardbody{padding:10px}.title{font-size:14px}}
-
-.coin-real-img,.auto-coin-img{max-width:90%;max-height:175px;object-fit:contain;border-radius:50%;filter:drop-shadow(0 8px 10px rgba(0,0,0,.16))}.de-generic {
-  object-fit: contain !important;
-  object-position: center !important;
-  clip-path: none !important;
-}
-.bigimg .coin-real-img,.bigimg .auto-coin-img{max-width:96%;max-height:315px}
 
 /* Druck-Styles */
 #printArea{display:none}
@@ -79,24 +62,21 @@ button{cursor:pointer}
   body * { visibility: hidden; }
   #printArea, #printArea * { visibility: visible; }
   #printArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; background: #fff; color: #000; font-family: Arial, sans-serif; padding: 20px; }
-  #printArea h1 { font-size: 22px; margin-bottom: 5px; }
-  #printArea h2 { font-size: 16px; margin-top: 20px; margin-bottom: 8px; border-bottom: 2px solid #333; padding-bottom: 4px; }
   #printArea table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
   #printArea th, #printArea td { border: 1px solid #ccc; padding: 6px 8px; text-align: left; font-size: 12px; }
-  #printArea th { background-color: #f2f2f2; font-weight: bold; }
-  .modal { display: none !important; }
 }
 </style>
 </head>
 <body>
 <header class="top">
   <div class="logo">2€ <span>Sammler</span></div>
-  <div class="search"><b>⌕</b><input id="globalSearch" placeholder="Land, Jahr, Motiv, Stichwort …"></div>
+  <div class="search"><b>⌕</b><input id="globalSearch" placeholder="Land, Jahr, Motiv …"></div>
   <div class="actions">
     <button class="iconbtn" id="printBtn" title="Drucken">🖨️</button>
-    <button class="iconbtn" id="themeBtn" title="Hell/Dunkel umschalten">🌓</button>
-    <button class="iconbtn" id="exportBtn" title="Sicherung exportieren">↥</button>
-    <button class="iconbtn" id="importBtn" title="Sicherung importieren">↧</button>
+    <button class="iconbtn" id="themeBtn">🌓</button>
+    <button class="iconbtn" id="exportBtn" title="Exportieren">↥</button>
+    <button class="iconbtn" id="importBtn" title="Importieren">↧</button>
+    <button class="iconbtn" id="resetBtn" title="Speicher zurücksetzen" style="color:#d9806e">🗑️</button>
     <input type="file" id="fileInput" accept=".json" hidden>
   </div>
 </header>
@@ -105,11 +85,11 @@ button{cursor:pointer}
   <section class="hero">
     <div class="panel heroMain">
       <h1>Meine 2-Euro-Sammlung</h1>
-      <p>Umlaufmünzen und 2-Euro-Gedenkmünzen – ohne Abo und mit Speicherung direkt auf dem Gerät.</p>
+      <p>Lokal gesichert auf deinem Gerät.</p>
       <div class="stats">
         <div class="stat"><strong id="ownedCount">0 / 0</strong><span>Münzen gesammelt</span></div>
-        <div class="stat"><strong id="missingCount">0</strong><span>Stück fehlen noch</span></div>
-        <div class="stat"><strong id="valueCount">0 €</strong><span>Nennwert im Bestand</span></div>
+        <div class="stat"><strong id="missingCount">0</strong><span>Fehlen noch</span></div>
+        <div class="stat"><strong id="valueCount">0 €</strong><span>Gesamtwert</span></div>
       </div>
       <div class="progressWrap">
         <div class="progress"><div id="progressBar"></div></div>
@@ -134,7 +114,6 @@ button{cursor:pointer}
     <button class="tab" data-tab="owned">Gesammelt</button>
     <button class="tab" data-tab="mine">Meine Excel-Liste</button>
     <button class="tab" data-tab="missing">Fehlen</button>
-    <button class="tab" data-tab="overview">Übersicht</button>
   </div>
 
   <div class="filters" id="filters">
@@ -144,21 +123,8 @@ button{cursor:pointer}
     <select id="sort"><option value="yearDesc">Neueste zuerst</option><option value="yearAsc">Älteste zuerst</option><option value="country">Land</option><option value="title">Motiv</option></select>
   </div>
 
-  <div class="note" id="dataNote">Gedenkmünzen werden aus einer öffentlichen Datensammlung geladen. Die Sammlung selbst bleibt lokal auf deinem Gerät.</div>
   <div class="sectionHead"><h2 id="heading">Katalog</h2><div class="count" id="resultCount"></div></div>
   <div class="grid" id="grid"></div>
-  <div id="overviewPanel" style="display:none">
-    <div class="tabs" id="overviewSubTabs" style="margin-top:0">
-      <button class="tab active" data-ov="countries">Länder</button>
-      <button class="tab" data-ov="years">Jahre</button>
-      <button class="tab" data-ov="stats">Statistik</button>
-      <button class="tab" data-ov="series">Serien</button>
-      <button class="tab" data-ov="joint">Gemeinschaft</button>
-      <button class="tab" data-ov="mints">DE-Stempel</button>
-    </div>
-    <div id="overviewBody"></div>
-  </div>
-  <div class="footer">2€ Sammler – private Sammlung. Katalogquellen: Europäische Zentralbank / Europäische Kommission; Bilder: offizielle Euro-Seiten bzw. Wikimedia Commons als Bild-Fallback.</div>
 </main>
 
 <div class="modal" id="modal">
@@ -169,215 +135,58 @@ button{cursor:pointer}
       <div class="detail">
         <div class="row" id="mPills"></div>
         <p id="mDesc"></p>
-        <p><b>Auflage:</b> <span id="mVolume">–</span></p>
-        <p><b>Ausgabe:</b> <span id="mRelease">–</span></p>
-        <label style="display:block;margin:15px 0"><b>In meiner Sammlung</b><br>
+        <label style="display:block;margin:15px 0"><b>Status</b><br>
           <select id="mOwned" style="margin-top:7px;width:100%;padding:12px;border:1px solid var(--line);border-radius:12px">
             <option value="0">❌ Fehlt</option><option value="1">✅ Vorhanden</option>
           </select>
         </label>
         <label style="display:block"><b>Anzahl</b><br><input id="mQty" type="number" min="1" max="999" value="1" style="margin-top:7px;width:100%;padding:12px;border:1px solid var(--line);border-radius:12px"></label>
         <button class="smallbtn primary" style="width:100%;margin-top:12px;padding:12px" onclick="saveModal()">Speichern</button>
-        <a class="smallbtn" id="mEbay" href="#" target="_blank" rel="noopener" style="width:100%;margin-top:8px;padding:12px;text-align:center;display:block;text-decoration:none">🔎 Zuletzt verkauft auf eBay</a>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Modal für Druck-Einstellungen -->
-<div class="modal" id="printModal">
-  <div class="modalbox" style="max-width:500px">
-    <div class="modalhead">
-      <b>Drucken - Optionen</b>
-      <button class="close" onclick="closePrintModal()">✕</button>
-    </div>
-    <div style="padding:20px">
-      <label style="display:block;margin-bottom:15px">
-        <b>Münzen auswählen:</b><br>
-        <select id="printType" style="margin-top:7px;width:100%;padding:10px;border:1px solid var(--line);border-radius:10px">
-          <option value="owned">✅ Bereits gesammelte Münzen</option>
-          <option value="missing">❌ Noch fehlende Münzen</option>
-        </select>
-      </label>
-      
-      <label style="display:block;margin-bottom:15px">
-        <b>Einteilung / Gruppierung:</b><br>
-        <select id="printGroup" style="margin-top:7px;width:100%;padding:10px;border:1px solid var(--line);border-radius:10px">
-          <option value="country">Nach Ländern</option>
-          <option value="type">Nach Münzversionen (Umlauf vs. Gedenkmünzen)</option>
-        </select>
-      </label>
-
-      <label style="display:block;margin-bottom:20px">
-        <b>Land filtern (optional):</b><br>
-        <select id="printCountryFilter" style="margin-top:7px;width:100%;padding:10px;border:1px solid var(--line);border-radius:10px">
-          <option value="">Alle Länder</option>
-        </select>
-      </label>
-
-      <button class="smallbtn primary" style="width:100%;padding:12px" onclick="executePrint()">🖨️ Druckansicht öffnen</button>
-    </div>
-  </div>
-</div>
-
-<!-- Bereich für die Druckausgabe -->
 <div id="printArea"></div>
 
 <script>
-const COMM_URL='https://raw.githubusercontent.com/Liebeck/two-euro-coins-data/main/2euro-coins.json';
-const STORE='twoEuroCollectorV1';
-const THEME_STORE='twoEuroCollectorTheme';
+const STORE='twoEuroCollectorV2';
 
 const COUNTRY_FLAG={"Andorra":"🇦🇩","Österreich":"🇦🇹","Belgien":"🇧🇪","Bulgarien":"🇧🇬","Kroatien":"🇭🇷","Zypern":"🇨🇾",
 "Estland":"🇪🇪","Finnland":"🇫🇮","Frankreich":"🇫🇷","Deutschland":"🇩🇪","Griechenland":"🇬🇷","Irland":"🇮🇪",
 "Italien":"🇮🇹","Lettland":"🇱🇻","Litauen":"🇱🇹","Luxemburg":"🇱🇺","Malta":"🇲🇹","Monaco":"🇲🇨","Niederlande":"🇳🇱",
-"Portugal":"🇵🇹","San Marino":"🇸🇲","Slowakei":"🇸🇰","Slowenien":"🇸🇮","Spanien":"🇪🇸","Vatikan":"🇻🇦","Vatikanstadt":"🇻🇦","Zypern ":"🇨🇾"};
+"Portugal":"🇵🇹","San Marino":"🇸🇲","Slowakei":"🇸🇰","Slowenien":"🇸🇮","Spanien":"🇪🇸","Vatikan":"🇻🇦"};
 
-const DE_MINTS = ['A','D','F','G','J'];
-const DE_MINT_NAMES = {A:'Berlin',D:'München',F:'Stuttgart',G:'Karlsruhe',J:'Hamburg'};
-const DE_GENERIC_IMAGE='https://www.ecb.europa.eu/euro/coins/common/shared/img/de/Germany_2euro.jpg';
-const DE_EXACT_IMAGES={
-  '2002-A':'https://www.euro-coins.info/images/4c92fea0-74fc-5d4a-aa9a-23b371fe8455_341_rev.jpg',
-  '2002-F':'https://cdn.monetnik.ru/storage/market-lot/86/11/584786/2069807_mainViewLot_2x.jpg',
-  '2002-J':'https://cdn.freewebstore.com/origin/916642/germany2euro20022_1702514095154.jpg',
-  '2003-A':'https://cdn6.focus.bg/bazar/ab/original/ab2aba0cf4a809c7d74b0cfcd140ccd7.webp',
-  '2003-D':'https://www.numiscorner.com/cdn/shop/products/580517A.jpg?v=1704060668',
-  '2003-G':'https://i.etsystatic.com/38992734/r/il/c13596/7011279990/il_fullxfull.7011279990_65kz.jpg',
-  '2004-A':'https://i.ebayimg.com/images/g/i2MAAeSwFKtpX-1M/s-l1200.webp',
-  '2004-D':'https://nominal.club/wa-data/public/shop/products/87/77/157787/images/454470/454470.970.jpg',
-  '2004-F':'https://www.numisnumismatics.com/171801-large_default/2-euro-2004-f-pp.jpg',
-  '2004-G':'https://i.ebayimg.com/images/g/s74AAOSwK3pji7ig/s-l1600.jpg',
-  '2004-J':'https://www.eurofischer.de/WebRoot/Store7/Shops/61426499/46B8/91DD/8CEC/EC96/2493/C0A8/28B9/117F/Deutschland_2_Euro_2004_J-1.jpg',
-  '2005-A':'https://www.eurofischer.de/WebRoot/Store7/Shops/61426499/46B8/91F4/E6ED/B5DA/CED4/C0A8/28B9/1142/Deutschland_2_Euro_2005_A-1.jpg',
-  '2006-A':'https://www.euro-muenzen.tv/img04/145787241062792.jpg',
-  '2006-D':'https://media1.allnumis.com/14278/20-06-2013/2-euro-2006-d_14278_04628608962d93L.jpg'
-};
+function flagFor(c){ return COUNTRY_FLAG[String(c||'').trim()] || '🇪🇺'; }
 
-function flagFor(country){ return COUNTRY_FLAG[String(country||'').trim()] || '🇪🇺'; }
-
-function deFixedImage(c){
-  if(String(c.country||'').trim()!=='Deutschland' || !c.mintmark || c.type!=='regular') return null;
-  return DE_EXACT_IMAGES[`${c.year}-${String(c.mintmark).toUpperCase()}`] || DE_GENERIC_IMAGE;
-}
-
-function expandMintVariants(list){
-  const out = [];
-  list.forEach(c=>{
-    const isDE = String(c.country||'').trim() === 'Deutschland';
-    const code = String(c.code||'').trim();
-    const mm = String(c.mintmark||'').trim();
-    const already = /^[ADFGJ]$/i.test(code) \vert{}\vert{} /^[ADFGJ]$/i.test(mm);
-    if(!isDE || already){
-      out.push(c);
-      return;
-    }
-    let mints = DE_MINTS.slice();
-    const fromCode = code.split(/[·,/\s]+/).map(x=>x.trim().toUpperCase()).filter(x=>DE_MINTS.includes(x));
-    if(fromCode.length) mints = fromCode;
-
-    mints.forEach(m=>{
-      out.push({
-        ...c,
-        id: c.id + '-' + m,
-        code: m,
-        mintmark: m,
-        title: String(c.title||'').replace(/\s·\s*[ADFGJ]\b/gi,'').trim() + ' · ' + m,
-        desc: (c.desc ? c.desc + ' ' : '') + 'Prägestätte ' + m + (DE_MINT_NAMES[m] ? ' (' + DE_MINT_NAMES[m] + ')' : ''),
-        parentId: c.id,
-        image: c.image || null,
-        owned: c.owned || 0,
-        qty: c.qty || 0
-      });
-    });
-  });
-  return out;
-}
-
-function ebaySoldUrl(c){
-  const parts=['2 Euro',c.country,c.year||'',c.title||'']
-    .map(s=>String(s||'').trim())
-    .filter(Boolean);
-  const q=encodeURIComponent(parts.join(' '));
-  return `https://www.ebay.de/sch/i.html?_nkw=${q}&LH_Sold=1&LH_Complete=1&_sop=13`;
-}
-
-const regular = [
-["Andorra",2014,"Wappen Andorras","AD","Reguläre nationale 2-€-Seite; Andorra gibt Euro-Münzen seit 2014 aus."],
-["Österreich",2002,"Bertha von Suttner","AT","Porträt von Bertha von Suttner."],
-["Belgien",1999,"König Albert II / Serienwechsel","BE","Belgien hat mehrere reguläre nationale 2-€-Designserien."],
-["Bulgarien",2026,"Paisij Chilendarski","BG","Bulgariens reguläre 2-€-Seite seit Einführung des Euro 2026."],
-["Kroatien",2023,"Karte Kroatiens","HR","Nationale 2-€-Seite seit Einführung des Euro 2023."],
-["Zypern",2008,"Idol von Pomos","CY","Nationale 2-€-Seite mit dem Idol von Pomos."],
-["Estland",2011,"Karte Estlands","EE","Einheitliches nationales Motiv für die estnischen Euro-Münzen."],
-["Finnland",2002,"Moltebeere / Moltebeerblüte","FI","Finnisches Motiv der 2-€-Münze."],
-["Frankreich",1999,"Baum des Lebens / Serienwechsel","FR","Mehrere reguläre nationale 2-€-Designs im Lauf der Zeit."],
-["Deutschland",2002,"Bundesadler","DE","Deutscher Bundesadler; bei deutschen 2-€-Münzen sind die Prägestätten A, D, F, G und J relevant."],
-["Griechenland",2002,"Entführung Europas","GR","Darstellung der Europa auf einem Stier."],
-["Irland",2002,"Irische Harfe","IE","Nationale Harfe mit Éire."],
-["Italien",2002,"Dante Alighieri","IT","Porträt Dantes nach Raffaels Darstellung."],
-["Lettland",2014,"Das Staatswappen Lettlands","LV","Nationale 2-€-Seite Lettlands."],
-["Litauen",2015,"Vytis","LT","Das Wappenmotiv Vytis."],
-["Luxemburg",2002,"Großherzog Henri","LU","Porträt des Großherzogs."],
-["Malta",2008,"Wappen Malta","MT","Wappen Maltas."],
-["Monaco",2001,"Fürst Rainier III / Serienwechsel","MC","Mehrere reguläre nationale 2-€-Designs."],
-["Niederlande",1999,"König / Serienwechsel","NL","Mehrere reguläre nationale 2-€-Designs."],
-["Portugal",2002,"Königssiegel","PT","Historische königliche Siegel als nationales Motiv."],
-["San Marino",2002,"Regierungsgebäude / Serienwechsel","SM","Mehrere reguläre nationale 2-€-Designs."],
-["Slowakei",2009,"Doppelkreuz auf dem Dreihügel","SK","Staatswappenmotiv."],
-["Slowenien",2007,"Franz Prešeren","SI","Porträt des Dichters Franz Prešeren."],
-["Spanien",1999,"Königliche Porträts / Serienwechsel","ES","Reguläre 2-€-Münzen mit wechselnden Herrscherporträts."],
-["Vatikan",2002,"Päpstliche Porträts / Serienwechsel","VA","Mehrere reguläre Serien mit wechselnden Päpsten bzw. Sedisvakanz."]
-].map((x,i)=>({id:'r'+i,type:'regular',country:x[0],year:x[1],title:x[2],code:x[3],desc:x[4],image:null,owned:0,qty:0}));
-
-const importedCollection=[
-{"id":"imp0","type":"regular","country":"Andorra","year":0,"title":"Staatswappen von Andorra","code":"","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},
-{"id":"imp1","type":"comm","country":"Andorra","year":0,"title":"50 Jahre Allgemeines Frauenwahlrecht in Andorra","code":"","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},
-{"id":"imp2","type":"comm","country":"Andorra","year":2020,"title":"XXVII. Iberoamerika-Gipfel 2020 in Andorra","code":"","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},
-{"id":"imp3","type":"regular","country":"Deutschland","year":2002,"title":"Bundesadler (2002)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
-{"id":"imp4","type":"regular","country":"Deutschland","year":2003,"title":"Bundesadler (2003)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
-{"id":"imp5","type":"regular","country":"Deutschland","year":2004,"title":"Bundesadler (2004)","code":"A-D-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},
-{"id":"imp6","type":"regular","country":"Deutschland","year":2005,"title":"Bundesadler (2005)","code":"","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},
-{"id":"imp7","type":"regular","country":"Deutschland","year":2006,"title":"Bundesadler (2006)","code":"","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},
-{"id":"imp8","type":"comm","country":"Deutschland","year":2006,"title":"Schleswig-Holstein (2006)","code":"A-D-F-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},
-{"id":"imp9","type":"comm","country":"Deutschland","year":2007,"title":"Mecklenburg-Vorpommern (2007)","code":"D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},
-{"id":"imp10","type":"comm","country":"Deutschland","year":2007,"title":"Deutschland - 50. Jahrestag Vertrag von Rom (2007)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
-{"id":"imp11","type":"regular","country":"Deutschland","year":2008,"title":"Bundesadler (2008)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
-{"id":"imp12","type":"comm","country":"Deutschland","year":2008,"title":"Hamburg (2008)","code":"D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},
-{"id":"imp13","type":"comm","country":"Deutschland","year":2009,"title":"Saarland (2009)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
-{"id":"imp14","type":"comm","country":"Deutschland","year":2009,"title":"Deutschland - 10 Jahre Währungsunion (2009)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
-{"id":"imp15","type":"regular","country":"Deutschland","year":2010,"title":"Bundesadler (2010)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
-{"id":"imp16","type":"comm","country":"Deutschland","year":2010,"title":"Bremen (2010)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
-{"id":"imp17","type":"regular","country":"Deutschland","year":2011,"title":"Bundesadler (2011)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
-{"id":"imp18","type":"comm","country":"Deutschland","year":2011,"title":"Nordrhein-Westfalen (2011)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
-{"id":"imp19","type":"comm","country":"Deutschland","year":2012,"title":"Bayern (2012)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
-{"id":"imp20","type":"comm","country":"Deutschland","year":2012,"title":"Deutschland - 10 Jahre Euro-Bargeld (2012)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
-{"id":"imp21","type":"comm","country":"Deutschland","year":2013,"title":"Baden Württemberg (2013)","code":"A-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},
-{"id":"imp22","type":"comm","country":"Deutschland","year":2013,"title":"Élysée-Vertrag (2013)","code":"D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},
-{"id":"imp23","type":"regular","country":"Deutschland","year":2014,"title":"Bundesadler (2014)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
-{"id":"imp24","type":"comm","country":"Deutschland","year":2014,"title":"Niedersachsen (2014)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
-{"id":"imp25","type":"comm","country":"Deutschland","year":2015,"title":"25 Jahre Deutsche Einheit (2015)","code":"A-D-F-G","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},
-{"id":"imp26","type":"comm","country":"Deutschland","year":2015,"title":"Hessen (2015)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
-{"id":"imp27","type":"comm","country":"Deutschland","year":2015,"title":"Deutschland - 30 Jahre EU-Flagge (2015)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
-{"id":"imp28","type":"regular","country":"Deutschland","year":2016,"title":"Bundesadler (2016)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
-{"id":"imp29","type":"comm","country":"Deutschland","year":2016,"title":"Sachsen (2016)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
-{"id":"imp30","type":"regular","country":"Deutschland","year":2017,"title":"Bundesadler (2017)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
-{"id":"imp31","type":"comm","country":"Deutschland","year":2017,"title":"Rheinland-Pfalz (2017)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
-{"id":"imp32","type":"comm","country":"Deutschland","year":2018,"title":"Helmut Schmidt (2018)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
-{"id":"imp33","type":"comm","country":"Deutschland","year":2018,"title":"Berlin (2018)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
-{"id":"imp34","type":"regular","country":"Deutschland","year":2019,"title":"Bundesadler (2019)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
-{"id":"imp35","type":"comm","country":"Deutschland","year":2019,"title":"Bundesrat (2019)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
-{"id":"imp36","type":"comm","country":"Deutschland","year":2019,"title":"30 Jahre Mauerfall (2019)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
-{"id":"imp37","type":"comm","country":"Deutschland","year":2020,"title":"Brandenburg (2020)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
-{"id":"imp38","type":"regular","country":"Deutschland","year":2020,"title":"Bundesadler (2020)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
-{"id":"imp39","type":"comm","country":"Deutschland","year":2020,"title":"50 Jahre Kniefall von Warschau (2020)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},
-{"id":"imp40","type":"regular","country":"Deutschland","year":2021,"title":"Bundesadler (2021)","code":"A-D-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},
-{"id":"imp41","type":"comm","country":"Deutschland","year":2021,"title":"Sachsen Anhalt (2021)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
-{"id":"imp42","type":"regular","country":"Deutschland","year":2022,"title":"Bundesadler (2022)","code":"","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},
-{"id":"imp43","type":"comm","country":"Deutschland","year":2022,"title":"Thüringen (2022)","code":"A-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},
-{"id":"imp44","type":"comm","country":"Deutschland","year":2022,"title":"35-jähriges Bestehen des Erasmus-Programms (2022)","code":"A-F-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},
-{"id":"imp45","type":"regular","country":"Deutschland","year":2023,"title":"Bundesadler (2023)","code":"","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},
-{"id":"imp46","type":"comm","country":"Deutschland","year":2023,"title":"Elbphilharmonie - Hamburg“ (2023)","code":"F-G","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},
-{"id":"imp47","type":"comm","country":"Deutschland","year":2023,"title":"„1275. Geburtstag Karl der Große“ (2023)","code":"","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0}
+// Integrierte Basissammlung (Umlauf & Excel-Münzen)
+const baseCoins = [
+  {"id":"imp3","type":"regular","country":"Deutschland","year":2002,"title":"Bundesadler (2002)","mintmark":"A","owned":1,"qty":1},
+  {"id":"imp3_d","type":"regular","country":"Deutschland","year":2002,"title":"Bundesadler (2002)","mintmark":"D","owned":1,"qty":1},
+  {"id":"imp3_f","type":"regular","country":"Deutschland","year":2002,"title":"Bundesadler (2002)","mintmark":"F","owned":1,"qty":1},
+  {"id":"imp3_g","type":"regular","country":"Deutschland","year":2002,"title":"Bundesadler (2002)","mintmark":"G","owned":1,"qty":1},
+  {"id":"imp3_j","type":"regular","country":"Deutschland","year":2002,"title":"Bundesadler (2002)","mintmark":"J","owned":1,"qty":1},
+  {"id":"imp10","type":"comm","country":"Deutschland","year":2007,"title":"50 Jahre Römische Verträge","mintmark":"A","owned":1,"qty":1},
+  {"id":"imp14","type":"comm","country":"Deutschland","year":2009,"title":"10 Jahre Wirtschafts- und Währungsunion","mintmark":"A","owned":1,"qty":1},
+  {"id":"imp16","type":"comm","country":"Deutschland","year":2010,"title":"Bremen (Rathaus & Roland)","mintmark":"A","owned":1,"qty":1},
+  {"id":"imp18","type":"comm","country":"Deutschland","year":2011,"title":"Nordrhein-Westfalen (Kölner Dom)","mintmark":"A","owned":1,"qty":1},
+  {"id":"imp19","type":"comm","country":"Deutschland","year":2012,"title":"Bayern (Schloss Neuschwanstein)","mintmark":"A","owned":1,"qty":1},
+  {"id":"imp20","type":"comm","country":"Deutschland","year":2012,"title":"10 Jahre Euro-Bargeld","mintmark":"A","owned":1,"qty":1},
+  {"id":"imp24","type":"comm","country":"Deutschland","year":2014,"title":"Niedersachsen (St. Michaelis Hildesheim)","mintmark":"A","owned":1,"qty":1},
+  {"id":"imp26","type":"comm","country":"Deutschland","year":2015,"title":"Hessen (Paulskirche Frankfurt)","mintmark":"A","owned":1,"qty":1},
+  {"id":"imp27","type":"comm","country":"Deutschland","year":2015,"title":"30 Jahre EU-Flagge","mintmark":"A","owned":1,"qty":1},
+  {"id":"imp29","type":"comm","country":"Deutschland","year":2016,"title":"Sachsen (Zwinger Dresden)","mintmark":"A","owned":1,"qty":1},
+  {"id":"imp31","type":"comm","country":"Deutschland","year":2017,"title":"Rheinland-Pfalz (Porta Nigra Trier)","mintmark":"A","owned":1,"qty":1},
+  {"id":"imp32","type":"comm","country":"Deutschland","year":2018,"title":"Helmut Schmidt","mintmark":"A","owned":1,"qty":1},
+  {"id":"imp33","type":"comm","country":"Deutschland","year":2018,"title":"Berlin (Schloss Charlottenburg)","mintmark":"A","owned":1,"qty":1},
+  {"id":"imp35","type":"comm","country":"Deutschland","year":2019,"title":"70 Jahre Bundesrat","mintmark":"A","owned":1,"qty":1},
+  {"id":"imp36","type":"comm","country":"Deutschland","year":2019,"title":"30 Jahre Mauerfall","mintmark":"A","owned":1,"qty":1},
+  {"id":"imp37","type":"comm","country":"Deutschland","year":2020,"title":"Brandenburg (Schloss Sanssouci)","mintmark":"A","owned":1,"qty":1},
+  {"id":"imp41","type":"comm","country":"Deutschland","year":2021,"title":"Sachsen-Anhalt (Magdeburger Dom)","mintmark":"A","owned":1,"qty":1},
+  {"id":"r0","type":"regular","country":"Österreich","year":2002,"title":"Bertha von Suttner","owned":0,"qty":0},
+  {"id":"r1","type":"regular","country":"Frankreich","year":1999,"title":"Baum des Lebens","owned":0,"qty":0},
+  {"id":"r2","type":"regular","country":"Italien","year":2002,"title":"Dante Alighieri","owned":0,"qty":0},
+  {"id":"r3","type":"regular","country":"Spanien","year":1999,"title":"König Juan Carlos I","owned":0,"qty":0}
 ];
 
 let allCoins = [];
@@ -412,34 +221,28 @@ function initFilters(){
 
 function renderGrid(){
   const grid = document.getElementById('grid');
-  const searchVal = document.getElementById('search').value.toLowerCase().trim();
-  const globalSearchVal = document.getElementById('globalSearch').value.toLowerCase().trim();
-  const query = searchVal || globalSearchVal;
-
+  const query = (document.getElementById('search').value || document.getElementById('globalSearch').value).toLowerCase().trim();
   const countryFilter = document.getElementById('country').value;
   const yearFilter = document.getElementById('year').value;
   const sortFilter = document.getElementById('sort').value;
 
   let filtered = allCoins.filter(c => {
-    // Tab Filter
     if(currentTab === 'regular' && c.type !== 'regular') return false;
     if(currentTab === 'comm' && c.type !== 'comm') return false;
     if(currentTab === 'owned' && (!c.owned || c.owned <= 0)) return false;
     if(currentTab === 'missing' && c.owned > 0) return false;
     if(currentTab === 'mine' && !c.id.startsWith('imp')) return false;
 
-    // Dropdown & Such-Filter
     if(countryFilter && c.country !== countryFilter) return false;
     if(yearFilter && String(c.year) !== yearFilter) return false;
 
     if(query){
-      const matchText = `${c.country} ${c.year} ${c.title} ${c.desc} ${c.mintmark||''}`.toLowerCase();
+      const matchText = `${c.country} ${c.year} ${c.title} ${c.mintmark||''}`.toLowerCase();
       if(!matchText.includes(query)) return false;
     }
     return true;
   });
 
-  // Sortierung
   filtered.sort((a,b) => {
     if(sortFilter === 'yearDesc') return (b.year || 0) - (a.year || 0);
     if(sortFilter === 'yearAsc') return (a.year || 0) - (b.year || 0);
@@ -451,33 +254,23 @@ function renderGrid(){
   document.getElementById('resultCount').innerText = `${filtered.length} Münzen gefunden`;
 
   if(filtered.length === 0){
-    grid.innerHTML = '<div class="empty">Keine Münzen für diese Filterkriterien gefunden.</div>';
+    grid.innerHTML = '<div class="empty">Keine Münzen gefunden.</div>';
     return;
   }
 
   grid.innerHTML = filtered.map(c => {
     const isOwned = c.owned > 0;
-    const deImg = deFixedImage(c);
-    const imgSrc = deImg || c.image;
-
-    let imgHtml = '';
-    if(imgSrc){
-      imgHtml = `<img src="${imgSrc}" loading="lazy" alt="${c.title}" class="${deImg ? 'de-generic' : 'coin-real-img'}">`;
-    } else {
-      imgHtml = `<div class="coinmock"><span class="flag">${flagFor(c.country)}</span><span class="e">2€</span><small>${c.year||''}</small></div>`;
-    }
-
     return `
       <div class="card">
         <div class="coinpic">
           <span class="badge">${c.type==='comm'?'Gedenkmünze':'Umlauf'}</span>
-          ${isOwned ? `<span class="owned">✅ ${c.qty > 1 ? c.qty+'x' : 'Im Bestand'}</span>` : ''}
-          ${imgHtml}
+          ${isOwned ? `<span class="owned">✅ ${c.qty > 1 ? c.qty+'x' : 'Vorhanden'}</span>` : ''}
+          <div class="coinmock"><span class="flag">${flagFor(c.country)}</span><span class="e">2€</span><small>${c.year||''}</small></div>
         </div>
         <div class="cardbody">
-          <div class="country">${flagFor(c.country)} ${c.country} ${c.mintmark ? '· Stempel '+c.mintmark : ''}</div>
+          <div class="country">${flagFor(c.country)} ${c.country} ${c.mintmark ? '· Mint '+c.mintmark : ''}</div>
           <div class="title">${c.title}</div>
-          <div class="year">${c.year ? 'Jahr: '+c.year : 'Unbekanntes Jahr'}</div>
+          <div class="year">${c.year ? 'Jahr: '+c.year : ''}</div>
           <div class="cardfoot">
             <button class="smallbtn" onclick="toggleOwned('${c.id}')">${isOwned ? 'Entfernen' : 'Hinzufügen'}</button>
             <button class="smallbtn primary" onclick="openModal('${c.id}')">Details</button>
@@ -506,33 +299,15 @@ function openModal(id){
 
   document.getElementById('mTitle').innerText = c.title;
   document.getElementById('mSub').innerText = `${flagFor(c.country)} ${c.country} ${c.year ? '· ' + c.year : ''}`;
-  document.getElementById('mDesc').innerText = c.desc || 'Keine Beschreibung vorhanden.';
-  document.getElementById('mVolume').innerText = c.volume || '–';
-  document.getElementById('mRelease').innerText = c.release || '–';
+  document.getElementById('mDesc').innerText = c.desc || '2-Euro-Sammelmünze.';
   document.getElementById('mOwned').value = c.owned > 0 ? "1" : "0";
   document.getElementById('mQty').value = c.qty || 1;
-  document.getElementById('mEbay').href = ebaySoldUrl(c);
-
-  const deImg = deFixedImage(c);
-  const imgSrc = deImg || c.image;
-  const bigImg = document.getElementById('mImage');
-  if(imgSrc){
-    bigImg.innerHTML = `<img src="${imgSrc}" alt="${c.title}" class="${deImg ? 'de-generic' : 'coin-real-img'}">`;
-  } else {
-    bigImg.innerHTML = `<div class="coinmock" style="width:180px;height:180px"><span class="flag" style="font-size:48px">${flagFor(c.country)}</span><span class="e" style="font-size:40px">2€</span><small>${c.year||''}</small></div>`;
-  }
-
-  document.getElementById('mPills').innerHTML = `
-    <span class="pill">${c.type==='comm'?'🏛️ Gedenkmünze':'🪙 Umlaufmünze'}</span>
-    ${c.mintmark ? `<span class="pill">Prägestätte ${c.mintmark}</span>` : ''}
-  `;
+  document.getElementById('mImage').innerHTML = `<div class="coinmock" style="width:180px;height:180px"><span class="flag" style="font-size:48px">${flagFor(c.country)}</span><span class="e" style="font-size:40px">2€</span><small>${c.year||''}</small></div>`;
 
   document.getElementById('modal').classList.add('open');
 }
 
-function closeModal(){
-  document.getElementById('modal').classList.remove('open');
-}
+function closeModal(){ document.getElementById('modal').classList.remove('open'); }
 
 function saveModal(){
   if(!activeCoinId) return;
@@ -565,88 +340,34 @@ function loadStorage(){
         coin.qty = s.qty || 0;
       }
     });
-  } catch(e){ console.error("Ladefehler aus LocalStorage", e); }
+  } catch(e){ console.error(e); }
 }
 
-async function fetchCommCoins(){
-  try {
-    const res = await fetch(COMM_URL);
-    if(!res.ok) return [];
-    const data = await res.json();
-    return data.map((item, idx) => ({
-      id: 'comm_' + (item.id || idx),
-      type: 'comm',
-      country: item.country || 'Unbekannt',
-      year: parseInt(item.year) || 0,
-      title: item.title || item.name || 'Gedenkmünze',
-      desc: item.description || '',
-      volume: item.volume || '–',
-      release: item.date || '–',
-      image: item.image || null,
-      code: item.code || '',
-      owned: 0,
-      qty: 0
-    }));
-  } catch(e){
-    console.warn("API für Gedenkmünzen nicht erreichbar", e);
-    return [];
-  }
-}
-
-async function initApp(){
-  // Basismünzen kombinieren & Prägestätten für DE aufteilen
-  const baseCoins = [...regular, ...importedCollection];
-  let expandedBase = expandMintVariants(baseCoins);
-
-  // Online Gedenkmünzen laden
-  const onlineComm = await fetchCommCoins();
-  let expandedComm = expandMintVariants(onlineComm);
-
-  // Zusammenführen ohne Duplikate
-  allCoins = [...expandedBase];
-  expandedComm.forEach(c => {
-    if(!allCoins.some(x => x.id === c.id)){
-      allCoins.push(c);
-    }
-  });
-
+function initApp(){
+  allCoins = JSON.parse(JSON.stringify(baseCoins));
   loadStorage();
   initFilters();
   renderStats();
   renderGrid();
 
-  // Event Listener
-  document.getElementById('search').addEventListener('input', renderGrid);
-  document.getElementById('globalSearch').addEventListener('input', () => {
+  document.getElementById('search').oninput = renderGrid;
+  document.getElementById('globalSearch').oninput = () => {
     document.getElementById('search').value = document.getElementById('globalSearch').value;
     renderGrid();
-  });
-  document.getElementById('country').addEventListener('change', renderGrid);
-  document.getElementById('year').addEventListener('change', renderGrid);
-  document.getElementById('sort').addEventListener('change', renderGrid);
+  };
+  document.getElementById('country').onchange = renderGrid;
+  document.getElementById('year').onchange = renderGrid;
+  document.getElementById('sort').onchange = renderGrid;
 
-  // Tab Buttons
   document.querySelectorAll('.tabs .tab').forEach(btn => {
     btn.onclick = () => {
       document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
       btn.classList.add('active');
       currentTab = btn.getAttribute('data-tab');
-
-      if(currentTab === 'overview'){
-        document.getElementById('grid').style.display = 'none';
-        document.getElementById('filters').style.display = 'none';
-        document.getElementById('overviewPanel').style.display = 'block';
-        renderOverview();
-      } else {
-        document.getElementById('grid').style.display = 'grid';
-        document.getElementById('filters').style.display = 'grid';
-        document.getElementById('overviewPanel').style.display = 'none';
-        renderGrid();
-      }
+      renderGrid();
     };
   });
 
-  // Schnellzugriff Buttons
   document.querySelectorAll('.quick button').forEach(btn => {
     btn.onclick = () => {
       const filter = btn.getAttribute('data-filter');
@@ -655,185 +376,16 @@ async function initApp(){
     };
   });
 
-  // Export / Import
-  document.getElementById('exportBtn').onclick = () => {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(allCoins));
-    const dl = document.createElement('a');
-    dl.setAttribute("href", dataStr);
-    dl.setAttribute("download", `2euro_sammlung_${new Date().toISOString().slice(0,10)}.json`);
-    dl.click();
-  };
-
-  document.getElementById('importBtn').onclick = () => document.getElementById('fileInput').click();
-  document.getElementById('fileInput').onchange = (e) => {
-    const file = e.target.files[0];
-    if(!file) return;
-    const reader = new FileReader();
-    reader.onload = (evt) => {
-      try {
-        const imported = JSON.parse(evt.target.result);
-        imported.forEach(imp => {
-          const c = allCoins.find(x => x.id === imp.id);
-          if(c){
-            c.owned = imp.owned || 0;
-            c.qty = imp.qty || 0;
-          }
-        });
-        saveToStorage();
-        renderStats();
-        renderGrid();
-        alert('Sammlung erfolgreich importiert!');
-      } catch(err){ alert('Fehler beim Importieren der Datei.'); }
-    };
-    reader.readAsText(file);
-  };
-}
-
-function renderOverview(){
-  const body = document.getElementById('overviewBody');
-  const grouped = {};
-  allCoins.forEach(c => {
-    if(!grouped[c.country]) grouped[c.country] = { total: 0, owned: 0 };
-    grouped[c.country].total++;
-    if(c.owned > 0) grouped[c.country].owned++;
-  });
-
-  let html = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:15px">`;
-  Object.keys(grouped).sort().forEach(country => {
-    const item = grouped[country];
-    const pct = Math.round((item.owned / item.total) * 100) || 0;
-    html += `
-      <div class="panel" style="padding:12px;text-align:center">
-        <div style="font-size:24px">${flagFor(country)}</div>
-        <b>${country}</b>
-        <div style="font-size:12px;color:var(--muted);margin:4px 0">${item.owned} / ${item.total} Münzen</div>
-        <div class="progress" style="height:6px"><div style="width:${pct}%"></div></div>
-      </div>
-    `;
-  });
-  html += `</div>`;
-  body.innerHTML = html;
-}
-
-// Druck-Modal Steuerung
-function openPrintModal(){
-  const cSel = document.getElementById('printCountryFilter');
-  cSel.innerHTML = '<option value="">Alle Länder</option>';
-  const countries = [...new Set(allCoins.map(c=>c.country).filter(Boolean))].sort();
-  countries.forEach(c => {
-    cSel.innerHTML += `<option value="${c}">${c}</option>`;
-  });
-  document.getElementById('printModal').classList.add('open');
-}
-
-function closePrintModal(){
-  document.getElementById('printModal').classList.remove('open');
-}
-
-function executePrint(){
-  const type = document.getElementById('printType').value;
-  const group = document.getElementById('printGroup').value;
-  const selectedCountry = document.getElementById('printCountryFilter').value;
-
-  let list = allCoins.filter(c => {
-    if(type === 'owned' && (!c.owned || c.owned <= 0)) return false;
-    if(type === 'missing' && c.owned > 0) return false;
-    if(selectedCountry && c.country !== selectedCountry) return false;
-    return true;
-  });
-
-  const printArea = document.getElementById('printArea');
-  const typeTitle = type === 'owned' ? 'Gesammelte Münzen' : 'Fehlende Münzen';
-  let html = `<h1>2€ Münzen-Sammlung: ${typeTitle}</h1>`;
-  if(selectedCountry) html += `<p><b>Land:</b> ${selectedCountry}</p>`;
-  html += `<p><b>Erstellt am:</b> ${new Date().toLocaleDateString('de-DE')}</p><hr><br>`;
-
-  if(list.length === 0){
-    html += '<p>Keine Münzen für die gewählten Kriterien gefunden.</p>';
-  } else {
-    if(group === 'country'){
-      const grouped = {};
-      list.forEach(c => {
-        if(!grouped[c.country]) grouped[c.country] = [];
-        grouped[c.country].push(c);
-      });
-
-      Object.keys(grouped).sort().forEach(country => {
-        html += `<h2>${flagFor(country)} ${country}</h2>`;
-        html += `<table>
-          <thead>
-            <tr>
-              <th>Jahr</th>
-              <th>Motiv / Titel</th>
-              <th>Typ</th>
-              ${type === 'owned' ? '<th>Anzahl</th>' : ''}
-            </tr>
-          </thead>
-          <tbody>`;
-        grouped[country].sort((a,b)=>(a.year||0)-(b.year||0)).forEach(c => {
-          html += `<tr>
-            <td>${c.year || '–'}</td>
-            <td>${c.title || '–'}</td>
-            <td>${c.type === 'comm' ? 'Gedenkmünze' : 'Umlaufmünze'}</td>
-            ${type === 'owned' ? `<td>${c.qty || 1}</td>` : ''}
-          </tr>`;
-        });
-        html += `</tbody></table>`;
-      });
-    } else {
-      const types = {
-        'comm': '🏛️ Gedenkmünzen',
-        'regular': '🪙 Umlaufmünzen'
-      };
-
-      Object.keys(types).forEach(tKey => {
-        const subList = list.filter(c => c.type === tKey || (tKey==='regular' && c.type!=='comm'));
-        if(subList.length > 0){
-          html += `<h2>${types[tKey]}</h2>`;
-          html += `<table>
-            <thead>
-              <tr>
-                <th>Land</th>
-                <th>Jahr</th>
-                <th>Motiv / Titel</th>
-                ${type === 'owned' ? '<th>Anzahl</th>' : ''}
-              </tr>
-            </thead>
-            <tbody>`;
-          subList.sort((a,b)=>a.country.localeCompare(b.country) || (a.year||0)-(b.year||0)).forEach(c => {
-            html += `<tr>
-              <td>${flagFor(c.country)} ${c.country}</td>
-              <td>${c.year || '–'}</td>
-              <td>${c.title || '–'}</td>
-              ${type === 'owned' ? `<td>${c.qty || 1}</td>` : ''}
-            </tr>`;
-          });
-          html += `</tbody></table>`;
-        }
-      });
+  document.getElementById('resetBtn').onclick = () => {
+    if(confirm("Möchtest du deinen lokalen Speicher wirklich zurücksetzen?")){
+      localStorage.removeItem(STORE);
+      localStorage.removeItem('twoEuroCollectorV1');
+      location.reload();
     }
-  }
-
-  printArea.innerHTML = html;
-  closePrintModal();
-  window.print();
+  };
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  const btn = document.getElementById('themeBtn');
-  if(btn) btn.onclick = () => {
-    const cur = document.documentElement.getAttribute('data-theme')
-      || (window.matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light');
-    const next = cur === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', next);
-    localStorage.setItem(THEME_STORE, next);
-  };
-
-  const pBtn = document.getElementById('printBtn');
-  if(pBtn) pBtn.onclick = openPrintModal;
-
-  initApp();
-});
+document.addEventListener('DOMContentLoaded', initApp);
 </script>
 </body>
 </html>
