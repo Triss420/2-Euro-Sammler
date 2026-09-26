@@ -72,23 +72,6 @@ button{cursor:pointer}
   clip-path: none !important;
 }
 .bigimg .coin-real-img,.bigimg .auto-coin-img{max-width:96%;max-height:315px}
-.mint-group { display: flex; gap: 8px; margin-top: 8px; }
-.mint-btn {
-  flex: 1; padding: 10px; border: 1px solid var(--line);
-  background: var(--panel2); color: var(--text); border-radius: 10px;
-  font-weight: bold; transition: all 0.2s;
-}
-.mint-btn.active {
-  background: var(--accent); color: #fff; border-color: var(--accent);
-}
-@media print {
-  body { background: #fff !important; color: #000 !important; }
-  .top, .hero, .filters, .tabs, .actions, .modal, .footer, .note, #dataNote { display: none !important; }
-  .wrap { padding: 0 !important; max-width: 100% !important; }
-  .grid { display: grid !important; grid-template-columns: repeat(3, 1fr) !important; gap: 10px !important; }
-  .card { break-inside: avoid; page-break-inside: avoid; border: 1px solid #ccc !important; box-shadow: none !important; }
-  .smallbtn { display: none !important; }
-}
 </style>
 </head>
 <body>
@@ -101,13 +84,6 @@ button{cursor:pointer}
     <button class="iconbtn" id="importBtn" title="Sicherung importieren">↧</button>
     <input type="file" id="fileInput" accept=".json" hidden>
   </div>
-  <div class="actions">
-  <button class="iconbtn" id="printBtn" title="Drucken / PDF-Export">🖨️</button>
-  <button class="iconbtn" id="themeBtn" title="Hell/Dunkel umschalten">🌓</button>
-  <button class="iconbtn" id="exportBtn" title="Sicherung exportieren">↥</button>
-  <button class="iconbtn" id="importBtn" title="Sicherung importieren">↧</button>
-  <input type="file" id="fileInput" accept=".json" hidden>
-</div>
 </header>
 
 <main class="wrap">
@@ -184,16 +160,6 @@ button{cursor:pointer}
             <option value="0">❌ Fehlt</option><option value="1">✅ Vorhanden</option>
           </select>
         </label>
-        <div id="mintContainer" style="display:none; margin-top:15px;">
-  <b>Prägestätten im Besitz (Deutschland):</b>
-  <div class="mint-group">
-    <button type="button" class="mint-btn" data-mint="A" onclick="toggleMint(this)">A</button>
-    <button type="button" class="mint-btn" data-mint="D" onclick="toggleMint(this)">D</button>
-    <button type="button" class="mint-btn" data-mint="F" onclick="toggleMint(this)">F</button>
-    <button type="button" class="mint-btn" data-mint="G" onclick="toggleMint(this)">G</button>
-    <button type="button" class="mint-btn" data-mint="J" onclick="toggleMint(this)">J</button>
-  </div>
-</div>
         <label style="display:block"><b>Anzahl</b><br><input id="mQty" type="number" min="1" max="999" value="1" style="margin-top:7px;width:100%;padding:12px;border:1px solid var(--line);border-radius:12px"></label>
         <button class="smallbtn primary" style="width:100%;margin-top:12px;padding:12px" onclick="saveModal()">Speichern</button>
 <a class="smallbtn" id="mEbay" href="#" target="_blank" rel="noopener" style="width:100%;margin-top:8px;padding:12px;text-align:center;display:block;text-decoration:none">🔎 Zuletzt verkauft auf eBay</a>
@@ -566,41 +532,12 @@ function openCoin(id){
   document.getElementById('mOwned').value=c.owned?'1':'0';document.getElementById('mQty').value=c.qty||1;
   const mEbay=document.getElementById('mEbay'); if(mEbay) mEbay.href=ebaySoldUrl(c);
   document.getElementById('modal').classList.add('open');
-  // Prägestätten A, D, F, G, J für Deutschland anzeigen
-  const mintBox = document.getElementById('mintContainer');
-  if (mintBox) {
-    if (c.country === 'Deutschland') {
-      mintBox.style.display = 'block';
-      const activeMints = userState[c.id]?.mints || [];
-      document.querySelectorAll('.mint-btn').forEach(btn => {
-        btn.classList.toggle('active', activeMints.includes(btn.dataset.mint));
-      });
-    } else {
-      mintBox.style.display = 'none';
-    }
-  }
 }
 function closeModal(){document.getElementById('modal').classList.remove('open');currentId=null}
 function saveModal(){
   const c=all.find(x=>x.id===currentId);if(!c)return;
-  c.owned=Number(document.getElementById('mOwned').value);
-  c.qty=Math.max(1,Number(document.getElementById('mQty').value)||1);
-  if(!c.owned)c.qty=0;
-
-  // 1. Hier erst die gewählten Prägestätten auslesen:
-  const selectedMints = Array.from(document.querySelectorAll('.mint-btn.active')).map(b => b.dataset.mint);
-  
-  // 2. Im Speicher-Objekt sichern:
-  if (!userState[c.id]) userState[c.id] = {};
-  userState[c.id].mints = selectedMints;
-  userState[c.id].owned = c.owned;
-  userState[c.id].qty = c.qty;
-
-  // 3. Erst danach Speichern und Schließen!
-  saveState();
-  stats();
-  render();
-  closeModal();
+  c.owned=Number(document.getElementById('mOwned').value);c.qty=Math.max(1,Number(document.getElementById('mQty').value)||1);
+  if(!c.owned)c.qty=0;saveState();stats();render();closeModal();
 }
 function normText(s){
   return String(s||'').toLowerCase()
@@ -867,15 +804,10 @@ function exportHTML(){
   downloadBlob('2euro-galerie-' + d + '.html', html, 'text/html;charset=utf-8');
 }
 document.getElementById('exportBtn').onclick = () => {
-  const confirmExport = confirm("Möchtest du deine Sammlung jetzt als JSON-Datei sichern?");
-  if (!confirmExport) return; // Bricht ab, wenn der Nutzer auf 'Abbrechen' klickt!
-
-  const blob = new Blob([JSON.stringify(userState, null, 2)], {type: 'application/json'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = '2euro-sammlung-backup.json';
-  a.click();
-};
+  const choice = prompt(
+    'Export wählen:\n\n1 = JSON-Backup (Wiederherstellen)\n2 = CSV (Excel-Tabelle, ohne Bilder)\n3 = HTML-Galerie (mit Bildern)\n\nZahl eingeben:',
+    '1'
+  );
   if(choice === '2') exportCSV();
   else if(choice === '3') exportHTML();
   else exportJSON();
@@ -885,10 +817,6 @@ document.getElementById('fileInput').onchange=e=>{
   const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const p=JSON.parse(rd.result);Object.assign(saved,p.owned||{});all.forEach(c=>{if(saved[c.id]){c.owned=!!saved[c.id].owned;c.qty=saved[c.id].qty||0}});saveState();stats();render();alert('Sammlung importiert.')}catch(_){alert('Die Datei konnte nicht gelesen werden.')}};rd.readAsText(f);
 };
 load();
-function toggleMint(btn) {
-  btn.classList.toggle('active');
-}
-document.getElementById('printBtn').onclick = () => { window.print(); };
 </script>
 </body>
 </html>
