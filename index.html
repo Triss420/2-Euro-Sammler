@@ -867,6 +867,56 @@ function exportHTML(){
   const html = `<!DOCTYPE html>
 <html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>2€ Sammlung Export</title>
+/* Styling für den Zoom-Slider */
+.zoom-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+/* Dynamisches Grid-Raster (Standard 4 Spalten) */
+.coin-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-columns, 4), 1fr);
+  gap: 16px;
+}
+
+/* Styling für den Fortschrittsbalken */
+.progress-container {
+  margin: 15px 0;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  font-weight: bold;
+  font-size: 0.9rem;
+  margin-bottom: 6px;
+}
+
+.progress-bar-bg {
+  width: 100%;
+  height: 12px;
+  background-color: #e0e0e0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background-color: #2eb85c; /* Grün für Fortschritt */
+  width: 0%;
+  transition: width 0.3s ease-in-out;
+}
+
+/* Vergrößerte Touch-Flächen für Tablet-Optimierung */
+button, select, input {
+  min-height: 44px; /* Apple/Android Mindeststandard für Finger-Taps */
+}
 <style>
   body{font-family:system-ui,sans-serif;background:#f3f1ea;color:#3a3630;margin:0;padding:24px}
   h1{margin:0 0 8px} .meta{color:#7c7568;margin-bottom:20px}
