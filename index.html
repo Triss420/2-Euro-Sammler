@@ -144,7 +144,7 @@ button{cursor:pointer}
     </select>
   </div>
 
-  <div class="note" id="dataNote">Gedenkmünzen werden geladen. Lokale Bilder aus dem Ordner "images/" werden bevorzugt angezeigt.</div>
+  <div class="note" id="dataNote">Gedenkmünzen werden geladen. Lokale Bilder aus dem Ordner "images/" werden automatisch bevorzugt.</div>
   <div class="sectionHead"><h2 id="heading">Katalog</h2><div class="count" id="resultCount"></div></div>
   <div class="grid" id="grid"></div>
   <div id="overviewPanel" style="display:none">
@@ -185,17 +185,46 @@ button{cursor:pointer}
 </div>
 
 <script>
+const COMM_URL='https://raw.githubusercontent.com/Liebeck/two-euro-coins-data/main/2euro-coins.json';
 const STORE='twoEuroCollectorV1';
 const THEME_STORE='twoEuroCollectorTheme';
 
 const COUNTRY_FLAG={"Andorra":"🇦🇩","Österreich":"🇦🇹","Belgien":"🇧🇪","Bulgarien":"🇧🇬","Kroatien":"🇭🇷","Zypern":"🇨🇾",
 "Estland":"🇪🇪","Finnland":"🇫🇮","Frankreich":"🇫🇷","Deutschland":"🇩🇪","Griechenland":"🇬🇷","Irland":"🇮🇪",
 "Italien":"🇮🇹","Lettland":"🇱🇻","Litauen":"🇱🇹","Luxemburg":"🇱🇺","Malta":"🇲🇹","Monaco":"🇲🇨","Niederlande":"🇳🇱",
-"Portugal":"🇵🇹","San Marino":"🇸🇲","Slowakei":"🇸🇰","Slowenien":"🇸🇮","Spanien":"🇪🇸","Vatikan":"🇻🇦","Vatikanstadt":"VF"};
+"Portugal":"🇵🇹","San Marino":"🇸🇲","Slowakei":"🇸🇰","Slowenien":"🇸🇮","Spanien":"🇪🇸","Vatikan":"🇻🇦","Vatikanstadt":"🇻🇦"};
 
 function flagFor(country){return COUNTRY_FLAG[String(country||'').trim()]||'🇪🇺';}
 
-const importedCollection = [
+const regular = [
+["Andorra",2014,"Wappen Andorras","AD","Reguläre nationale 2-€-Seite; Andorra gibt Euro-Münzen seit 2014 aus."],
+["Österreich",2002,"Bertha von Suttner","AT","Porträt von Bertha von Suttner."],
+["Belgien",1999,"König Albert II / Serienwechsel","BE","Belgien hat mehrere reguläre nationale 2-€-Designserien."],
+["Bulgarien",2026,"Paisij Chilendarski","BG","Bulgariens reguläre 2-€-Seite seit Einführung des Euro 2026."],
+["Kroatien",2023,"Karte Kroatiens","HR","Nationale 2-€-Seite seit Einführung des Euro 2023."],
+["Zypern",2008,"Idol von Pomos","CY","Nationale 2-€-Seite mit dem Idol von Pomos."],
+["Estland",2011,"Karte Estlands","EE","Einheitliches nationales Motiv für die estnischen Euro-Münzen."],
+["Finnland",2002,"Moltebeere / Moltebeerblüte","FI","Finnisches Motiv der 2-€-Münze."],
+["Frankreich",1999,"Baum des Lebens / Serienwechsel","FR","Mehrere reguläre nationale 2-€-Designs im Lauf der Zeit."],
+["Deutschland",2002,"Bundesadler","DE","Deutscher Bundesadler; bei deutschen 2-€-Münzen sind die Prägestätten A, D, F, G und J relevant."],
+["Griechenland",2002,"Entführung Europas","GR","Darstellung der Europa auf einem Stier."],
+["Irland",2002,"Irische Harfe","IE","Nationale Harfe mit Éire."],
+["Italien",2002,"Dante Alighieri","IT","Porträt Dantes nach Raffaels Darstellung."],
+["Lettland",2014,"Das Staatswappen Lettlands","LV","Nationale 2-€-Seite Lettlands."],
+["Litauen",2015,"Vytis","LT","Das Wappenmotiv Vytis."],
+["Luxemburg",2002,"Großherzog Henri","LU","Porträt des Großherzogs."],
+["Malta",2008,"Wappen Malta","MT","Wappen Maltas."],
+["Monaco",2001,"Fürst Rainier III / Serienwechsel","MC","Mehrere reguläre nationale 2-€-Designs."],
+["Niederlande",1999,"König / Serienwechsel","NL","Mehrere reguläre nationale 2-€-Designs."],
+["Portugal",2002,"Königssiegel","PT","Historische königliche Siegel als nationales Motiv."],
+["San Marino",2002,"Regierungsgebäude / Serienwechsel","SM","Mehrere reguläre nationale 2-€-Designs."],
+["Slowakei",2009,"Doppelkreuz auf dem Dreihügel","SK","Staatswappenmotiv."],
+["Slowenien",2007,"Franz Prešeren","SI","Porträt des Dichters Franz Prešeren."],
+["Spanien",1999,"Königliche Porträts / Serienwechsel","ES","Reguläre 2-€-Münzen mit wechselnden Herrscherporträts."],
+["Vatikan",2002,"Päpstliche Porträts / Serienwechsel","VA","Mehrere reguläre Serien mit wechselnden Päpsten bzw. Sedisvakanz."]
+].map((x,i)=>({id:'r'+i,type:'regular',country:x[0],year:x[1],title:x[2],code:x[3],desc:x[4],image:null,owned:0,qty:0}));
+
+const importedCollection=[
   {
     "id": "belgien_eyck_2020",
     "type": "comm",
@@ -212,47 +241,293 @@ const importedCollection = [
   }
 ];
 
+let catalog = [];
+let userState = {};
+let currentTab = 'all';
+let currentOv = 'countries';
+let activeModalCoin = null;
+
 (function initTheme(){
   const saved=localStorage.getItem(THEME_STORE);
   if(saved==='dark'||saved==='light') document.documentElement.setAttribute('data-theme',saved);
 })();
 
-document.addEventListener('DOMContentLoaded',()=>{
-  const btn=document.getElementById('themeBtn');
-  if(btn) btn.onclick=()=>{
-    const cur=document.documentElement.getAttribute('data-theme')
-      || (window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
-    const next=cur==='dark'?'light':'dark';
-    document.documentElement.setAttribute('data-theme',next);
-    localStorage.setItem(THEME_STORE,next);
-  };
-  renderGrid();
+document.addEventListener('DOMContentLoaded', () => {
+  loadUserState();
+  initThemeBtn();
+  initEventListeners();
+  loadData();
 });
 
-function renderGrid(){
-  const grid = document.getElementById('grid');
-  grid.innerHTML = '';
-  
-  importedCollection.forEach(coin => {
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.innerHTML = `
-      <div class="coinpic">
-        <span class="badge">${flagFor(coin.country)} ${coin.country}</span>
-        <img src="${coin.image}" alt="${coin.title}" onerror="this.style.display='none'">
-      </div>
-      <div class="cardbody">
-        <div class="country">${coin.country} (${coin.year})</div>
-        <div class="title">${coin.title}</div>
-        <div class="year">${coin.desc}</div>
-      </div>
-    `;
-    grid.appendChild(card);
+function loadUserState() {
+  try {
+    const raw = localStorage.getItem(STORE);
+    if(raw) userState = JSON.parse(raw);
+  } catch(e) { userState = {}; }
+}
+
+function saveUserState() {
+  localStorage.setItem(STORE, JSON.stringify(userState));
+}
+
+function initThemeBtn() {
+  const btn = document.getElementById('themeBtn');
+  if(btn) btn.onclick = () => {
+    const cur = document.documentElement.getAttribute('data-theme')
+      || (window.matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light');
+    const next = cur === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem(THEME_STORE, next);
+  };
+}
+
+function initEventListeners() {
+  document.querySelectorAll('.tabs .tab').forEach(btn => {
+    if(btn.dataset.tab) {
+      btn.onclick = () => {
+        document.querySelectorAll('.tabs .tab[data-tab]').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        currentTab = btn.dataset.tab;
+        render();
+      };
+    }
+  });
+
+  document.querySelectorAll('.quick button').forEach(btn => {
+    btn.onclick = () => {
+      const filter = btn.dataset.filter;
+      currentTab = filter;
+      document.querySelectorAll('.tabs .tab[data-tab]').forEach(b => {
+        b.classList.toggle('active', b.dataset.tab === filter);
+      });
+      render();
+    };
+  });
+
+  ['search', 'country', 'year', 'sort', 'globalSearch'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.oninput = () => render();
+  });
+
+  document.getElementById('exportBtn').onclick = exportData;
+  document.getElementById('importBtn').onclick = () => document.getElementById('fileInput').click();
+  document.getElementById('fileInput').onchange = importData;
+}
+
+async function loadData() {
+  let commCoins = [];
+  try {
+    const res = await fetch(COMM_URL);
+    if(res.ok) {
+      const data = await res.json();
+      commCoins = data.map((c, i) => ({
+        id: 'c' + i,
+        type: 'comm',
+        country: c.country,
+        year: parseInt(c.year) || 0,
+        title: c.title,
+        desc: c.description || '',
+        volume: c.volume || '–',
+        release: c.date || '–',
+        image: c.image || null,
+        owned: 0,
+        qty: 0
+      }));
+    }
+  } catch(e) {}
+
+  catalog = [...regular, ...importedCollection, ...commCoins];
+  populateDropdowns();
+  render();
+}
+
+function populateDropdowns() {
+  const countries = [...new Set(catalog.map(c => c.country))].sort();
+  const years = [...new Set(catalog.map(c => c.year).filter(y => y > 0))].sort((a,b) => b - a);
+
+  const cSelect = document.getElementById('country');
+  cSelect.innerHTML = '<option value="">Alle Länder</option>' + 
+    countries.map(c => `<option value="${c}">${flagFor(c)} ${c}</option>`).join('');
+
+  const ySelect = document.getElementById('year');
+  ySelect.innerHTML = '<option value="">Alle Jahre</option>' + 
+    years.map(y => `<option value="${y}">${y}</option>`).join('');
+}
+
+function getFilteredCoins() {
+  const q = (document.getElementById('search').value || document.getElementById('globalSearch').value || '').toLowerCase();
+  const country = document.getElementById('country').value;
+  const year = document.getElementById('year').value;
+  const sort = document.getElementById('sort').value;
+
+  return catalog.filter(c => {
+    const isOwned = userState[c.id] && userState[c.id].owned > 0;
+    
+    if(currentTab === 'regular' && c.type !== 'regular') return false;
+    if(currentTab === 'comm' && c.type !== 'comm') return false;
+    if(currentTab === 'owned' && !isOwned) return false;
+    if(currentTab === 'missing' && isOwned) return false;
+    if(currentTab === 'mine' && !c.id.startsWith('belgien_eyck') && !c.id.startsWith('imp')) return false;
+
+    if(country && c.country !== country) return false;
+    if(year && String(c.year) !== year) return false;
+    if(q && !`${c.country} ${c.year} ${c.title} ${c.desc}`.toLowerCase().includes(q)) return false;
+
+    return true;
+  }).sort((a,b) => {
+    if(sort === 'yearDesc') return b.year - a.year;
+    if(sort === 'yearAsc') return a.year - b.year;
+    if(sort === 'country') return a.country.localeCompare(b.country);
+    if(sort === 'title') return a.title.localeCompare(b.title);
+    return 0;
   });
 }
 
-function closeModal(){
+function updateStats() {
+  const total = catalog.length;
+  let ownedCount = 0;
+  let totalQty = 0;
+
+  catalog.forEach(c => {
+    if(userState[c.id] && userState[c.id].owned > 0) {
+      ownedCount++;
+      totalQty += userState[c.id].qty || 1;
+    }
+  });
+
+  const missing = total - ownedCount;
+  const pct = total ? Math.round((ownedCount / total) * 100) : 0;
+
+  document.getElementById('ownedCount').innerText = `${ownedCount} / ${total}`;
+  document.getElementById('missingCount').innerText = missing;
+  document.getElementById('valueCount').innerText = `${totalQty * 2} €`;
+  document.getElementById('progressBar').style.width = `${pct}%`;
+  document.getElementById('progressLabel').innerText = `${pct} %`;
+}
+
+function render() {
+  updateStats();
+
+  const isOverview = currentTab === 'overview';
+  document.getElementById('filters').style.display = isOverview ? 'none' : 'grid';
+  document.getElementById('grid').style.display = isOverview ? 'none' : 'grid';
+  document.getElementById('overviewPanel').style.display = isOverview ? 'block' : 'none';
+
+  if(isOverview) {
+    renderOverview();
+    return;
+  }
+
+  const coins = getFilteredCoins();
+  const grid = document.getElementById('grid');
+  document.getElementById('resultCount').innerText = `${coins.length} Münzen`;
+
+  if(!coins.length) {
+    grid.innerHTML = '<div class="empty" style="grid-column:1/-1">Keine Münzen für diese Filterkriterien gefunden.</div>';
+    return;
+  }
+
+  grid.innerHTML = coins.map(c => {
+    const u = userState[c.id] || { owned: 0, qty: 1 };
+    const imgHtml = c.image 
+      ? `<img src="${c.image}" alt="${c.title}" onerror="this.onerror=null;this.parentElement.innerHTML='<div class=\\'coinmock\\'><span class=\\'flag\\'>${flagFor(c.country)}</span><span class=\\'e\\'>2€</span><small>${c.year||''}</small></div>'">`
+      : `<div class="coinmock"><span class="flag">${flagFor(c.country)}</span><span class="e">2€</span><small>${c.year||''}</small></div>`;
+
+    return `
+      <div class="card">
+        <div class="coinpic">
+          <span class="badge">${flagFor(c.country)} ${c.country}</span>
+          ${u.owned ? '<span class="owned">✓ Vorhanden</span>' : ''}
+          ${imgHtml}
+        </div>
+        <div class="cardbody">
+          <div class="country">${c.country} • ${c.year || '–'}</div>
+          <div class="title">${c.title}</div>
+          <div class="cardfoot">
+            <button class="smallbtn ${u.owned ? 'primary' : ''}" onclick="toggleOwned('${c.id}')">${u.owned ? '✅ Im Besitz' : '➕ Hinzufügen'}</button>
+            <button class="smallbtn" onclick="openModal('${c.id}')">Details</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function toggleOwned(id) {
+  if(!userState[id]) userState[id] = { owned: 0, qty: 1 };
+  userState[id].owned = userState[id].owned ? 0 : 1;
+  saveUserState();
+  render();
+}
+
+function openModal(id) {
+  const c = catalog.find(x => x.id === id);
+  if(!c) return;
+  activeModalCoin = c;
+
+  const u = userState[c.id] || { owned: 0, qty: 1 };
+  document.getElementById('mTitle').innerText = c.title;
+  document.getElementById('mSub').innerText = `${flagFor(c.country)} ${c.country} (${c.year})`;
+  document.getElementById('mDesc').innerText = c.desc || 'Keine Beschreibung vorhanden.';
+  document.getElementById('mVolume').innerText = c.volume || '–';
+  document.getElementById('mRelease').innerText = c.release || '–';
+  document.getElementById('mOwned').value = u.owned ? '1' : '0';
+  document.getElementById('mQty').value = u.qty || 1;
+
+  const imgContainer = document.getElementById('mImage');
+  imgContainer.innerHTML = c.image 
+    ? `<img src="${c.image}" alt="${c.title}">`
+    : `<div class="coinmock" style="width:180px;height:180px"><span class="flag" style="font-size:48px">${flagFor(c.country)}</span><span class="e" style="font-size:40px">2€</span></div>`;
+
+  document.getElementById('mEbay').href = `https://www.ebay.de/sch/i.html?_nkw=2+Euro+${encodeURIComponent(c.country)}+${encodeURIComponent(c.title)}+${c.year}&_sacat=11116&LH_Sold=1&LH_Complete=1`;
+
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal() {
   document.getElementById('modal').classList.remove('open');
+}
+
+function saveModal() {
+  if(!activeModalCoin) return;
+  const owned = parseInt(document.getElementById('mOwned').value) || 0;
+  const qty = parseInt(document.getElementById('mQty').value) || 1;
+
+  userState[activeModalCoin.id] = { owned, qty };
+  saveUserState();
+  closeModal();
+  render();
+}
+
+function renderOverview() {
+  const body = document.getElementById('overviewBody');
+  body.innerHTML = '<div class="panel" style="padding:20px"><p>Übersicht wird generiert...</p></div>';
+}
+
+function exportData() {
+  const blob = new Blob([JSON.stringify(userState, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = '2euro_sammlung_backup.json';
+  a.click();
+}
+
+function importData(e) {
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    try {
+      userState = JSON.parse(evt.target.result);
+      saveUserState();
+      render();
+      alert('Sammlung erfolgreich importiert!');
+    } catch(err) {
+      alert('Fehlerhafte JSON-Datei.');
+    }
+  };
+  reader.readAsText(file);
 }
 </script>
 </body>
