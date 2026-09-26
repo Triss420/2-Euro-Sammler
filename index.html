@@ -309,18 +309,33 @@ function imageSearchQueries(c){
   // Deutschland: niemals eine allgemeine Deutschland-Suche verwenden.
   // Das Jahr muss Teil jeder Suche sein; bei Gedenkmünzen kommt der genaue Titel dazu.
   if(country==='Deutschland' && year){
+    const mint=String(c.mintmark||c.code||'').trim().toUpperCase();
+    const mintName=DE_MINT_NAMES[mint]||'';
+    // Bei Deutschland ist Jahr + Prägestätte Teil der Bildsuche.
+    // Genau dadurch kann z.B. 2004 G nicht mehr als Bild für 2004 A verwendet werden.
     if(t.includes('bundesadler')){
+      if(mint){
+        qs.push(`Germany 2 euro ${year} ${mint} ${mintName} eagle`);
+        qs.push(`Germany 2 euro ${year} ${mint} eagle`);
+        qs.push(`Deutschland 2 Euro ${year} ${mint} ${mintName} Adler`);
+      }
       qs.push(`Germany 2 euro ${year} eagle`);
       qs.push(`Germany 2 euro ${year} Bundesadler`);
-      qs.push(`Deutschland 2 Euro ${year} Bundesadler`);
     }else{
       const words=title.split(/\s+/).filter(w=>normText(w).length>=4).slice(0,5).join(' ');
       if(words){
+        if(mint){
+          qs.push(`Germany 2 euro ${year} ${mint} ${mintName} ${words}`);
+          qs.push(`Germany 2 euro ${year} ${mint} ${words}`);
+        }
         qs.push(`Germany 2 euro ${year} ${words}`);
         qs.push(`Deutschland 2 Euro ${year} ${words}`);
       }
+      if(mint){
+        qs.push(`Germany 2 euro ${year} ${mint} ${mintName}`);
+        qs.push(`Germany 2 euro ${year} ${mint}`);
+      }
       qs.push(`Germany 2 euro ${year}`);
-      qs.push(`Deutschland 2 Euro ${year}`);
     }
     return [...new Set(qs)].map(encodeURIComponent);
   }
@@ -357,17 +372,26 @@ function bestCommonsImage(data,c){
     // ein markantes Titelwort passen, sofern der Dateiname solche Angaben enthält.
     if(isGermany && year && !name.includes(year)) continue;
 
+    const mint=String(c.mintmark||'').trim().toLowerCase();
+    const mintName=normText(DE_MINT_NAMES[String(c.mintmark||'').trim().toUpperCase()]||'');
     let score=0;
     if(year && name.includes(year)) score+=20;
     if(country && name.includes(country)) score+=5;
     if(countryEn && name.includes(countryEn)) score+=5;
+    if(isGermany && mint){
+      if(new RegExp(`\\b${mint}\\b`,'i').test(name)) score+=12;
+      if(mintName && name.includes(mintName)) score+=8;
+    }
     for(const w of titleWords) if(name.includes(w)) score+=4;
     if(isBundesadler && !name.includes('eagle') && !name.includes('adler') && !name.includes('bundesadler')) score+=1;
     if(name.includes('2 euro')) score+=3;
     if(/jpg|jpeg|png/i.test(ii.url||'')) score+=1;
     if(score>scoreBest){scoreBest=score;best=ii.thumburl||ii.url;}
   }
-  // Deutschland nur akzeptieren, wenn das Jahr wirklich getroffen wurde.
+  // Deutschland: niemals ein Bild aus einem anderen Jahr akzeptieren.
+  // Wenn eine exakte Prägestätte vorhanden ist, wird sie höher bewertet;
+  // falls Commons kein mint-spezifisches Foto besitzt, darf ein korrektes
+  // Jahr-Foto als Fallback verwendet werden – aber niemals ein anderes Jahr.
   if(isGermany && year && scoreBest<21) return null;
   return scoreBest>=3 ? best : null;
 }
