@@ -106,15 +106,15 @@ button{cursor:pointer}
     <div class="panel heroMain">
       <h1>Meine 2-Euro-Sammlung</h1>
       <p>Umlaufmünzen und 2-Euro-Gedenkmünzen – ohne Abo und mit Speicherung direkt auf dem Gerät.</p>
-            <div class="stats">
+      <div class="stats">
         <div class="stat"><strong id="ownedCount">0 / 0</strong><span>Münzen gesammelt</span></div>
         <div class="stat"><strong id="missingCount">0</strong><span>Stück fehlen noch</span></div>
         <div class="stat"><strong id="valueCount">0 €</strong><span>Nennwert im Bestand</span></div>
       </div>
       <div class="progressWrap">
-  <div class="progress"><div id="progressBar"></div></div>
-  <div class="progressLabel" id="progressLabel">0 %</div>
-</div>
+        <div class="progress"><div id="progressBar"></div></div>
+        <div class="progressLabel" id="progressLabel">0 %</div>
+      </div>
     </div>
     <div class="panel heroSide">
       <h3>Schnellzugriff</h3>
@@ -131,7 +131,8 @@ button{cursor:pointer}
     <button class="tab active" data-tab="all">Alle</button>
     <button class="tab" data-tab="regular">Umlaufmünzen</button>
     <button class="tab" data-tab="comm">Gedenkmünzen</button>
-    <button class="tab" data-tab="owned">Gesammelt</button><button class="tab" data-tab="mine">Meine Excel-Liste</button>
+    <button class="tab" data-tab="owned">Gesammelt</button>
+    <button class="tab" data-tab="mine">Meine Excel-Liste</button>
     <button class="tab" data-tab="missing">Fehlen</button>
     <button class="tab" data-tab="overview">Übersicht</button>
   </div>
@@ -146,7 +147,7 @@ button{cursor:pointer}
   <div class="note" id="dataNote">Gedenkmünzen werden aus einer öffentlichen Datensammlung geladen. Die Sammlung selbst bleibt lokal auf deinem Gerät.</div>
   <div class="sectionHead"><h2 id="heading">Katalog</h2><div class="count" id="resultCount"></div></div>
   <div class="grid" id="grid"></div>
-    <div id="overviewPanel" style="display:none">
+  <div id="overviewPanel" style="display:none">
     <div class="tabs" id="overviewSubTabs" style="margin-top:0">
       <button class="tab active" data-ov="countries">Länder</button>
       <button class="tab" data-ov="years">Jahre</button>
@@ -177,7 +178,7 @@ button{cursor:pointer}
         </label>
         <label style="display:block"><b>Anzahl</b><br><input id="mQty" type="number" min="1" max="999" value="1" style="margin-top:7px;width:100%;padding:12px;border:1px solid var(--line);border-radius:12px"></label>
         <button class="smallbtn primary" style="width:100%;margin-top:12px;padding:12px" onclick="saveModal()">Speichern</button>
-<a class="smallbtn" id="mEbay" href="#" target="_blank" rel="noopener" style="width:100%;margin-top:8px;padding:12px;text-align:center;display:block;text-decoration:none">🔎 Zuletzt verkauft auf eBay</a>
+        <a class="smallbtn" id="mEbay" href="#" target="_blank" rel="noopener" style="width:100%;margin-top:8px;padding:12px;text-align:center;display:block;text-decoration:none">🔎 Zuletzt verkauft auf eBay</a>
       </div>
     </div>
   </div>
@@ -227,20 +228,13 @@ const COMM_URL='https://raw.githubusercontent.com/Liebeck/two-euro-coins-data/ma
 const STORE='twoEuroCollectorV1';
 const THEME_STORE='twoEuroCollectorTheme';
 
-// Länderflaggen + englische Namen
 const COUNTRY_FLAG={"Andorra":"🇦🇩","Österreich":"🇦🇹","Belgien":"🇧🇪","Bulgarien":"🇧🇬","Kroatien":"🇭🇷","Zypern":"🇨🇾",
 "Estland":"🇪🇪","Finnland":"🇫🇮","Frankreich":"🇫🇷","Deutschland":"🇩🇪","Griechenland":"🇬🇷","Irland":"🇮🇪",
 "Italien":"🇮🇹","Lettland":"🇱🇻","Litauen":"🇱🇹","Luxemburg":"🇱🇺","Malta":"🇲🇹","Monaco":"🇲🇨","Niederlande":"🇳🇱",
-"Portugal":"🇵🇹","San Marino":"🇸🇲","Slowakei":"🇸🇰","Slowenien":"🇸🇮","Spanien":"🇪🇸","Vatikan":"🇻🇦","Vatikanstadt":"VA","Zypern ":"🇨🇾"};
-const COUNTRY_EN={"Österreich":"Austria","Belgien":"Belgium","Bulgarien":"Bulgaria","Kroatien":"Croatia","Zypern":"Cyprus",
-"Estland":"Estonia","Finnland":"Finland","Frankreich":"France","Deutschland":"Germany","Griechenland":"Greece","Irland":"Ireland",
-"Italien":"Italy","Lettland":"Latvia","Litauen":"Lithuania","Luxemburg":"Luxembourg","Niederlande":"Netherlands","Portugal":"Portugal",
-"Slowakei":"Slovakia","Slowenien":"Slovenia","Spanien":"Spain","Vatikan":"Vatican City","Vatikanstadt":"Vatican City",
-"Andorra":"Andorra","Malta":"Malta","Monaco":"Monaco","San Marino":"San Marino"};
-function flagFor(country){return COUNTRY_FLAG[String(country||'').trim()]||'🇪🇺';}
+"Portugal":"🇵🇹","San Marino":"🇸🇲","Slowakei":"🇸🇰","Slowenien":"🇸🇮","Spanien":"🇪🇸","Vatikan":"🇻🇦","Vatikanstadt":"🇻🇦","Zypern ":"🇨🇾"};
+
 const DE_MINTS = ['A','D','F','G','J'];
 const DE_MINT_NAMES = {A:'Berlin',D:'München',F:'Stuttgart',G:'Karlsruhe',J:'Hamburg'};
-
 const DE_GENERIC_IMAGE='https://www.ecb.europa.eu/euro/coins/common/shared/img/de/Germany_2euro.jpg';
 const DE_EXACT_IMAGES={
   '2002-A':'https://www.euro-coins.info/images/4c92fea0-74fc-5d4a-aa9a-23b371fe8455_341_rev.jpg',
@@ -258,6 +252,9 @@ const DE_EXACT_IMAGES={
   '2006-A':'https://www.euro-muenzen.tv/img04/145787241062792.jpg',
   '2006-D':'https://media1.allnumis.com/14278/20-06-2013/2-euro-2006-d_14278_04628608962d93L.jpg'
 };
+
+function flagFor(country){ return COUNTRY_FLAG[String(country||'').trim()] || '🇪🇺'; }
+
 function deFixedImage(c){
   if(String(c.country||'').trim()!=='Deutschland' || !c.mintmark || c.type!=='regular') return null;
   return DE_EXACT_IMAGES[`${c.year}-${String(c.mintmark).toUpperCase()}`] || DE_GENERIC_IMAGE;
@@ -288,8 +285,8 @@ function expandMintVariants(list){
         desc: (c.desc ? c.desc + ' ' : '') + 'Prägestätte ' + m + (DE_MINT_NAMES[m] ? ' (' + DE_MINT_NAMES[m] + ')' : ''),
         parentId: c.id,
         image: c.image || null,
-        owned: 0,
-        qty: 0
+        owned: c.owned || 0,
+        qty: c.qty || 0
       });
     });
   });
@@ -303,26 +300,6 @@ function ebaySoldUrl(c){
   const q=encodeURIComponent(parts.join(' '));
   return `https://www.ebay.de/sch/i.html?_nkw=${q}&LH_Sold=1&LH_Complete=1&_sop=13`;
 }
-
-(function initTheme(){
-  const saved=localStorage.getItem(THEME_STORE);
-  if(saved==='dark'||saved==='light') document.documentElement.setAttribute('data-theme',saved);
-})();
-
-document.addEventListener('DOMContentLoaded',()=>{
-  const btn=document.getElementById('themeBtn');
-  if(btn) btn.onclick=()=>{
-    const cur=document.documentElement.getAttribute('data-theme')
-      || (window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
-    const next=cur==='dark'?'light':'dark';
-    document.documentElement.setAttribute('data-theme',next);
-    localStorage.setItem(THEME_STORE,next);
-  };
-
-  // Druck-Button Event Listener
-  const pBtn = document.getElementById('printBtn');
-  if(pBtn) pBtn.onclick = openPrintModal;
-});
 
 const regular = [
 ["Andorra",2014,"Wappen Andorras","AD","Reguläre nationale 2-€-Seite; Andorra gibt Euro-Münzen seit 2014 aus."],
@@ -352,14 +329,393 @@ const regular = [
 ["Vatikan",2002,"Päpstliche Porträts / Serienwechsel","VA","Mehrere reguläre Serien mit wechselnden Päpsten bzw. Sedisvakanz."]
 ].map((x,i)=>({id:'r'+i,type:'regular',country:x[0],year:x[1],title:x[2],code:x[3],desc:x[4],image:null,owned:0,qty:0}));
 
-const importedCollection=[{"id":"imp0","type":"regular","country":"Andorra","year":0,"title":"Staatswappen von Andorra","code":"","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},{"id":"imp1","type":"comm","country":"Andorra","year":0,"title":"50 Jahre Allgemeines Frauenwahlrecht in Andorra","code":"","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},{"id":"imp2","type":"comm","country":"Andorra","year":2020,"title":"XXVII. Iberoamerika-Gipfel 2020 in Andorra","code":"","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},{"id":"imp3","type":"regular","country":"Deutschland","year":2002,"title":"Bundesadler (2002)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},{"id":"imp4","type":"regular","country":"Deutschland","year":2003,"title":"Bundesadler (2003)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},{"id":"imp5","type":"regular","country":"Deutschland","year":2004,"title":"Bundesadler (2004)","code":"A-D-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},{"id":"imp6","type":"regular","country":"Deutschland","year":2005,"title":"Bundesadler (2005)","code":"","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},{"id":"imp7","type":"regular","country":"Deutschland","year":2006,"title":"Bundesadler (2006)","code":"","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},{"id":"imp8","type":"comm","country":"Deutschland","year":2006,"title":"Schleswig-Holstein (2006)","code":"A-D-F-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},{"id":"imp9","type":"comm","country":"Deutschland","year":2007,"title":"Mecklenburg-Vorpommern (2007)","code":"D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},{"id":"imp10","type":"comm","country":"Deutschland","year":2007,"title":"Deutschland - 50. Jahrestag Vertrag von Rom (2007)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},{"id":"imp11","type":"regular","country":"Deutschland","year":2008,"title":"Bundesadler (2008)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},{"id":"imp12","type":"comm","country":"Deutschland","year":2008,"title":"Hamburg (2008)","code":"D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},{"id":"imp13","type":"comm","country":"Deutschland","year":2009,"title":"Saarland (2009)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},{"id":"imp14","type":"comm","country":"Deutschland","year":2009,"title":"Deutschland - 10 Jahre Währungsunion (2009)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},{"id":"imp15","type":"regular","country":"Deutschland","year":2010,"title":"Bundesadler (2010)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},{"id":"imp16","type":"comm","country":"Deutschland","year":2010,"title":"Bremen (2010)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},{"id":"imp17","type":"regular","country":"Deutschland","year":2011,"title":"Bundesadler (2011)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},{"id":"imp18","type":"comm","country":"Deutschland","year":2011,"title":"Nordrhein-Westfalen (2011)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},{"id":"imp19","type":"comm","country":"Deutschland","year":2012,"title":"Bayern (2012)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},{"id":"imp20","type":"comm","country":"Deutschland","year":2012,"title":"Deutschland - 10 Jahre Euro-Bargeld (2012)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},{"id":"imp21","type":"comm","country":"Deutschland","year":2013,"title":"Baden Württemberg (2013)","code":"A-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},{"id":"imp22","type":"comm","country":"Deutschland","year":2013,"title":"Élysée-Vertrag (2013)","code":"D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},{"id":"imp23","type":"regular","country":"Deutschland","year":2014,"title":"Bundesadler (2014)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},{"id":"imp24","type":"comm","country":"Deutschland","year":2014,"title":"Niedersachsen (2014)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},{"id":"imp25","type":"comm","country":"Deutschland","year":2015,"title":"25 Jahre Deutsche Einheit (2015)","code":"A-D-F-G","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},{"id":"imp26","type":"comm","country":"Deutschland","year":2015,"title":"Hessen (2015)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},{"id":"imp27","type":"comm","country":"Deutschland","year":2015,"title":"Deutschland - 30 Jahre EU-Flagge (2015)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},{"id":"imp28","type":"regular","country":"Deutschland","year":2016,"title":"Bundesadler (2016)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},{"id":"imp29","type":"comm","country":"Deutschland","year":2016,"title":"Sachsen (2016)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},{"id":"imp30","type":"regular","country":"Deutschland","year":2017,"title":"Bundesadler (2017)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},{"id":"imp31","type":"comm","country":"Deutschland","year":2017,"title":"Rheinland-Pfalz (2017)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},{"id":"imp32","type":"comm","country":"Deutschland","year":2018,"title":"Helmut Schmidt (2018)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},{"id":"imp33","type":"comm","country":"Deutschland","year":2018,"title":"Berlin (2018)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},{"id":"imp34","type":"regular","country":"Deutschland","year":2019,"title":"Bundesadler (2019)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},{"id":"imp35","type":"comm","country":"Deutschland","year":2019,"title":"Bundesrat (2019)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},{"id":"imp36","type":"comm","country":"Deutschland","year":2019,"title":"30 Jahre Mauerfall (2019)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},{"id":"imp37","type":"comm","country":"Deutschland","year":2020,"title":"Brandenburg (2020)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},{"id":"imp38","type":"regular","country":"Deutschland","year":2020,"title":"Bundesadler (2020)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},{"id":"imp39","type":"comm","country":"Deutschland","year":2020,"title":"50 Jahre Kniefall von Warschau (2020)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},{"id":"imp40","type":"regular","country":"Deutschland","year":2021,"title":"Bundesadler (2021)","code":"A-D-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},{"id":"imp41","type":"comm","country":"Deutschland","year":2021,"title":"Sachsen Anhalt (2021)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},{"id":"imp42","type":"regular","country":"Deutschland","year":2022,"title":"Bundesadler (2022)","code":"","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},{"id":"imp43","type":"comm","country":"Deutschland","year":2022,"title":"Thüringen (2022)","code":"A-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},{"id":"imp44","type":"comm","country":"Deutschland","year":2022,"title":"35-jähriges Bestehen des Erasmus-Programms (2022)","code":"A-F-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},{"id":"imp45","type":"regular","country":"Deutschland","year":2023,"title":"Bundesadler (2023)","code":"","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},{"id":"imp46","type":"comm","country":"Deutschland","year":2023,"title":"Elbphilharmonie - Hamburg“ (2023)","code":"F-G","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},{"id":"imp47","type":"comm","country":"Deutschland","year":2023,"title":"„1275. Geburtstag Karl der Große“ (2023)","code":"","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0}];
+const importedCollection=[
+{"id":"imp0","type":"regular","country":"Andorra","year":0,"title":"Staatswappen von Andorra","code":"","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},
+{"id":"imp1","type":"comm","country":"Andorra","year":0,"title":"50 Jahre Allgemeines Frauenwahlrecht in Andorra","code":"","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},
+{"id":"imp2","type":"comm","country":"Andorra","year":2020,"title":"XXVII. Iberoamerika-Gipfel 2020 in Andorra","code":"","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},
+{"id":"imp3","type":"regular","country":"Deutschland","year":2002,"title":"Bundesadler (2002)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
+{"id":"imp4","type":"regular","country":"Deutschland","year":2003,"title":"Bundesadler (2003)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
+{"id":"imp5","type":"regular","country":"Deutschland","year":2004,"title":"Bundesadler (2004)","code":"A-D-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},
+{"id":"imp6","type":"regular","country":"Deutschland","year":2005,"title":"Bundesadler (2005)","code":"","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},
+{"id":"imp7","type":"regular","country":"Deutschland","year":2006,"title":"Bundesadler (2006)","code":"","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},
+{"id":"imp8","type":"comm","country":"Deutschland","year":2006,"title":"Schleswig-Holstein (2006)","code":"A-D-F-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},
+{"id":"imp9","type":"comm","country":"Deutschland","year":2007,"title":"Mecklenburg-Vorpommern (2007)","code":"D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},
+{"id":"imp10","type":"comm","country":"Deutschland","year":2007,"title":"Deutschland - 50. Jahrestag Vertrag von Rom (2007)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
+{"id":"imp11","type":"regular","country":"Deutschland","year":2008,"title":"Bundesadler (2008)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
+{"id":"imp12","type":"comm","country":"Deutschland","year":2008,"title":"Hamburg (2008)","code":"D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},
+{"id":"imp13","type":"comm","country":"Deutschland","year":2009,"title":"Saarland (2009)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
+{"id":"imp14","type":"comm","country":"Deutschland","year":2009,"title":"Deutschland - 10 Jahre Währungsunion (2009)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
+{"id":"imp15","type":"regular","country":"Deutschland","year":2010,"title":"Bundesadler (2010)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
+{"id":"imp16","type":"comm","country":"Deutschland","year":2010,"title":"Bremen (2010)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
+{"id":"imp17","type":"regular","country":"Deutschland","year":2011,"title":"Bundesadler (2011)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
+{"id":"imp18","type":"comm","country":"Deutschland","year":2011,"title":"Nordrhein-Westfalen (2011)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
+{"id":"imp19","type":"comm","country":"Deutschland","year":2012,"title":"Bayern (2012)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
+{"id":"imp20","type":"comm","country":"Deutschland","year":2012,"title":"Deutschland - 10 Jahre Euro-Bargeld (2012)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
+{"id":"imp21","type":"comm","country":"Deutschland","year":2013,"title":"Baden Württemberg (2013)","code":"A-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},
+{"id":"imp22","type":"comm","country":"Deutschland","year":2013,"title":"Élysée-Vertrag (2013)","code":"D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},
+{"id":"imp23","type":"regular","country":"Deutschland","year":2014,"title":"Bundesadler (2014)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
+{"id":"imp24","type":"comm","country":"Deutschland","year":2014,"title":"Niedersachsen (2014)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
+{"id":"imp25","type":"comm","country":"Deutschland","year":2015,"title":"25 Jahre Deutsche Einheit (2015)","code":"A-D-F-G","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},
+{"id":"imp26","type":"comm","country":"Deutschland","year":2015,"title":"Hessen (2015)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
+{"id":"imp27","type":"comm","country":"Deutschland","year":2015,"title":"Deutschland - 30 Jahre EU-Flagge (2015)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
+{"id":"imp28","type":"regular","country":"Deutschland","year":2016,"title":"Bundesadler (2016)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
+{"id":"imp29","type":"comm","country":"Deutschland","year":2016,"title":"Sachsen (2016)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
+{"id":"imp30","type":"regular","country":"Deutschland","year":2017,"title":"Bundesadler (2017)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
+{"id":"imp31","type":"comm","country":"Deutschland","year":2017,"title":"Rheinland-Pfalz (2017)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
+{"id":"imp32","type":"comm","country":"Deutschland","year":2018,"title":"Helmut Schmidt (2018)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
+{"id":"imp33","type":"comm","country":"Deutschland","year":2018,"title":"Berlin (2018)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
+{"id":"imp34","type":"regular","country":"Deutschland","year":2019,"title":"Bundesadler (2019)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
+{"id":"imp35","type":"comm","country":"Deutschland","year":2019,"title":"Bundesrat (2019)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
+{"id":"imp36","type":"comm","country":"Deutschland","year":2019,"title":"30 Jahre Mauerfall (2019)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
+{"id":"imp37","type":"comm","country":"Deutschland","year":2020,"title":"Brandenburg (2020)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
+{"id":"imp38","type":"regular","country":"Deutschland","year":2020,"title":"Bundesadler (2020)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
+{"id":"imp39","type":"comm","country":"Deutschland","year":2020,"title":"50 Jahre Kniefall von Warschau (2020)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},
+{"id":"imp40","type":"regular","country":"Deutschland","year":2021,"title":"Bundesadler (2021)","code":"A-D-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},
+{"id":"imp41","type":"comm","country":"Deutschland","year":2021,"title":"Sachsen Anhalt (2021)","code":"A-D-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":1,"qty":5},
+{"id":"imp42","type":"regular","country":"Deutschland","year":2022,"title":"Bundesadler (2022)","code":"","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},
+{"id":"imp43","type":"comm","country":"Deutschland","year":2022,"title":"Thüringen (2022)","code":"A-F-G-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},
+{"id":"imp44","type":"comm","country":"Deutschland","year":2022,"title":"35-jähriges Bestehen des Erasmus-Programms (2022)","code":"A-F-J","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},
+{"id":"imp45","type":"regular","country":"Deutschland","year":2023,"title":"Bundesadler (2023)","code":"","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},
+{"id":"imp46","type":"comm","country":"Deutschland","year":2023,"title":"Elbphilharmonie - Hamburg“ (2023)","code":"F-G","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0},
+{"id":"imp47","type":"comm","country":"Deutschland","year":2023,"title":"„1275. Geburtstag Karl der Große“ (2023)","code":"","desc":"Aus deiner Excel-Sammlung übernommen.","volume":"–","release":"–","image":null,"owned":0,"qty":0}
+];
 
 let allCoins = [];
+let currentTab = 'all';
+let activeCoinId = null;
 
-// Globale Variablen & Helfer
-function closeModal(){ document.getElementById('modal').classList.remove('open'); }
+function renderStats(){
+  const total = allCoins.length;
+  const ownedCoins = allCoins.filter(c => c.owned > 0);
+  const ownedCount = ownedCoins.length;
+  const missing = total - ownedCount;
+  const totalValue = ownedCoins.reduce((sum, c) => sum + ((c.qty || 1) * 2), 0);
+  const percent = total > 0 ? Math.round((ownedCount / total) * 100) : 0;
 
-// Druck-Logik
+  document.getElementById('ownedCount').innerText = `${ownedCount} / ${total}`;
+  document.getElementById('missingCount').innerText = missing;
+  document.getElementById('valueCount').innerText = `${totalValue} €`;
+  document.getElementById('progressBar').style.width = `${percent}%`;
+  document.getElementById('progressLabel').innerText = `${percent} %`;
+}
+
+function initFilters(){
+  const countrySel = document.getElementById('country');
+  const yearSel = document.getElementById('year');
+  
+  const countries = [...new Set(allCoins.map(c => c.country).filter(Boolean))].sort();
+  const years = [...new Set(allCoins.map(c => c.year).filter(y => y && y > 0))].sort((a,b) => b - a);
+
+  countrySel.innerHTML = '<option value="">Alle Länder</option>' + countries.map(c => `<option value="${c}">${c}</option>`).join('');
+  yearSel.innerHTML = '<option value="">Alle Jahre</option>' + years.map(y => `<option value="${y}">${y}</option>`).join('');
+}
+
+function renderGrid(){
+  const grid = document.getElementById('grid');
+  const searchVal = document.getElementById('search').value.toLowerCase().trim();
+  const globalSearchVal = document.getElementById('globalSearch').value.toLowerCase().trim();
+  const query = searchVal || globalSearchVal;
+
+  const countryFilter = document.getElementById('country').value;
+  const yearFilter = document.getElementById('year').value;
+  const sortFilter = document.getElementById('sort').value;
+
+  let filtered = allCoins.filter(c => {
+    // Tab Filter
+    if(currentTab === 'regular' && c.type !== 'regular') return false;
+    if(currentTab === 'comm' && c.type !== 'comm') return false;
+    if(currentTab === 'owned' && (!c.owned || c.owned <= 0)) return false;
+    if(currentTab === 'missing' && c.owned > 0) return false;
+    if(currentTab === 'mine' && !c.id.startsWith('imp')) return false;
+
+    // Dropdown & Such-Filter
+    if(countryFilter && c.country !== countryFilter) return false;
+    if(yearFilter && String(c.year) !== yearFilter) return false;
+
+    if(query){
+      const matchText = `${c.country} ${c.year} ${c.title} ${c.desc} ${c.mintmark||''}`.toLowerCase();
+      if(!matchText.includes(query)) return false;
+    }
+    return true;
+  });
+
+  // Sortierung
+  filtered.sort((a,b) => {
+    if(sortFilter === 'yearDesc') return (b.year || 0) - (a.year || 0);
+    if(sortFilter === 'yearAsc') return (a.year || 0) - (b.year || 0);
+    if(sortFilter === 'country') return (a.country || '').localeCompare(b.country || '');
+    if(sortFilter === 'title') return (a.title || '').localeCompare(b.title || '');
+    return 0;
+  });
+
+  document.getElementById('resultCount').innerText = `${filtered.length} Münzen gefunden`;
+
+  if(filtered.length === 0){
+    grid.innerHTML = '<div class="empty">Keine Münzen für diese Filterkriterien gefunden.</div>';
+    return;
+  }
+
+  grid.innerHTML = filtered.map(c => {
+    const isOwned = c.owned > 0;
+    const deImg = deFixedImage(c);
+    const imgSrc = deImg || c.image;
+
+    let imgHtml = '';
+    if(imgSrc){
+      imgHtml = `<img src="${imgSrc}" loading="lazy" alt="${c.title}" class="${deImg ? 'de-generic' : 'coin-real-img'}">`;
+    } else {
+      imgHtml = `<div class="coinmock"><span class="flag">${flagFor(c.country)}</span><span class="e">2€</span><small>${c.year||''}</small></div>`;
+    }
+
+    return `
+      <div class="card">
+        <div class="coinpic">
+          <span class="badge">${c.type==='comm'?'Gedenkmünze':'Umlauf'}</span>
+          ${isOwned ? `<span class="owned">✅ ${c.qty > 1 ? c.qty+'x' : 'Im Bestand'}</span>` : ''}
+          ${imgHtml}
+        </div>
+        <div class="cardbody">
+          <div class="country">${flagFor(c.country)} ${c.country} ${c.mintmark ? '· Stempel '+c.mintmark : ''}</div>
+          <div class="title">${c.title}</div>
+          <div class="year">${c.year ? 'Jahr: '+c.year : 'Unbekanntes Jahr'}</div>
+          <div class="cardfoot">
+            <button class="smallbtn" onclick="toggleOwned('${c.id}')">${isOwned ? 'Entfernen' : 'Hinzufügen'}</button>
+            <button class="smallbtn primary" onclick="openModal('${c.id}')">Details</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function toggleOwned(id){
+  const coin = allCoins.find(c => c.id === id);
+  if(coin){
+    coin.owned = coin.owned > 0 ? 0 : 1;
+    coin.qty = coin.owned > 0 ? 1 : 0;
+    saveToStorage();
+    renderStats();
+    renderGrid();
+  }
+}
+
+function openModal(id){
+  activeCoinId = id;
+  const c = allCoins.find(x => x.id === id);
+  if(!c) return;
+
+  document.getElementById('mTitle').innerText = c.title;
+  document.getElementById('mSub').innerText = `${flagFor(c.country)} ${c.country} ${c.year ? '· ' + c.year : ''}`;
+  document.getElementById('mDesc').innerText = c.desc || 'Keine Beschreibung vorhanden.';
+  document.getElementById('mVolume').innerText = c.volume || '–';
+  document.getElementById('mRelease').innerText = c.release || '–';
+  document.getElementById('mOwned').value = c.owned > 0 ? "1" : "0";
+  document.getElementById('mQty').value = c.qty || 1;
+  document.getElementById('mEbay').href = ebaySoldUrl(c);
+
+  const deImg = deFixedImage(c);
+  const imgSrc = deImg || c.image;
+  const bigImg = document.getElementById('mImage');
+  if(imgSrc){
+    bigImg.innerHTML = `<img src="${imgSrc}" alt="${c.title}" class="${deImg ? 'de-generic' : 'coin-real-img'}">`;
+  } else {
+    bigImg.innerHTML = `<div class="coinmock" style="width:180px;height:180px"><span class="flag" style="font-size:48px">${flagFor(c.country)}</span><span class="e" style="font-size:40px">2€</span><small>${c.year||''}</small></div>`;
+  }
+
+  document.getElementById('mPills').innerHTML = `
+    <span class="pill">${c.type==='comm'?'🏛️ Gedenkmünze':'🪙 Umlaufmünze'}</span>
+    ${c.mintmark ? `<span class="pill">Prägestätte ${c.mintmark}</span>` : ''}
+  `;
+
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal(){
+  document.getElementById('modal').classList.remove('open');
+}
+
+function saveModal(){
+  if(!activeCoinId) return;
+  const c = allCoins.find(x => x.id === activeCoinId);
+  if(c){
+    c.owned = parseInt(document.getElementById('mOwned').value);
+    c.qty = parseInt(document.getElementById('mQty').value) || 1;
+    if(c.owned === 0) c.qty = 0;
+    saveToStorage();
+    renderStats();
+    renderGrid();
+    closeModal();
+  }
+}
+
+function saveToStorage(){
+  const savedData = allCoins.map(c => ({ id: c.id, owned: c.owned, qty: c.qty }));
+  localStorage.setItem(STORE, JSON.stringify(savedData));
+}
+
+function loadStorage(){
+  const raw = localStorage.getItem(STORE);
+  if(!raw) return;
+  try {
+    const saved = JSON.parse(raw);
+    saved.forEach(s => {
+      const coin = allCoins.find(c => c.id === s.id);
+      if(coin){
+        coin.owned = s.owned || 0;
+        coin.qty = s.qty || 0;
+      }
+    });
+  } catch(e){ console.error("Ladefehler aus LocalStorage", e); }
+}
+
+async function fetchCommCoins(){
+  try {
+    const res = await fetch(COMM_URL);
+    if(!res.ok) return [];
+    const data = await res.json();
+    return data.map((item, idx) => ({
+      id: 'comm_' + (item.id || idx),
+      type: 'comm',
+      country: item.country || 'Unbekannt',
+      year: parseInt(item.year) || 0,
+      title: item.title || item.name || 'Gedenkmünze',
+      desc: item.description || '',
+      volume: item.volume || '–',
+      release: item.date || '–',
+      image: item.image || null,
+      code: item.code || '',
+      owned: 0,
+      qty: 0
+    }));
+  } catch(e){
+    console.warn("API für Gedenkmünzen nicht erreichbar", e);
+    return [];
+  }
+}
+
+async function initApp(){
+  // Basismünzen kombinieren & Prägestätten für DE aufteilen
+  const baseCoins = [...regular, ...importedCollection];
+  let expandedBase = expandMintVariants(baseCoins);
+
+  // Online Gedenkmünzen laden
+  const onlineComm = await fetchCommCoins();
+  let expandedComm = expandMintVariants(onlineComm);
+
+  // Zusammenführen ohne Duplikate
+  allCoins = [...expandedBase];
+  expandedComm.forEach(c => {
+    if(!allCoins.some(x => x.id === c.id)){
+      allCoins.push(c);
+    }
+  });
+
+  loadStorage();
+  initFilters();
+  renderStats();
+  renderGrid();
+
+  // Event Listener
+  document.getElementById('search').addEventListener('input', renderGrid);
+  document.getElementById('globalSearch').addEventListener('input', () => {
+    document.getElementById('search').value = document.getElementById('globalSearch').value;
+    renderGrid();
+  });
+  document.getElementById('country').addEventListener('change', renderGrid);
+  document.getElementById('year').addEventListener('change', renderGrid);
+  document.getElementById('sort').addEventListener('change', renderGrid);
+
+  // Tab Buttons
+  document.querySelectorAll('.tabs .tab').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      currentTab = btn.getAttribute('data-tab');
+
+      if(currentTab === 'overview'){
+        document.getElementById('grid').style.display = 'none';
+        document.getElementById('filters').style.display = 'none';
+        document.getElementById('overviewPanel').style.display = 'block';
+        renderOverview();
+      } else {
+        document.getElementById('grid').style.display = 'grid';
+        document.getElementById('filters').style.display = 'grid';
+        document.getElementById('overviewPanel').style.display = 'none';
+        renderGrid();
+      }
+    };
+  });
+
+  // Schnellzugriff Buttons
+  document.querySelectorAll('.quick button').forEach(btn => {
+    btn.onclick = () => {
+      const filter = btn.getAttribute('data-filter');
+      const tabBtn = document.querySelector(`.tab[data-tab="${filter}"]`);
+      if(tabBtn) tabBtn.click();
+    };
+  });
+
+  // Export / Import
+  document.getElementById('exportBtn').onclick = () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(allCoins));
+    const dl = document.createElement('a');
+    dl.setAttribute("href", dataStr);
+    dl.setAttribute("download", `2euro_sammlung_${new Date().toISOString().slice(0,10)}.json`);
+    dl.click();
+  };
+
+  document.getElementById('importBtn').onclick = () => document.getElementById('fileInput').click();
+  document.getElementById('fileInput').onchange = (e) => {
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const imported = JSON.parse(evt.target.result);
+        imported.forEach(imp => {
+          const c = allCoins.find(x => x.id === imp.id);
+          if(c){
+            c.owned = imp.owned || 0;
+            c.qty = imp.qty || 0;
+          }
+        });
+        saveToStorage();
+        renderStats();
+        renderGrid();
+        alert('Sammlung erfolgreich importiert!');
+      } catch(err){ alert('Fehler beim Importieren der Datei.'); }
+    };
+    reader.readAsText(file);
+  };
+}
+
+function renderOverview(){
+  const body = document.getElementById('overviewBody');
+  const grouped = {};
+  allCoins.forEach(c => {
+    if(!grouped[c.country]) grouped[c.country] = { total: 0, owned: 0 };
+    grouped[c.country].total++;
+    if(c.owned > 0) grouped[c.country].owned++;
+  });
+
+  let html = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:15px">`;
+  Object.keys(grouped).sort().forEach(country => {
+    const item = grouped[country];
+    const pct = Math.round((item.owned / item.total) * 100) || 0;
+    html += `
+      <div class="panel" style="padding:12px;text-align:center">
+        <div style="font-size:24px">${flagFor(country)}</div>
+        <b>${country}</b>
+        <div style="font-size:12px;color:var(--muted);margin:4px 0">${item.owned} / ${item.total} Münzen</div>
+        <div class="progress" style="height:6px"><div style="width:${pct}%"></div></div>
+      </div>
+    `;
+  });
+  html += `</div>`;
+  body.innerHTML = html;
+}
+
+// Druck-Modal Steuerung
 function openPrintModal(){
   const cSel = document.getElementById('printCountryFilter');
   cSel.innerHTML = '<option value="">Alle Länder</option>';
@@ -375,11 +731,10 @@ function closePrintModal(){
 }
 
 function executePrint(){
-  const type = document.getElementById('printType').value; // 'owned' or 'missing'
-  const group = document.getElementById('printGroup').value; // 'country' or 'type'
+  const type = document.getElementById('printType').value;
+  const group = document.getElementById('printGroup').value;
   const selectedCountry = document.getElementById('printCountryFilter').value;
 
-  // Filtern
   let list = allCoins.filter(c => {
     if(type === 'owned' && (!c.owned || c.owned <= 0)) return false;
     if(type === 'missing' && c.owned > 0) return false;
@@ -426,7 +781,6 @@ function executePrint(){
         html += `</tbody></table>`;
       });
     } else {
-      // Gruppierung nach Münzversion / Typ
       const types = {
         'comm': '🏛️ Gedenkmünzen',
         'regular': '🪙 Umlaufmünzen'
@@ -465,8 +819,21 @@ function executePrint(){
   window.print();
 }
 
-// Basis-Initialisierung
-allCoins = expandMintVariants([...regular, ...importedCollection]);
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('themeBtn');
+  if(btn) btn.onclick = () => {
+    const cur = document.documentElement.getAttribute('data-theme')
+      || (window.matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light');
+    const next = cur === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem(THEME_STORE, next);
+  };
+
+  const pBtn = document.getElementById('printBtn');
+  if(pBtn) pBtn.onclick = openPrintModal;
+
+  initApp();
+});
 </script>
 </body>
 </html>
