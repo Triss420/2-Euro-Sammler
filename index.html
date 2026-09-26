@@ -377,6 +377,20 @@ function saveState(){
 const imageCache={};
 const imageBusy=new Set();
 
+// Lokale Bilder (liegen im /images-Ordner neben index.html). Werden bevorzugt
+// vor der Online-Bildersuche geprüft, damit eigene Fotos nie überschrieben werden.
+const LOCAL_IMAGES=[
+  {country:'Andorra', match:/staatswappen|wappen andorras/, image:'images/andorra_staatswappen.png'},
+  {country:'Andorra', match:/frauenwahlrecht/, image:'images/andorra_frauenwahlrecht_2020.png'},
+  {country:'Andorra', match:/iberoamerika/, image:'images/andorra_gipfel_2020.png'}
+];
+function localImageFor(c){
+  const country=String(c.country||'').trim();
+  const t=normText(c.title||'');
+  for(const e of LOCAL_IMAGES){ if(e.country===country && e.match.test(t)) return e.image; }
+  return null;
+}
+
 function normText(s){
   return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
     .replace(/[^a-z0-9]+/g,' ').trim();
@@ -756,6 +770,8 @@ async function load(){
   if(!all.some(c => c.mintmark)) all = expandMintVariants(all);
   all.forEach(c=>{ if(String(c.country||'').trim()==='Deutschland' && c.mintmark && !c.image) c.image=deFixedImage(c); });
   applyExcelOwnership();
+  all.forEach(c=>{ if(!c.image){ const li=localImageFor(c); if(li) c.image=li; } });
+  excelCollection.forEach(x=>{ if(!x.image){ const li=localImageFor(x); if(li) x.image=li; } });
   attachExcelImages();
   applySaved();rebuildFilters();stats();render();
 }
