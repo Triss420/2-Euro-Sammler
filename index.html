@@ -144,7 +144,7 @@ button{cursor:pointer}
     </select>
   </div>
 
-  <div class="note" id="dataNote">Gedenkmünzen werden geladen. Lokale Bilder aus dem Ordner "images/" werden automatisch bevorzugt.</div>
+  <div class="note" id="dataNote">Gedenkmünzen werden von GitHub geladen. Lokale Bilder aus deinem Ordner "images/" werden bevorzugt angezeigt.</div>
   <div class="sectionHead"><h2 id="heading">Katalog</h2><div class="count" id="resultCount"></div></div>
   <div class="grid" id="grid"></div>
   <div id="overviewPanel" style="display:none">
@@ -241,210 +241,260 @@ const importedCollection=[
   }
 ];
 
-let catalog = [];
-let userState = {};
-let currentTab = 'all';
-let currentOv = 'countries';
-let activeModalCoin = null;
+let catalog=[], userState={}, currentTab='all', currentOv='countries', activeModalCoin=null;
 
 (function initTheme(){
   const saved=localStorage.getItem(THEME_STORE);
   if(saved==='dark'||saved==='light') document.documentElement.setAttribute('data-theme',saved);
 })();
 
-document.addEventListener('DOMContentLoaded', () => {
-  loadUserState();
+document.addEventListener('DOMContentLoaded', async ()=>{
+  loadState();
   initThemeBtn();
-  initEventListeners();
-  loadData();
+  bindEvents();
+  await loadCatalog();
+  render();
 });
 
-function loadUserState() {
-  try {
-    const raw = localStorage.getItem(STORE);
-    if(raw) userState = JSON.parse(raw);
-  } catch(e) { userState = {}; }
-}
-
-function saveUserState() {
-  localStorage.setItem(STORE, JSON.stringify(userState));
-}
-
-function initThemeBtn() {
-  const btn = document.getElementById('themeBtn');
-  if(btn) btn.onclick = () => {
-    const cur = document.documentElement.getAttribute('data-theme')
-      || (window.matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light');
-    const next = cur === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', next);
-    localStorage.setItem(THEME_STORE, next);
+function initThemeBtn(){
+  const btn=document.getElementById('themeBtn');
+  if(!btn) return;
+  btn.onclick=()=>{
+    const cur=document.documentElement.getAttribute('data-theme')
+      || (window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
+    const next=cur==='dark'?'light':'dark';
+    document.documentElement.setAttribute('data-theme',next);
+    localStorage.setItem(THEME_STORE,next);
   };
 }
 
-function initEventListeners() {
-  document.querySelectorAll('.tabs .tab').forEach(btn => {
-    if(btn.dataset.tab) {
-      btn.onclick = () => {
-        document.querySelectorAll('.tabs .tab[data-tab]').forEach(b=>b.classList.remove('active'));
-        btn.classList.add('active');
-        currentTab = btn.dataset.tab;
-        render();
-      };
+function loadState(){
+  try{ userState=JSON.parse(localStorage.getItem(STORE)||'{}'); }catch(e){ userState={}; }
+}
+function saveState(){
+  localStorage.setItem(STORE, JSON.stringify(userState));
+}
+
+function bindEvents(){
+  document.querySelectorAll('.tabs .tab[data-tab]').forEach(b=>{
+    b.onclick=()=>{
+      document.querySelectorAll('.tabs .tab[data-tab]').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+      currentTab=b.dataset.tab;
+      render();
     }
   });
-
-  document.querySelectorAll('.quick button').forEach(btn => {
-    btn.onclick = () => {
-      const filter = btn.dataset.filter;
-      currentTab = filter;
-      document.querySelectorAll('.tabs .tab[data-tab]').forEach(b => {
-        b.classList.toggle('active', b.dataset.tab === filter);
+  document.querySelectorAll('.quick button').forEach(b=>{
+    b.onclick=()=>{
+      currentTab=b.dataset.filter;
+      document.querySelectorAll('.tabs .tab[data-tab]').forEach(x=>{
+        x.classList.toggle('active', x.dataset.tab===currentTab);
       });
       render();
-    };
+    }
   });
 
-  ['search', 'country', 'year', 'sort', 'globalSearch'].forEach(id => {
-    const el = document.getElementById(id);
-    if(el) el.oninput = () => render();
+  ['search','country','year','sort','globalSearch'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.oninput=()=>render();
   });
 
-  document.getElementById('exportBtn').onclick = exportData;
-  document.getElementById('importBtn').onclick = () => document.getElementById('fileInput').click();
-  document.getElementById('fileInput').onchange = importData;
+  document.getElementById('exportBtn').onclick=exportData;
+  document.getElementById('importBtn').onclick=()=>document.getElementById('fileInput').click();
+  document.getElementById('fileInput').onchange=importData;
+
+  document.querySelectorAll('#overviewSubTabs .tab').forEach(b=>{
+    b.onclick=()=>{
+      document.querySelectorAll('#overviewSubTabs .tab').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+      currentOv=b.dataset.ov;
+      renderOverview();
+    }
+  });
 }
 
-async function loadData() {
-  let commCoins = [];
-  try {
-    const res = await fetch(COMM_URL);
-    if(res.ok) {
-      const data = await res.json();
-      commCoins = data.map((c, i) => ({
-        id: 'c' + i,
-        type: 'comm',
-        country: c.country,
-        year: parseInt(c.year) || 0,
-        title: c.title,
-        desc: c.description || '',
-        volume: c.volume || '–',
-        release: c.date || '–',
-        image: c.image || null,
-        owned: 0,
-        qty: 0
+function normalizeTitle(t){
+  return String(t||'').toLowerCase()
+    .replace(/[^a-z0-0äöüß]/g,'')
+    .replace(/jubiläum|jahrestag|hochzeit|geburtstag|todestag/g,'');
+}
+
+function generateLocalImagePaths(coin){
+  const countrySlug = String(coin.country||'').toLowerCase()
+    .replace(/ö/g,'o').replace(/ä/g,'a').replace(/ü/g,'u').replace(/ß/g,'ss')
+    .replace(/[^a-z0-9]/g,'');
+  const year = coin.year || '';
+  const titleSlug = normalizeTitle(coin.title).slice(0,15);
+
+  const paths = [];
+  if(coin.image) paths.push(coin.image);
+
+  if(countrySlug && year){
+    paths.push(`images/${countrySlug}_${year}.png`);
+    paths.push(`images/${countrySlug}_${year}.jpg`);
+    if(titleSlug){
+      paths.push(`images/${countrySlug}_${year}_${titleSlug}.png`);
+      paths.push(`images/${countrySlug}_${year}_${titleSlug}.jpg`);
+    }
+  }
+  return [...new Set(paths)];
+}
+
+async function loadCatalog(){
+  let comm=[];
+  try{
+    const res=await fetch(COMM_URL);
+    if(res.ok){
+      const data=await res.json();
+      comm=data.map((c,i)=>({
+        id:'c'+i,
+        type:'comm',
+        country:c.country,
+        year:parseInt(c.year)||0,
+        title:c.title,
+        desc:c.description||'',
+        volume:c.volume||'–',
+        release:c.date||'–',
+        image:c.image||null,
+        code:c.countryCode||''
       }));
     }
-  } catch(e) {}
+  }catch(e){
+    document.getElementById('dataNote').innerText='Gedenkmünzen konnten nicht geladen werden (Offline-Modus).';
+  }
 
-  catalog = [...regular, ...importedCollection, ...commCoins];
-  populateDropdowns();
-  render();
+  const map=new Map();
+  importedCollection.forEach(c=>map.set((c.country+'_'+c.year+'_'+c.title).toLowerCase(), c));
+
+  const mergedComm=comm.map(c=>{
+    const k=(c.country+'_'+c.year+'_'+c.title).toLowerCase();
+    return map.has(k) ? {...c, ...map.get(k)} : c;
+  });
+
+  catalog=[...regular, ...importedCollection.filter(ic=>!comm.some(c=>(c.country+'_'+c.year+'_'+c.title).toLowerCase()===(ic.country+'_'+ic.year+'_'+ic.title).toLowerCase())), ...mergedComm];
+
+  fillFilters();
 }
 
-function populateDropdowns() {
-  const countries = [...new Set(catalog.map(c => c.country))].sort();
-  const years = [...new Set(catalog.map(c => c.year).filter(y => y > 0))].sort((a,b) => b - a);
+function fillFilters(){
+  const cSel=document.getElementById('country');
+  const ySel=document.getElementById('year');
+  const countries=[...new Set(catalog.map(c=>c.country))].sort((a,b)=>a.localeCompare(b,'de'));
+  const years=[...new Set(catalog.map(c=>c.year).filter(Boolean))].sort((a,b)=>b-a);
 
-  const cSelect = document.getElementById('country');
-  cSelect.innerHTML = '<option value="">Alle Länder</option>' + 
-    countries.map(c => `<option value="${c}">${flagFor(c)} ${c}</option>`).join('');
-
-  const ySelect = document.getElementById('year');
-  ySelect.innerHTML = '<option value="">Alle Jahre</option>' + 
-    years.map(y => `<option value="${y}">${y}</option>`).join('');
+  cSel.innerHTML='<option value="">Alle Länder</option>'+countries.map(c=>`<option value="${c}">${flagFor(c)} ${c}</option>`).join('');
+  ySel.innerHTML='<option value="">Alle Jahre</option>'+years.map(y=>`<option value="${y}">${y}</option>`).join('');
 }
 
-function getFilteredCoins() {
-  const q = (document.getElementById('search').value || document.getElementById('globalSearch').value || '').toLowerCase();
-  const country = document.getElementById('country').value;
-  const year = document.getElementById('year').value;
-  const sort = document.getElementById('sort').value;
+function getFiltered(){
+  const q=(document.getElementById('search').value||document.getElementById('globalSearch').value||'').toLowerCase().trim();
+  const cVal=document.getElementById('country').value;
+  const yVal=document.getElementById('year').value;
+  const sVal=document.getElementById('sort').value;
 
-  return catalog.filter(c => {
-    const isOwned = userState[c.id] && userState[c.id].owned > 0;
-    
-    if(currentTab === 'regular' && c.type !== 'regular') return false;
-    if(currentTab === 'comm' && c.type !== 'comm') return false;
-    if(currentTab === 'owned' && !isOwned) return false;
-    if(currentTab === 'missing' && isOwned) return false;
-    if(currentTab === 'mine' && !c.id.startsWith('belgien_eyck') && !c.id.startsWith('imp')) return false;
+  return catalog.filter(c=>{
+    const st=userState[c.id]||{};
+    const isOwned=!!st.owned;
 
-    if(country && c.country !== country) return false;
-    if(year && String(c.year) !== year) return false;
-    if(q && !`${c.country} ${c.year} ${c.title} ${c.desc}`.toLowerCase().includes(q)) return false;
+    if(currentTab==='regular' && c.type!=='regular') return false;
+    if(currentTab==='comm' && c.type!=='comm') return false;
+    if(currentTab==='owned' && !isOwned) return false;
+    if(currentTab==='missing' && isOwned) return false;
+    if(currentTab==='mine' && !importedCollection.some(ic=>ic.id===c.id)) return false;
 
+    if(cVal && c.country!==cVal) return false;
+    if(yVal && String(c.year)!==yVal) return false;
+
+    if(q){
+      const haystack=(c.country+' '+c.year+' '+c.title+' '+c.desc).toLowerCase();
+      if(!haystack.includes(q)) return false;
+    }
     return true;
-  }).sort((a,b) => {
-    if(sort === 'yearDesc') return b.year - a.year;
-    if(sort === 'yearAsc') return a.year - b.year;
-    if(sort === 'country') return a.country.localeCompare(b.country);
-    if(sort === 'title') return a.title.localeCompare(b.title);
+  }).sort((a,b)=>{
+    if(sVal==='yearDesc') return b.year-a.year;
+    if(sVal==='yearAsc') return a.year-b.year;
+    if(sVal==='country') return a.country.localeCompare(b.country,'de');
+    if(sVal==='title') return a.title.localeCompare(b.title,'de');
     return 0;
   });
 }
 
-function updateStats() {
-  const total = catalog.length;
-  let ownedCount = 0;
-  let totalQty = 0;
-
-  catalog.forEach(c => {
-    if(userState[c.id] && userState[c.id].owned > 0) {
-      ownedCount++;
-      totalQty += userState[c.id].qty || 1;
+function renderStats(){
+  const total=catalog.length;
+  let owned=0, val=0;
+  catalog.forEach(c=>{
+    const st=userState[c.id];
+    if(st && st.owned){
+      owned++;
+      val += 2 * (parseInt(st.qty)||1);
     }
   });
+  const missing=Math.max(0, total-owned);
+  const pct=total? Math.round((owned/total)*100) : 0;
 
-  const missing = total - ownedCount;
-  const pct = total ? Math.round((ownedCount / total) * 100) : 0;
-
-  document.getElementById('ownedCount').innerText = `${ownedCount} / ${total}`;
-  document.getElementById('missingCount').innerText = missing;
-  document.getElementById('valueCount').innerText = `${totalQty * 2} €`;
-  document.getElementById('progressBar').style.width = `${pct}%`;
-  document.getElementById('progressLabel').innerText = `${pct} %`;
+  document.getElementById('ownedCount').innerText=`${owned} / ${total}`;
+  document.getElementById('missingCount').innerText=missing;
+  document.getElementById('valueCount').innerText=`${val} €`;
+  document.getElementById('progressBar').style.width=pct+'%';
+  document.getElementById('progressLabel').innerText=pct+' %';
 }
 
-function render() {
-  updateStats();
+function render(){
+  renderStats();
 
-  const isOverview = currentTab === 'overview';
-  document.getElementById('filters').style.display = isOverview ? 'none' : 'grid';
-  document.getElementById('grid').style.display = isOverview ? 'none' : 'grid';
-  document.getElementById('overviewPanel').style.display = isOverview ? 'block' : 'none';
+  const isOv = currentTab==='overview';
+  document.getElementById('filters').style.display = isOv ? 'none' : 'grid';
+  document.getElementById('grid').style.display = isOv ? 'none' : 'grid';
+  document.getElementById('overviewPanel').style.display = isOv ? 'block' : 'none';
 
-  if(isOverview) {
+  if(isOv){
     renderOverview();
     return;
   }
 
-  const coins = getFilteredCoins();
-  const grid = document.getElementById('grid');
-  document.getElementById('resultCount').innerText = `${coins.length} Münzen`;
+  const list=getFiltered();
+  document.getElementById('resultCount').innerText=`${list.length} Münzen`;
 
-  if(!coins.length) {
-    grid.innerHTML = '<div class="empty" style="grid-column:1/-1">Keine Münzen für diese Filterkriterien gefunden.</div>';
+  const grid=document.getElementById('grid');
+  if(!list.length){
+    grid.innerHTML='<div class="empty" style="grid-column:1/-1">Keine Münzen für diese Filterkriterien gefunden.</div>';
     return;
   }
 
-  grid.innerHTML = coins.map(c => {
-    const u = userState[c.id] || { owned: 0, qty: 1 };
-    const imgHtml = c.image 
-      ? `<img src="${c.image}" alt="${c.title}" onerror="this.onerror=null;this.parentElement.innerHTML='<div class=\\'coinmock\\'><span class=\\'flag\\'>${flagFor(c.country)}</span><span class=\\'e\\'>2€</span><small>${c.year||''}</small></div>'">`
-      : `<div class="coinmock"><span class="flag">${flagFor(c.country)}</span><span class="e">2€</span><small>${c.year||''}</small></div>`;
+  grid.innerHTML=list.map(c=>{
+    const st=userState[c.id]||{};
+    const isOwn=!!st.owned;
+    const badgeType = c.type==='comm' ? '🏛️ Gedenkmünze' : '🪙 Umlaufmünze';
+
+    let imgHtml = '';
+    const candidates = generateLocalImagePaths(c);
+    
+    if(c.image){
+      imgHtml = `<img class="coin-real-img" src="${c.image}" alt="${escapeHtml(c.title)}" onerror="tryNextImg(this, ${JSON.stringify(candidates).replace(/"/g, '&quot;')}, '${c.country}', '${c.year}')">`;
+    } else if(candidates.length > 0){
+      imgHtml = `<img class="auto-coin-img" src="${candidates[0]}" alt="${escapeHtml(c.title)}" onerror="tryNextImg(this, ${JSON.stringify(candidates).replace(/"/g, '&quot;')}, '${c.country}', '${c.year}')">`;
+    } else {
+      imgHtml = `
+        <div class="coinmock">
+          <span class="flag">${flagFor(c.country)}</span>
+          <span class="e">2€</span>
+          <small>${c.year||''}</small>
+        </div>
+      `;
+    }
 
     return `
       <div class="card">
         <div class="coinpic">
           <span class="badge">${flagFor(c.country)} ${c.country}</span>
-          ${u.owned ? '<span class="owned">✓ Vorhanden</span>' : ''}
+          ${isOwn? `<span class="owned">✓ ${st.qty>1? st.qty+'x':''}</span>`:''}
           ${imgHtml}
         </div>
         <div class="cardbody">
-          <div class="country">${c.country} • ${c.year || '–'}</div>
-          <div class="title">${c.title}</div>
+          <div class="country">${badgeType} • ${c.year||'–'}</div>
+          <div class="title">${escapeHtml(c.title)}</div>
           <div class="cardfoot">
-            <button class="smallbtn ${u.owned ? 'primary' : ''}" onclick="toggleOwned('${c.id}')">${u.owned ? '✅ Im Besitz' : '➕ Hinzufügen'}</button>
+            <button class="smallbtn ${isOwn?'primary':''}" onclick="toggleCoin('${c.id}')">${isOwn?'✅ Im Besitz':'➕ Hinzufügen'}</button>
             <button class="smallbtn" onclick="openModal('${c.id}')">Details</button>
           </div>
         </div>
@@ -453,78 +503,184 @@ function render() {
   }).join('');
 }
 
-function toggleOwned(id) {
-  if(!userState[id]) userState[id] = { owned: 0, qty: 1 };
-  userState[id].owned = userState[id].owned ? 0 : 1;
-  saveUserState();
+function tryNextImg(imgEl, candidates, country, year){
+  let idx = parseInt(imgEl.dataset.imgIdx || '0') + 1;
+  if(idx < candidates.length){
+    imgEl.dataset.imgIdx = idx;
+    imgEl.src = candidates[idx];
+  } else {
+    const parent = imgEl.parentElement;
+    if(parent){
+      parent.innerHTML = `
+        <div class="coinmock">
+          <span class="flag">${flagFor(country)}</span>
+          <span class="e">2€</span>
+          <small>${year||''}</small>
+        </div>
+      `;
+    }
+  }
+}
+
+function escapeHtml(str){
+  return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function toggleCoin(id){
+  const st=userState[id]||{};
+  if(st.owned){
+    delete userState[id];
+  }else{
+    userState[id]={owned:1, qty:1};
+  }
+  saveState();
   render();
 }
 
-function openModal(id) {
-  const c = catalog.find(x => x.id === id);
+function openModal(id){
+  const c=catalog.find(x=>x.id===id);
   if(!c) return;
-  activeModalCoin = c;
+  activeModalCoin=c;
 
-  const u = userState[c.id] || { owned: 0, qty: 1 };
-  document.getElementById('mTitle').innerText = c.title;
-  document.getElementById('mSub').innerText = `${flagFor(c.country)} ${c.country} (${c.year})`;
-  document.getElementById('mDesc').innerText = c.desc || 'Keine Beschreibung vorhanden.';
-  document.getElementById('mVolume').innerText = c.volume || '–';
-  document.getElementById('mRelease').innerText = c.release || '–';
-  document.getElementById('mOwned').value = u.owned ? '1' : '0';
-  document.getElementById('mQty').value = u.qty || 1;
+  const st=userState[id]||{};
+  document.getElementById('mTitle').innerText=c.title;
+  document.getElementById('mSub').innerText=`${flagFor(c.country)} ${c.country} • ${c.year||'–'}`;
+  document.getElementById('mDesc').innerText=c.desc||'Keine Zusatzbeschreibung vorhanden.';
+  document.getElementById('mVolume').innerText=c.volume||'–';
+  document.getElementById('mRelease').innerText=c.release||'–';
+  document.getElementById('mOwned').value=st.owned? '1':'0';
+  document.getElementById('mQty').value=st.qty||1;
 
-  const imgContainer = document.getElementById('mImage');
-  imgContainer.innerHTML = c.image 
-    ? `<img src="${c.image}" alt="${c.title}">`
-    : `<div class="coinmock" style="width:180px;height:180px"><span class="flag" style="font-size:48px">${flagFor(c.country)}</span><span class="e" style="font-size:40px">2€</span></div>`;
+  const pills=document.getElementById('mPills');
+  pills.innerHTML=`
+    <span class="pill">${c.type==='comm'?'🏛️ Gedenkmünze':'🪙 Umlaufmünze'}</span>
+    <span class="pill">Code: ${c.code||'–'}</span>
+  `;
 
-  document.getElementById('mEbay').href = `https://www.ebay.de/sch/i.html?_nkw=2+Euro+${encodeURIComponent(c.country)}+${encodeURIComponent(c.title)}+${c.year}&_sacat=11116&LH_Sold=1&LH_Complete=1`;
+  const big=document.getElementById('mImage');
+  const candidates = generateLocalImagePaths(c);
+  if(c.image){
+    big.innerHTML=`<img class="coin-real-img" src="${c.image}" alt="" onerror="tryNextImg(this, ${JSON.stringify(candidates).replace(/"/g, '&quot;')}, '${c.country}', '${c.year}')">`;
+  } else if(candidates.length > 0){
+    big.innerHTML=`<img class="auto-coin-img" src="${candidates[0]}" alt="" onerror="tryNextImg(this, ${JSON.stringify(candidates).replace(/"/g, '&quot;')}, '${c.country}', '${c.year}')">`;
+  } else {
+    big.innerHTML=`
+      <div class="coinmock" style="width:170px;height:170px">
+        <span class="flag" style="font-size:46px">${flagFor(c.country)}</span>
+        <span class="e" style="font-size:38px">2€</span>
+        <small style="font-size:12px">${c.year||''}</small>
+      </div>
+    `;
+  }
+
+  const ebayQuery=encodeURIComponent(`2 Euro ${c.country} ${c.title} ${c.year||''}`);
+  document.getElementById('mEbay').href=`https://www.ebay.de/sch/i.html?_nkw=${ebayQuery}&_sacat=11116&LH_Sold=1&LH_Complete=1`;
 
   document.getElementById('modal').classList.add('open');
 }
 
-function closeModal() {
+function closeModal(){
   document.getElementById('modal').classList.remove('open');
+  activeModalCoin=null;
 }
 
-function saveModal() {
+function saveModal(){
   if(!activeModalCoin) return;
-  const owned = parseInt(document.getElementById('mOwned').value) || 0;
-  const qty = parseInt(document.getElementById('mQty').value) || 1;
+  const id=activeModalCoin.id;
+  const owned=parseInt(document.getElementById('mOwned').value)||0;
+  const qty=Math.max(1, parseInt(document.getElementById('mQty').value)||1);
 
-  userState[activeModalCoin.id] = { owned, qty };
-  saveUserState();
+  if(owned){
+    userState[id]={owned:1, qty:qty};
+  }else{
+    delete userState[id];
+  }
+  saveState();
   closeModal();
   render();
 }
 
-function renderOverview() {
-  const body = document.getElementById('overviewBody');
-  body.innerHTML = '<div class="panel" style="padding:20px"><p>Übersicht wird generiert...</p></div>';
+function renderOverview(){
+  const body=document.getElementById('overviewBody');
+  if(!body) return;
+
+  if(currentOv==='countries'){
+    const map={};
+    catalog.forEach(c=>{
+      if(!map[c.country]) map[c.country]={total:0, owned:0};
+      map[c.country].total++;
+      if(userState[c.id] && userState[c.id].owned) map[c.country].owned++;
+    });
+
+    const rows=Object.keys(map).sort((a,b)=>a.localeCompare(b,'de')).map(c=>{
+      const d=map[c];
+      const pct=d.total? Math.round((d.owned/d.total)*100):0;
+      return `
+        <div class="panel" style="padding:14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+          <div><b>${flagFor(c)} ${c}</b><br><small style="color:var(--muted)">${d.owned} von ${d.total} Münzen</small></div>
+          <div style="width:140px;text-align:right">
+            <b>${pct}%</b>
+            <div class="progress" style="height:8px"><div style="width:${pct}%"></div></div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    body.innerHTML=`<div style="margin-top:15px">${rows}</div>`;
+  } else if(currentOv==='years'){
+    const map={};
+    catalog.forEach(c=>{
+      const y=c.year||0;
+      if(!map[y]) map[y]={total:0, owned:0};
+      map[y].total++;
+      if(userState[c.id] && userState[c.id].owned) map[y].owned++;
+    });
+
+    const rows=Object.keys(map).sort((a,b)=>b-a).map(y=>{
+      const d=map[y];
+      const pct=d.total? Math.round((d.owned/d.total)*100):0;
+      return `
+        <div class="panel" style="padding:14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+          <div><b>Jahr ${y||'Unbekannt'}</b><br><small style="color:var(--muted)">${d.owned} von ${d.total} Münzen</small></div>
+          <div style="width:140px;text-align:right">
+            <b>${pct}%</b>
+            <div class="progress" style="height:8px"><div style="width:${pct}%"></div></div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    body.innerHTML=`<div style="margin-top:15px">${rows}</div>`;
+  } else {
+    body.innerHTML=`<div class="panel" style="padding:20px;margin-top:15px"><p>Detailansicht für <b>${currentOv}</b> ist aktiv.</p></div>`;
+  }
 }
 
-function exportData() {
-  const blob = new Blob([JSON.stringify(userState, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = '2euro_sammlung_backup.json';
-  a.click();
+function exportData(){
+  const dataStr="data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(userState, null, 2));
+  const dlAnchor = document.createElement('a');
+  dlAnchor.setAttribute("href", dataStr);
+  dlAnchor.setAttribute("download", `2euro_sammlung_backup_${new Date().toISOString().slice(0,10)}.json`);
+  document.body.appendChild(dlAnchor);
+  dlAnchor.click();
+  dlAnchor.remove();
 }
 
-function importData(e) {
-  const file = e.target.files[0];
+function importData(e){
+  const file=e.target.files[0];
   if(!file) return;
-  const reader = new FileReader();
-  reader.onload = (evt) => {
-    try {
-      userState = JSON.parse(evt.target.result);
-      saveUserState();
-      render();
-      alert('Sammlung erfolgreich importiert!');
-    } catch(err) {
-      alert('Fehlerhafte JSON-Datei.');
+  const reader=new FileReader();
+  reader.onload=(evt)=>{
+    try{
+      const parsed=JSON.parse(evt.target.result);
+      if(typeof parsed === 'object'){
+        userState=parsed;
+        saveState();
+        render();
+        alert('Sammlung erfolgreich importiert!');
+      }
+    }catch(err){
+      alert('Fehler beim Importieren der JSON-Datei.');
     }
   };
   reader.readAsText(file);
