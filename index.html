@@ -81,6 +81,14 @@ button{cursor:pointer}
 .mint-btn.active {
   background: var(--accent); color: #fff; border-color: var(--accent);
 }
+@media print {
+  body { background: #fff !important; color: #000 !important; }
+  .top, .hero, .filters, .tabs, .actions, .modal, .footer, .note, #dataNote { display: none !important; }
+  .wrap { padding: 0 !important; max-width: 100% !important; }
+  .grid { display: grid !important; grid-template-columns: repeat(3, 1fr) !important; gap: 10px !important; }
+  .card { break-inside: avoid; page-break-inside: avoid; border: 1px solid #ccc !important; box-shadow: none !important; }
+  .smallbtn { display: none !important; }
+}
 </style>
 </head>
 <body>
@@ -93,6 +101,13 @@ button{cursor:pointer}
     <button class="iconbtn" id="importBtn" title="Sicherung importieren">↧</button>
     <input type="file" id="fileInput" accept=".json" hidden>
   </div>
+  <div class="actions">
+  <button class="iconbtn" id="printBtn" title="Drucken / PDF-Export">🖨️</button>
+  <button class="iconbtn" id="themeBtn" title="Hell/Dunkel umschalten">🌓</button>
+  <button class="iconbtn" id="exportBtn" title="Sicherung exportieren">↥</button>
+  <button class="iconbtn" id="importBtn" title="Sicherung importieren">↧</button>
+  <input type="file" id="fileInput" accept=".json" hidden>
+</div>
 </header>
 
 <main class="wrap">
@@ -852,10 +867,15 @@ function exportHTML(){
   downloadBlob('2euro-galerie-' + d + '.html', html, 'text/html;charset=utf-8');
 }
 document.getElementById('exportBtn').onclick = () => {
-  const choice = prompt(
-    'Export wählen:\n\n1 = JSON-Backup (Wiederherstellen)\n2 = CSV (Excel-Tabelle, ohne Bilder)\n3 = HTML-Galerie (mit Bildern)\n\nZahl eingeben:',
-    '1'
-  );
+  const confirmExport = confirm("Möchtest du deine Sammlung jetzt als JSON-Datei sichern?");
+  if (!confirmExport) return; // Bricht ab, wenn der Nutzer auf 'Abbrechen' klickt!
+
+  const blob = new Blob([JSON.stringify(userState, null, 2)], {type: 'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = '2euro-sammlung-backup.json';
+  a.click();
+};
   if(choice === '2') exportCSV();
   else if(choice === '3') exportHTML();
   else exportJSON();
@@ -868,6 +888,7 @@ load();
 function toggleMint(btn) {
   btn.classList.toggle('active');
 }
+document.getElementById('printBtn').onclick = () => { window.print(); };
 </script>
 </body>
 </html>
