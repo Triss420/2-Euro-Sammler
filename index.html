@@ -66,7 +66,7 @@ button{cursor:pointer}
 @media(max-width:900px){.hero{grid-template-columns:1fr}.filters{grid-template-columns:1fr 1fr}.modalgrid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}}
 @media(max-width:600px){.top{flex-wrap:wrap}.search{order:3;flex-basis:100%}.wrap{padding:14px}.stats{grid-template-columns:1fr}.filters{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.coinpic{height:145px}.coinmock{width:100px;height:100px}.coinmock .e{font-size:24px}.coinmock .flag{font-size:26px}.cardbody{padding:10px}.title{font-size:14px}}
 
-.coin-real-img,.auto-coin-img{max-width:90%;max-height:175px;object-fit:contain;border-radius:50%;filter:drop-shadow(0 8px 10px rgba(0,0,0,.16))}.de-generic{object-fit:cover!important;object-position:center top!important;clip-path:inset(0 0 18% 0 round 50%)}
+.coin-real-img,.auto-coin-img{max-width:90%;max-height:175px;object-fit:contain;border-radius:50%;filter:drop-shadow(0 8px 10px rgba(0,0,0,.16))}
 .bigimg .coin-real-img,.bigimg .auto-coin-img{max-width:96%;max-height:315px}
 </style>
 </head>
@@ -184,32 +184,6 @@ function flagFor(country){return COUNTRY_FLAG[String(country||'').trim()]||'🇪
 const DE_MINTS = ['A','D','F','G','J'];
 const DE_MINT_NAMES = {A:'Berlin',D:'München',F:'Stuttgart',G:'Karlsruhe',J:'Hamburg'};
 
-// Feste, verifizierte Bilder für deutsche Bundesadler-Ausgaben.
-// Wenn kein exaktes Foto vorhanden ist, wird bewusst nur ein neutrales
-// Motivbild ohne sichtbares Jahr/Prägezeichen verwendet – niemals ein falsches Prägezeichen.
-const DE_GENERIC_IMAGE='https://www.ecb.europa.eu/euro/coins/common/shared/img/de/Germany_2euro.jpg';
-const DE_EXACT_IMAGES={
-  '2002-A':'https://www.euro-coins.info/images/4c92fea0-74fc-5d4a-aa9a-23b371fe8455_341_rev.jpg',
-  '2002-F':'https://cdn.monetnik.ru/storage/market-lot/86/11/584786/2069807_mainViewLot_2x.jpg',
-  '2002-J':'https://cdn.freewebstore.com/origin/916642/germany2euro20022_1702514095154.jpg',
-  '2003-A':'https://cdn6.focus.bg/bazar/ab/original/ab2aba0cf4a809c7d74b0cfcd140ccd7.webp',
-  '2003-D':'https://www.numiscorner.com/cdn/shop/products/580517A.jpg?v=1704060668',
-  '2003-G':'https://i.etsystatic.com/38992734/r/il/c13596/7011279990/il_fullxfull.7011279990_65kz.jpg',
-  '2004-A':'https://i.ebayimg.com/images/g/i2MAAeSwFKtpX-1M/s-l1200.webp',
-  '2004-D':'https://nominal.club/wa-data/public/shop/products/87/77/157787/images/454470/454470.970.jpg',
-  '2004-F':'https://www.numisnumismatics.com/171801-large_default/2-euro-2004-f-pp.jpg',
-  '2004-G':'https://i.ebayimg.com/images/g/s74AAOSwK3pji7ig/s-l1600.jpg',
-  '2004-J':'https://www.eurofischer.de/WebRoot/Store7/Shops/61426499/46B8/91DD/8CEC/EC96/2493/C0A8/28B9/117F/Deutschland_2_Euro_2004_J-1.jpg',
-  '2005-A':'https://www.eurofischer.de/WebRoot/Store7/Shops/61426499/46B8/91F4/E6ED/B5DA/CED4/C0A8/28B9/1142/Deutschland_2_Euro_2005_A-1.jpg',
-  '2006-A':'https://www.euro-muenzen.tv/img04/145787241062792.jpg',
-  '2006-D':'https://media1.allnumis.com/14278/20-06-2013/2-euro-2006-d_14278_04628608962d93L.jpg'
-};
-function deFixedImage(c){
-  if(String(c.country||'').trim()!=='Deutschland' || !c.mintmark) return null;
-  return DE_EXACT_IMAGES[`${c.year}-${String(c.mintmark).toUpperCase()}`] || DE_GENERIC_IMAGE;
-}
-
-
 function expandMintVariants(list){
   const out = [];
   list.forEach(c=>{
@@ -234,9 +208,9 @@ function expandMintVariants(list){
         title: String(c.title||'').replace(/\s·\s*[ADFGJ]\b/gi,'').trim() + ' · ' + m,
         desc: (c.desc ? c.desc + ' ' : '') + 'Prägestätte ' + m + (DE_MINT_NAMES[m] ? ' (' + DE_MINT_NAMES[m] + ')' : ''),
         parentId: c.id,
-        image: null,
         owned: 0,
-        qty: 0
+        qty: 0,
+        image: null
       });
     });
   });
@@ -328,22 +302,36 @@ function imageSearchQueries(c){
   const country=String(c.country||'').trim();
   const countryEn=COUNTRY_EN[country]||country;
   const year=String(c.year||'').trim();
-  const title=String(c.title||'').trim();
+  const title=String(c.title||'').replace(/\s*[·-]\s*[ADFGJ]\s*$/i,'').trim();
   const t=normText(title);
   const qs=[];
-  // Englische Varianten zuerst – Commons-Dateien sind fast immer englisch benannt.
+
+  // Deutschland: niemals eine allgemeine Deutschland-Suche verwenden.
+  // Das Jahr muss Teil jeder Suche sein; bei Gedenkmünzen kommt der genaue Titel dazu.
+  if(country==='Deutschland' && year){
+    if(t.includes('bundesadler')){
+      qs.push(`Germany 2 euro ${year} eagle`);
+      qs.push(`Germany 2 euro ${year} Bundesadler`);
+      qs.push(`Deutschland 2 Euro ${year} Bundesadler`);
+    }else{
+      const words=title.split(/\s+/).filter(w=>normText(w).length>=4).slice(0,5).join(' ');
+      if(words){
+        qs.push(`Germany 2 euro ${year} ${words}`);
+        qs.push(`Deutschland 2 Euro ${year} ${words}`);
+      }
+      qs.push(`Germany 2 euro ${year}`);
+      qs.push(`Deutschland 2 Euro ${year}`);
+    }
+    return [...new Set(qs)].map(encodeURIComponent);
+  }
+
   if(title) qs.push(`2 euro coin ${countryEn} ${year} commemorative`);
   qs.push(`2 euro coin ${countryEn} ${year}`);
   qs.push(`€2 commemorative coin ${countryEn} ${year}`);
   if(title) qs.push(`2 euro ${countryEn} ${year} ${title}`);
-  // deutsche Varianten als Fallback
   if(title) qs.push(`2 euro ${country} ${year} ${title}`);
   if(title) qs.push(`${country} 2 euro ${year} ${title}`);
   qs.push(`2 euro ${country} ${year}`);
-  if(t.includes('bundesadler')){
-    qs.unshift(`Germany 2 euro ${year} eagle`);
-    qs.push(`Germany 2 euro ${year} Bundesadler`);
-  }
   if(t.includes('bertha von suttner')) qs.unshift(`Austria 2 euro Bertha von Suttner`);
   return [...new Set(qs)].map(encodeURIComponent);
 }
@@ -351,24 +339,36 @@ function bestCommonsImage(data,c){
   const pages=Object.values(data?.query?.pages||{});
   const country=normText(c.country||'');
   const countryEn=normText(COUNTRY_EN[String(c.country||'').trim()]||'');
-  const title=normText(c.title||'');
+  const rawTitle=String(c.title||'').replace(/\s*[·-]\s*[ADFGJ]\s*$/i,'').trim();
+  const title=normText(rawTitle);
   const year=String(c.year||'');
-  const titleWords=title.split(' ').filter(x=>x.length>3);
+  const isGermany=String(c.country||'').trim()==='Deutschland';
+  const isBundesadler=isGermany && title.includes('bundesadler');
+  const titleWords=title.split(' ').filter(x=>x.length>3 && !['deutschland','bundesadler'].includes(x));
   let best=null, scoreBest=-999;
   for(const p of pages){
     const ii=p.imageinfo?.[0]; if(!ii) continue;
     const name=normText(p.title||'');
-    if(!/2 euro|2euro|2 eur|euro coin|euro münze|euro munze/i.test(name)) continue;
+    if(!/2 euro|2euro|2 eur|euro coin|euro munze|euro munze/i.test(name)) continue;
     if(/album|folder|set|roll|banknote|medal|token|coincard|proof set|mint set/i.test(name)) continue;
+
+    // Für Deutschland ist das Jahr ein harter Filter. So kann z.B. 2003 niemals
+    // als Bild für 2004 zurückkommen. Bei Gedenkmünzen muss außerdem mindestens
+    // ein markantes Titelwort passen, sofern der Dateiname solche Angaben enthält.
+    if(isGermany && year && !name.includes(year)) continue;
+
     let score=0;
-    if(year && name.includes(year)) score+=8;
+    if(year && name.includes(year)) score+=20;
     if(country && name.includes(country)) score+=5;
     if(countryEn && name.includes(countryEn)) score+=5;
-    for(const w of titleWords) if(name.includes(w)) score+=2;
+    for(const w of titleWords) if(name.includes(w)) score+=4;
+    if(isBundesadler && !name.includes('eagle') && !name.includes('adler') && !name.includes('bundesadler')) score+=1;
     if(name.includes('2 euro')) score+=3;
     if(/jpg|jpeg|png/i.test(ii.url||'')) score+=1;
     if(score>scoreBest){scoreBest=score;best=ii.thumburl||ii.url;}
   }
+  // Deutschland nur akzeptieren, wenn das Jahr wirklich getroffen wurde.
+  if(isGermany && year && scoreBest<21) return null;
   return scoreBest>=3 ? best : null;
 }
 async function commonsSearch(q,c){
@@ -378,7 +378,6 @@ async function commonsSearch(q,c){
 }
 async function resolveCoinImage(c,target){
   if(!c || c.image || imageBusy.has(c.id)) return;
-  if(String(c.country||'').trim()==='Deutschland' && c.mintmark) return;
   imageBusy.add(c.id);
   try{
     const qs=imageSearchQueries(c);
@@ -402,7 +401,7 @@ async function resolveCoinImage(c,target){
 function coinVisual(c,big=false){
   const flag=flagFor(c.country);
   const fallback=`<div class="coinmock fallbackCoin"${c.image?' style="display:none"':''}><div class="flag">${flag}</div><div class="e">2€</div><small>${esc(c.code||c.country||'EURO')}</small></div>`;
-  if(c.image){ const genericDE=String(c.country||'').trim()==='Deutschland' && c.mintmark && !DE_EXACT_IMAGES[`${c.year}-${String(c.mintmark).toUpperCase()}`]; return `<img class="coin-real-img${genericDE?' de-generic':''}" src="${esc(c.image)}" alt="${esc(c.title)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">${fallback}`; }
+  if(c.image) return `<img class="coin-real-img" src="${esc(c.image)}" alt="${esc(c.title)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">${fallback}`;
   return `<img class="auto-coin-img" data-coin-id="${esc(c.id)}" src="" alt="${esc(c.title)}" loading="lazy" style="display:none">${fallback}`;
 }
 function loadVisibleCoinImages(){
@@ -693,11 +692,9 @@ async function load(){
     document.getElementById('dataNote').innerHTML=`<b>${all.length}</b> reguläre 2-€-Ausgaben geladen. Die Gedenkmünzen werden bei bestehender Internetverbindung ergänzt.`;
   }
     all = expandMintVariants(all);
-  all.forEach(c=>{ if(String(c.country||'').trim()==='Deutschland' && c.mintmark) c.image=deFixedImage(c); });
   applyExcelOwnership();
     // Falls expand noch nicht lief (z.B. Fehler beim Comm-Laden):
   if(!all.some(c => c.mintmark)) all = expandMintVariants(all);
-  all.forEach(c=>{ if(String(c.country||'').trim()==='Deutschland' && c.mintmark) c.image=deFixedImage(c); });
   applyExcelOwnership();
   attachExcelImages();
   applySaved();rebuildFilters();stats();render();
