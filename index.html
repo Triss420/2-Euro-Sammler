@@ -995,6 +995,61 @@ document.getElementById('fileInput').onchange=e=>{
   const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const p=JSON.parse(rd.result);Object.assign(saved,p.owned||{});all.forEach(c=>{if(saved[c.id]){c.owned=!!saved[c.id].owned;c.qty=saved[c.id].qty||0}});saveState();stats();render();alert('Sammlung importiert.')}catch(_){alert('Die Datei konnte nicht gelesen werden.')}};rd.readAsText(f);
 };
 load();
+// 1. DYNAMISCHER GRID-ZOOM (SLIDER)
+const zoomInput = document.getElementById('grid-zoom');
+const coinGrid = document.querySelector('.coin-grid'); // Sicherstellen, dass die Galerie diese Klasse hat
+
+if (zoomInput && coinGrid) {
+  zoomInput.addEventListener('input', (e) => {
+    coinGrid.style.setProperty('--grid-columns', e.target.value);
+  });
+}
+
+// 2. FORTSCHRITTSBALKEN BERECHNEN UND UPDATE
+// Diese Funktion aufrufen, wann immer Münzen geladen, gefiltert oder hinzugefügt werden!
+function updateProgressBar(currentCount, totalPossible, label = "Sammlung") {
+  const labelEl = document.getElementById('progress-label');
+  const textEl = document.getElementById('progress-text');
+  const fillEl = document.getElementById('progress-bar-fill');
+
+  if (!labelEl || !textEl || !fillEl) return;
+
+  const percentage = totalPossible > 0 ? Math.round((currentCount / totalPossible) * 100) : 0;
+
+  labelEl.textContent = label;
+  textEl.textContent = `${currentCount} / ${totalPossible} (${percentage}%)`;
+  fillEl.style.width = `${percentage}%`;
+}
+
+// 3. TABLET TOUCH-SWIPE FÜR DAS DETAIL-MODAL
+const modal = document.getElementById('coin-modal'); // Name deines Modals anpassen
+let touchStartX = 0;
+let touchEndX = 0;
+
+if (modal) {
+  modal.addEventListener('touchstart', (e) => {
+    touchStartX = e.changedTouches[0].screenX;
+  }, { passive: true });
+
+  modal.addEventListener('touchend', (e) => {
+    touchEndX = e.changedTouches[0].screenX;
+    handleSwipe();
+  }, { passive: true });
+}
+
+function handleSwipe() {
+  const swipeThreshold = 50; // Mindestdistanz in Pixeln für einen Swipe
+  
+  if (touchEndX < touchStartX - swipeThreshold) {
+    // nach links gewischt -> NÄCHSTE MÜNZE
+    if (typeof showNextCoin === 'function') showNextCoin(); 
+  }
+  
+  if (touchEndX > touchStartX + swipeThreshold) {
+    // nach rechts gewischt -> VORHERIGE MÜNZE
+    if (typeof showPreviousCoin === 'function') showPreviousCoin();
+  }
+}
 </script>
 </body>
 </html>
