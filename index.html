@@ -458,8 +458,9 @@ async function resolveCoinImage(c,target){
 }
 function coinVisual(c,big=false){
   const flag=flagFor(c.country);
-  const fallback=`<div class="coinmock fallbackCoin"${c.image?' style="display:none"':''}><div class="flag">${flag}</div><div class="e">2€</div><small>${esc(c.code||c.country||'EURO')}</small></div>`;
-  if(c.image){ const genericDE=c.type==='regular' && String(c.country||'').trim()==='Deutschland' && c.mintmark && !DE_EXACT_IMAGES[`${c.year}-${String(c.mintmark).toUpperCase()}`]; return `<img class="coin-real-image${genericDE?' de-generic':''}" src="${esc(c.image)}" alt="${esc(c.title)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">${fallback}`; }
+  const imgPath = c.image || c.img; // FALLBACK HIER
+  const fallback=`<div class="coinmock fallbackCoin"${imgPath?' style="display:none"':''}><div class="flag">${flag}</div><div class="e">2€</div><small>${esc(c.code||c.country||'EURO')}</small></div>`;
+  if(imgPath){ const genericDE=c.type==='regular' && String(c.country||'').trim()==='Deutschland' && c.mintmark && !DE_EXACT_IMAGES[`${c.year}-${String(c.mintmark).toUpperCase()}`]; return `<img class="coin-real-image${genericDE?' de-generic':''}" src="${esc(imgPath)}" alt="${esc(c.title)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">${fallback}`; }
   return `<img class="auto-coin-image" data-coin-id="${esc(c.id)}" src="" alt="${esc(c.title)}" loading="lazy" style="display:none">${fallback}`;
 }
 function loadVisibleCoinImages(){
