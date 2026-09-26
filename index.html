@@ -130,6 +130,22 @@ button{cursor:pointer}
     <button class="iconbtn" id="importBtn" title="Sicherung importieren">↧</button>
     <input type="file" id="fileInput" accept=".json" hidden>
   </div>
+  <!-- Tablet-Steuerung: Raster-Zoom -->
+<div class="zoom-control">
+  <label for="grid-zoom">Raster:</label>
+  <input type="range" id="grid-zoom" min="2" max="6" value="4" step="1">
+</div>
+
+<!-- Fortschrittsanzeige für Vollständigkeit -->
+<div class="progress-container">
+  <div class="progress-info">
+    <span id="progress-label">Gesamtsammlung</span>
+    <span id="progress-text">0 / 0 (0%)</span>
+  </div>
+  <div class="progress-bar-bg">
+    <div id="progress-bar-fill" class="progress-bar-fill" style="width: 0%;"></div>
+  </div>
+</div>
 </header>
 
 <main class="wrap">
