@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#3d5a6c">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="2€ Sammler">
 <title>2€ Sammler</title>
 <style>
 :root{
@@ -117,6 +123,49 @@ button{cursor:pointer}
     height: 80px !important;
   }
 }
+
+/* ===== V10 ===== */
+.card{-webkit-touch-callout:none}
+.coinmock{background:radial-gradient(circle at 50% 50%,#e6e3da 0 57%,#c9a24c 59% 100%);border:0;color:#4a4536;box-shadow:0 10px 18px rgba(0,0,0,.16),inset 0 0 0 3px rgba(255,255,255,.25)}
+.coin-real-img{transition:opacity .25s}
+.coinpic .coin-real-img:not(.ld){opacity:0;position:absolute}
+.coin-real-img.ld+.fallbackCoin{display:none}
+.coin-real-img:not(.ld)+.fallbackCoin{animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.55}}
+.stepper{flex:1.4;display:flex;align-items:stretch;border:1px solid var(--accent);border-radius:10px;overflow:hidden;background:var(--panel)}
+.stepper button{flex:0 0 38px;border:0;background:var(--accent);color:#fff;font-weight:800;font-size:18px;line-height:1}
+.stepper span{flex:1;display:flex;align-items:center;justify-content:center;font-weight:800}
+.selmark{position:absolute;top:10px;right:10px;z-index:3;width:26px;height:26px;border-radius:50%;background:var(--panel);border:2px solid var(--line);display:none;align-items:center;justify-content:center;color:transparent;font-weight:800}
+.selmode .selmark{display:flex}
+.selmode .cardfoot{display:none}
+.selmode .owned{right:44px}
+.card.sel{outline:3px solid var(--accent);outline-offset:-3px}
+.card.sel .selmark{background:var(--accent);border-color:var(--accent);color:#fff}
+.selbar{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translate(-50%,160%);transition:transform .2s;z-index:15;display:flex;gap:8px;flex-wrap:wrap;justify-content:center;align-items:center;max-width:calc(100% - 24px);padding:10px 12px;border-radius:16px;background:var(--top);color:#fbf9f4;box-shadow:var(--shadow)}
+.selbar.open{transform:translate(-50%,0)}
+.selbar button{border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:inherit;border-radius:10px;padding:8px 11px}
+.selbar button.ok{background:var(--good);border-color:var(--good)}
+.toast{position:fixed;left:50%;bottom:calc(80px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;pointer-events:none;transition:.25s;z-index:30;background:var(--top);color:#fbf9f4;padding:11px 16px;border-radius:12px;box-shadow:var(--shadow);max-width:calc(100% - 30px);text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+#backupNote{display:flex;flex-wrap:wrap;gap:8px;align-items:center;border-color:var(--warn)}
+.ovgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.ovrow{display:grid;grid-template-columns:1fr auto;gap:6px 10px;text-align:left;padding:12px 14px;border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:14px}
+.ovrow:hover{border-color:var(--accent)}.ovrow.done{border-color:var(--good)}
+.ovrow .progress{grid-column:1/-1;height:8px;margin:0}
+.ovrow.static{cursor:default}
+.scroll{overflow-x:auto}
+.ovtable{border-collapse:collapse;width:100%;background:var(--panel);border-radius:14px;overflow:hidden}
+.ovtable th,.ovtable td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:center;white-space:nowrap}
+.ovtable th:nth-child(2),.ovtable td:nth-child(2){text-align:left;white-space:normal}
+.mintcell{width:36px;height:34px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--muted)}
+.mintcell.on{background:var(--good);border-color:var(--good);color:#fff}
+.mintcell:disabled{opacity:.35;cursor:default}
+.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.bdg{padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--panel)}
+.bdg .ic{font-size:30px}.bdg b{display:block;margin-top:4px}.bdg small{color:var(--muted);display:block;margin-top:2px}
+.bdg.locked{opacity:.55;filter:grayscale(1)}.bdg:not(.locked){border-color:var(--warn)}
+.menuBtns{padding:16px;display:grid;gap:10px}.menuBtns .smallbtn{padding:14px;text-align:left}
+@media print{.selbar,.toast,#backupNote,#selBtn{display:none!important}}
 </style>
 </head>
 <body>
@@ -125,6 +174,7 @@ button{cursor:pointer}
   <div class="search"><b>⌕</b><input id="globalSearch" placeholder="Land, Jahr, Motiv, Stichwort …"></div>
   <div class="actions">
     <button class="iconbtn" id="themeBtn" title="Hell/Dunkel umschalten">🌓</button>
+    <button class="iconbtn" id="photoBtn" title="Fotos ein/aus (aus = einheitliche Platzhalter)" onclick="togglePhotos()">🖼️</button>
     <button class="iconbtn" onclick="window.print()" title="Sammlung drucken / als PDF speichern">🖨️</button>
     <button class="iconbtn" id="exportBtn" title="Sicherung exportieren">↥</button>
     <button class="iconbtn" id="importBtn" title="Sicherung importieren">↧</button>
@@ -171,20 +221,21 @@ button{cursor:pointer}
     <input id="search" placeholder="🔎 Suche im Katalog …">
     <select id="country"><option value="">Alle Länder</option></select>
     <select id="year"><option value="">Alle Jahre</option></select>
-    <select id="sort"><option value="yearDesc">Neueste zuerst</option><option value="yearAsc">Älteste zuerst</option><option value="country">Land</option><option value="title">Motiv</option></select>
+    <select id="sort"><option value="yearDesc">Neueste zuerst</option><option value="recent">Zuletzt hinzugefügt</option><option value="yearAsc">Älteste zuerst</option><option value="country">Land</option><option value="title">Motiv</option></select>
   </div>
 
+  <div class="note" id="backupNote" style="display:none"><span id="backupText"></span><span style="display:flex;gap:8px"><button class="smallbtn primary" style="flex:none;padding:6px 12px" onclick="exportJSON()">Jetzt sichern</button><button class="smallbtn" style="flex:none;padding:6px 12px" onclick="snoozeBackup()">Später</button></span></div>
   <div class="note" id="dataNote">Gedenkmünzen werden aus einer öffentlichen Datensammlung geladen. Die Sammlung selbst bleibt lokal auf deinem Gerät.</div>
-  <div class="sectionHead"><h2 id="heading">Katalog</h2><div class="count" id="resultCount"></div></div>
+  <div class="sectionHead"><h2 id="heading">Katalog</h2><div style="display:flex;gap:10px;align-items:center"><div class="count" id="resultCount"></div><button class="smallbtn" id="selBtn" style="flex:none;padding:7px 12px" onclick="setSelectMode(!selectMode)">☑ Auswählen</button></div></div>
   <div class="grid" id="grid"></div>
     <div id="overviewPanel" style="display:none">
     <div class="tabs" id="overviewSubTabs" style="margin-top:0">
       <button class="tab active" data-ov="countries">Länder</button>
       <button class="tab" data-ov="years">Jahre</button>
       <button class="tab" data-ov="stats">Statistik</button>
-      <button class="tab" data-ov="series">Serien</button>
       <button class="tab" data-ov="joint">Gemeinschaft</button>
       <button class="tab" data-ov="mints">DE-Stempel</button>
+      <button class="tab" data-ov="badges">Abzeichen</button>
     </div>
     <div id="overviewBody"></div>
   </div>
@@ -193,7 +244,7 @@ button{cursor:pointer}
 
 <div class="modal" id="modal">
   <div class="modalbox">
-    <div class="modalhead"><div><b id="mTitle">Münze</b><div id="mSub" class="country"></div></div><button class="close" onclick="closeModal()">✕</button></div>
+    <div class="modalhead"><div><b id="mTitle">Münze</b><div id="mSub" class="country"></div></div><div style="display:flex;gap:6px;align-items:flex-start"><button class="close" onclick="stepCoin(-1)" title="Vorherige (←)">‹</button><button class="close" onclick="stepCoin(1)" title="Nächste (→)">›</button><button class="close" onclick="closeModal()" title="Schließen (Esc)">✕</button></div></div>
     <div class="modalgrid">
       <div class="bigimg" id="mImage"></div>
       <div class="detail">
@@ -213,6 +264,16 @@ button{cursor:pointer}
     </div>
   </div>
 </div>
+
+<div class="modal" id="menuModal"><div class="modalbox" style="max-width:420px">
+  <div class="modalhead"><b>Exportieren</b><button class="close" onclick="closeMenu()">✕</button></div>
+  <div class="menuBtns">
+    <button class="smallbtn primary" onclick="exportJSON();closeMenu()">💾 JSON-Backup (zum Wiederherstellen)</button>
+    <button class="smallbtn" onclick="exportCSV();closeMenu()">📊 CSV (Excel-Tabelle, ohne Bilder)</button>
+    <button class="smallbtn" onclick="exportHTML();closeMenu()">🖼️ HTML-Galerie (mit Bildern)</button>
+  </div></div></div>
+<div class="selbar" id="selBar"><span id="selCount">0 ausgewählt</span><button onclick="selAll()">Alle sichtbaren</button><button class="ok" onclick="bulkSet(1)">✅ Vorhanden</button><button onclick="bulkSet(0)">❌ Fehlt</button><button onclick="setSelectMode(false)">✕</button></div>
+<div class="toast" id="toast"></div>
 
 <script>
 const COMM_URL='https://raw.githubusercontent.com/Liebeck/two-euro-coins-data/main/2euro-coins.json';
@@ -367,11 +428,16 @@ function normalizeComm(c,i){
     owned:Number(saved['c'+i]?.owned||c.Owned||0),qty:Number(saved['c'+i]?.qty||0)};
 }
 function applySaved(){
-  all.forEach(c=>{if(saved[c.id]){c.owned=Number(saved[c.id].owned||0);c.qty=Number(saved[c.id].qty||0)}});
+  all.forEach(c=>{if(saved[c.id]){c.owned=Number(saved[c.id].owned||0);c.qty=Number(saved[c.id].qty||0);c.added=Number(saved[c.id].added||0)}});
 }
 function saveState(){
-  const o={};all.forEach(c=>o[c.id]={owned:c.owned?1:0,qty:c.qty||0});
-  localStorage.setItem(STORE,JSON.stringify({version:1,owned:o}));
+  // bestehende Einträge behalten (z.B. Gedenkmünzen, die offline nicht geladen wurden)
+  const o={...saved};all.forEach(c=>o[c.id]={owned:c.owned?1:0,qty:c.qty||0,added:c.added||0});
+  Object.assign(saved,o);
+  const json=JSON.stringify({version:2,owned:o});
+  try{localStorage.setItem(STORE,json)}catch(e){}
+  idbSet(STORE,json);
+  const m=getMeta();m.changes=(m.changes||0)+1;setMeta(m);checkBackup();
 }
 
 const imageCache={};
@@ -458,8 +524,10 @@ async function resolveCoinImage(c,target){
 }
 function coinVisual(c,big=false){
   const flag=flagFor(c.country);
-  const fallback=`<div class="coinmock fallbackCoin"${c.image?' style="display:none"':''}><div class="flag">${flag}</div><div class="e">2€</div><small>${esc(c.code||c.country||'EURO')}</small></div>`;
-  if(c.image){ const genericDE=c.type==='regular' && String(c.country||'').trim()==='Deutschland' && c.mintmark && !DE_EXACT_IMAGES[`${c.year}-${String(c.mintmark).toUpperCase()}`]; return `<img class="coin-real-img${genericDE?' de-generic':''}" src="${esc(c.image)}" alt="${esc(c.title)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">${fallback}`; }
+  const sub=[c.year||'',c.mintmark||c.code||''].filter(Boolean).join(' · ')||c.country||'EURO';
+  const fallback=`<div class="coinmock fallbackCoin"><div class="flag">${flag}</div><div class="e">2€</div><small>${esc(sub)}</small></div>`;
+  if(!usePhotos) return fallback;
+  if(c.image){ const genericDE=c.type==='regular' && String(c.country||'').trim()==='Deutschland' && c.mintmark && !DE_EXACT_IMAGES[`${c.year}-${String(c.mintmark).toUpperCase()}`]; return `<img class="coin-real-img${genericDE?' de-generic':''}" src="${esc(c.image)}" alt="${esc(c.title)}" loading="lazy" onload="this.classList.add('ld')" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">${fallback}`; }
   return `<img class="auto-coin-img" data-coin-id="${esc(c.id)}" src="" alt="${esc(c.title)}" loading="lazy" style="display:none">${fallback}`;
 }
 function loadVisibleCoinImages(){
@@ -477,6 +545,11 @@ function loadVisibleCoinImages(){
 }
 
 function render(){
+  const isOv=activeTab==='overview';
+  document.getElementById('overviewPanel').style.display=isOv?'block':'none';
+  ['filters','dataNote','grid'].forEach(i=>document.getElementById(i).style.display=isOv?'none':'');
+  document.querySelector('.sectionHead').style.display=isOv?'none':'';
+  if(isOv){renderOverview();return}
   const q=(document.getElementById('search').value+' '+document.getElementById('globalSearch').value).trim().toLowerCase();
   const country=document.getElementById('country').value, year=document.getElementById('year').value, sort=document.getElementById('sort').value;
 
@@ -517,15 +590,15 @@ function render(){
     if(q&&!(`${c.country} ${c.year} ${c.title} ${c.desc} ${c.code||''}`.toLowerCase().includes(q)))return false;
     return true;
   });
-  list.sort((a,b)=>sort==='yearAsc'?a.year-b.year:sort==='country'?a.country.localeCompare(b.country,'de'):sort==='title'?a.title.localeCompare(b.title,'de'):b.year-a.year);
-  document.getElementById('resultCount').textContent=`${list.length} Treffer`;
+  list.sort((a,b)=>sort==='recent'?((b.added||0)-(a.added||0)||b.year-a.year):sort==='yearAsc'?a.year-b.year:sort==='country'?a.country.localeCompare(b.country,'de'):sort==='title'?a.title.localeCompare(b.title,'de'):b.year-a.year);
+  document.getElementById('resultCount').textContent=`${list.length} Treffer`;lastList=list.map(c=>c.id);updateSelBar();
   document.getElementById('heading').textContent=activeTab==='regular'?'Umlaufmünzen':activeTab==='comm'?'Gedenkmünzen':activeTab==='owned'?'Meine Sammlung':activeTab==='missing'?'Noch fehlend':'Katalog';
   const grid=document.getElementById('grid');
   if(!list.length){grid.innerHTML='<div class="empty">Keine Münzen gefunden.<br>Ändere Suche oder Filter.</div>';return}
-  grid.innerHTML=list.map(c=>`<article class="card">
-    <div class="coinpic"><span class="badge">${c.mintmark ? ((c.type==='comm'?'Gedenk':'Umlauf')+' · '+c.mintmark) : (c.type==='comm'?'Gedenkmünze':'Umlaufmünze')}</span>${c.owned?`<span class="owned">✓ ${c.qty||1}×</span>`:''}${coinVisual(c)}</div>
+  grid.innerHTML=list.map(c=>`<article class="card${selected.has(c.id)?' sel':''}" data-id="${c.id}">
+    <div class="coinpic"><span class="selmark">✓</span><span class="badge">${c.mintmark ? ((c.type==='comm'?'Gedenk':'Umlauf')+' · '+c.mintmark) : (c.type==='comm'?'Gedenkmünze':'Umlaufmünze')}</span>${c.owned?`<span class="owned">✓ ${c.qty||1}×</span>`:''}${coinVisual(c)}</div>
     <div class="cardbody"><div class="country">${esc(c.country)}</div><div class="title">${esc(c.title)}</div><div class="year">${c.year?esc(c.year):'–'}</div>
-    <div class="cardfoot"><button class="smallbtn" onclick="openCoin('${c.id}')">Details</button><button class="smallbtn primary" onclick="toggle('${c.id}')">${c.owned?'✓ Vorhanden':'＋ Sammeln'}</button><a class="smallbtn" href="${ebaySoldUrl(c)}" target="_blank" rel="noopener" title="Zuletzt verkauft auf eBay">eBay</a></div></div>
+    <div class="cardfoot"><button class="smallbtn" onclick="openCoin('${c.id}')">Details</button>${c.owned?`<div class="stepper"><button onclick="bump('${c.id}',-1)" aria-label="weniger">−</button><span>${c.qty||1}×</span><button onclick="bump('${c.id}',1)" aria-label="mehr">+</button></div>`:`<button class="smallbtn primary" onclick="toggle('${c.id}')">＋ Sammeln</button>`}<a class="smallbtn" href="${ebaySoldUrl(c)}" target="_blank" rel="noopener" title="Zuletzt verkauft auf eBay">eBay</a></div></div>
   </article>`).join('');
   loadVisibleCoinImages();
 }
@@ -533,7 +606,7 @@ function showExcel(id){
   const c=excelCollection.find(x=>x.id===id); if(!c)return;
   document.getElementById('mTitle').textContent=c.title;
   document.getElementById('mSub').textContent=`${c.country}${c.year?' · '+c.year:''}`;
-  document.getElementById('mImage').innerHTML=coinVisual(c,true); if(!c.image) setTimeout(()=>resolveCoinImage(c,document.getElementById('mImage')),0);
+  document.getElementById('mImage').innerHTML=coinVisual(c,true); if(!c.image&&usePhotos) setTimeout(()=>resolveCoinImage(c,document.getElementById('mImage')),0);
   document.getElementById('mPills').innerHTML=`<span class="pill">${c.complete?'✓ vollständig':'❌ noch offen'}</span>${c.qty?`<span class="pill">${c.qty}× vorhanden</span>`:''}${c.mintmarks.length?`<span class="pill">Prägestätten: ${esc(c.mintmarks.join(' · '))}</span>`:''}`;
   const missing=(c.mintmarks.length&&!c.complete)?c.mintmarks.filter(x=>!c.ownedMintmarks.includes(x)):[];
   document.getElementById('mDesc').innerHTML=esc(c.mintmarks.length?`Vorhanden: ${c.ownedMintmarks.join(' · ')||'keine'}${missing.length?` | Fehlen: ${missing.join(' · ')}`:''}`:'In deiner Excel-Liste ist dieser Eintrag als '+(c.complete?'vollständig':'noch nicht vollständig')+' markiert.');
@@ -563,9 +636,10 @@ function stats(){
   document.getElementById('progressBar').style.width = pct.toFixed(1) + '%';
     const pl = document.getElementById('progressLabel');
   if(pl) pl.textContent = pct.toLocaleString('de-DE',{maximumFractionDigits:1}) + ' %';
+  checkBadges();
 }
 function toggle(id){
-  const c=all.find(x=>x.id===id);if(!c)return;c.owned=!c.owned;c.qty=c.owned?(c.qty||1):0;saveState();stats();render();
+  const c=all.find(x=>x.id===id);if(!c)return;c.owned=!c.owned;c.qty=c.owned?(c.qty||1):0;if(c.owned)c.added=Date.now();saveState();stats();render();
 }
 function openCoin(id){
   const c=all.find(x=>x.id===id);if(!c)return;currentId=id;
@@ -582,7 +656,7 @@ function openCoin(id){
 function closeModal(){document.getElementById('modal').classList.remove('open');currentId=null}
 function saveModal(){
   const c=all.find(x=>x.id===currentId);if(!c)return;
-  c.owned=Number(document.getElementById('mOwned').value);c.qty=Math.max(1,Number(document.getElementById('mQty').value)||1);
+  const was=c.owned;c.owned=Number(document.getElementById('mOwned').value);if(c.owned&&!was)c.added=Date.now();c.qty=Math.max(1,Number(document.getElementById('mQty').value)||1);
   if(!c.owned)c.qty=0;saveState();stats();render();closeModal();
 }
 function normText(s){
@@ -664,6 +738,7 @@ function buildRegularCatalog(){
 }
 
 async function load(){
+  await restoreFromIDB();
   const excel=excelCollection;
   all=buildRegularCatalog();
   function applyExcelOwnership(){
@@ -752,17 +827,13 @@ async function load(){
     all = expandMintVariants(all);
   all.forEach(c=>{ if(String(c.country||'').trim()==='Deutschland' && c.mintmark && !c.image) c.image=deFixedImage(c); });
   applyExcelOwnership();
-    // Falls expand noch nicht lief (z.B. Fehler beim Comm-Laden):
-  if(!all.some(c => c.mintmark)) all = expandMintVariants(all);
-  all.forEach(c=>{ if(String(c.country||'').trim()==='Deutschland' && c.mintmark && !c.image) c.image=deFixedImage(c); });
-  applyExcelOwnership();
   attachExcelImages();
-  applySaved();rebuildFilters();stats();render();
+  applySaved();rebuildFilters();stats();render();checkBackup();
 }
 
-document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');activeTab=b.dataset.tab;render()});
-document.querySelectorAll('.quick button').forEach(b=>b.onclick=()=>{activeTab=b.dataset.filter;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===activeTab));render()});
-['search','globalSearch','country','year','sort'].forEach(id=>document.getElementById(id).addEventListener('input',render));
+document.querySelectorAll('.tabs:not(#overviewSubTabs) .tab').forEach(b=>b.onclick=()=>{setActiveTab(b.dataset.tab);render()});
+document.querySelectorAll('.quick button').forEach(b=>b.onclick=()=>{setActiveTab(b.dataset.filter);render()});
+['search','globalSearch','country','year','sort'].forEach(id=>document.getElementById(id).addEventListener('input',()=>{if(activeTab==='overview'&&id!=='sort')setActiveTab('all');render()}));
 document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal()});
 function downloadBlob(filename, content, mime){
   const blob = new Blob([content], {type: mime});
@@ -778,12 +849,13 @@ function exportJSON(){
     app: '2€ Sammler',
     version: 1,
     exported: new Date().toISOString(),
-    owned: {}
+    owned: JSON.parse(JSON.stringify(saved))
   };
   all.forEach(c => {
     payload.owned[c.id] = {
       owned: c.owned ? 1 : 0,
       qty: c.qty || 0,
+      added: c.added || 0,
       country: c.country,
       year: c.year,
       title: c.title,
@@ -792,6 +864,7 @@ function exportJSON(){
   });
   const d = new Date().toISOString().slice(0,10);
   downloadBlob('2euro-backup-' + d + '.json', JSON.stringify(payload, null, 2), 'application/json');
+  const mt=getMeta();mt.lastBackup=Date.now();mt.changes=0;delete mt.snooze;setMeta(mt);checkBackup();toast('Backup gespeichert.');
 }
 
 function exportCSV(){
@@ -849,19 +922,207 @@ function exportHTML(){
   const d = new Date().toISOString().slice(0,10);
   downloadBlob('2euro-galerie-' + d + '.html', html, 'text/html;charset=utf-8');
 }
-document.getElementById('exportBtn').onclick = () => {
-  const choice = prompt(
-    'Export wählen:\n\n1 = JSON-Backup (Wiederherstellen)\n2 = CSV (Excel-Tabelle, ohne Bilder)\n3 = HTML-Galerie (mit Bildern)\n\nZahl eingeben:',
-    '1'
-  );
-  if(choice === '2') exportCSV();
-  else if(choice === '3') exportHTML();
-  else exportJSON();
-};
+document.getElementById('exportBtn').onclick = () => document.getElementById('menuModal').classList.add('open');
 document.getElementById('importBtn').onclick=()=>document.getElementById('fileInput').click();
 document.getElementById('fileInput').onchange=e=>{
-  const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const p=JSON.parse(rd.result);Object.assign(saved,p.owned||{});all.forEach(c=>{if(saved[c.id]){c.owned=!!saved[c.id].owned;c.qty=saved[c.id].qty||0}});saveState();stats();render();alert('Sammlung importiert.')}catch(_){alert('Die Datei konnte nicht gelesen werden.')}};rd.readAsText(f);
+  const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const p=JSON.parse(rd.result);Object.assign(saved,p.owned||{});all.forEach(c=>{if(saved[c.id]){c.owned=!!saved[c.id].owned;c.qty=saved[c.id].qty||0;c.added=saved[c.id].added||0}});saveState();stats();render();toast('Sammlung importiert.')}catch(_){toast('Die Datei konnte nicht gelesen werden.')}};rd.readAsText(f);
 };
+/* ===================== V10 ===================== */
+// --- Toast ---
+let toastT;
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2800)}
+
+// --- Speicher: IndexedDB-Spiegel, Meta, Backup-Hinweis ---
+const META_STORE='twoEuroCollectorMeta';
+function getMeta(){try{return JSON.parse(localStorage.getItem(META_STORE)||'{}')}catch(e){return {}}}
+function setMeta(m){try{localStorage.setItem(META_STORE,JSON.stringify(m))}catch(e){}}
+function idb(){return new Promise((res,rej)=>{if(!window.indexedDB)return rej();const r=indexedDB.open('twoEuroCollector',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+function idbSet(k,v){return idb().then(db=>new Promise(res=>{const tx=db.transaction('kv','readwrite');tx.objectStore('kv').put(v,k);tx.oncomplete=()=>res(true);tx.onerror=()=>res(false)})).catch(()=>false)}
+function idbGet(k){return idb().then(db=>new Promise(res=>{const q=db.transaction('kv').objectStore('kv').get(k);q.onsuccess=()=>res(q.result);q.onerror=()=>res(null)})).catch(()=>null)}
+async function restoreFromIDB(){
+  try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}
+  if(Object.keys(saved).length)return;
+  const v=await idbGet(STORE);if(!v)return;
+  try{const d=JSON.parse(v);Object.assign(saved,d.owned||{});try{localStorage.setItem(STORE,v)}catch(e){}toast('Sammlung aus dem Sicherungsspeicher wiederhergestellt.')}catch(e){}
+}
+function checkBackup(){
+  const el=document.getElementById('backupNote');if(!el)return;
+  const m=getMeta(),owned=all.filter(c=>c.owned).length;
+  const days=m.lastBackup?Math.floor((Date.now()-m.lastBackup)/864e5):null;
+  const ch=m.changes||0;
+  const due=owned>0&&!(m.snooze&&Date.now()<m.snooze)&&(ch>=25||(days===null&&ch>=10)||(days!==null&&days>=30&&ch>0));
+  el.style.display=due?'flex':'none';
+  if(due)document.getElementById('backupText').innerHTML='💾 <b>Backup fällig:</b> '+(days===null?'noch keines erstellt':'letztes vor '+days+' Tagen')+', '+ch+' Änderungen seitdem.';
+}
+function snoozeBackup(){const m=getMeta();m.snooze=Date.now()+3*864e5;setMeta(m);checkBackup()}
+function closeMenu(){document.getElementById('menuModal').classList.remove('open')}
+
+// --- Fotos ein/aus ---
+const PHOTO_STORE='twoEuroCollectorPhotos';
+let usePhotos=localStorage.getItem(PHOTO_STORE)!=='off';
+function togglePhotos(){usePhotos=!usePhotos;try{localStorage.setItem(PHOTO_STORE,usePhotos?'on':'off')}catch(e){}syncPhotoBtn();render();toast(usePhotos?'Fotos an':'Einheitliche Platzhalter statt Fotos')}
+function syncPhotoBtn(){const b=document.getElementById('photoBtn');if(b)b.style.opacity=usePhotos?1:.5}
+syncPhotoBtn();
+
+// --- Tabs ---
+function setActiveTab(t){activeTab=t;document.querySelectorAll('.tabs:not(#overviewSubTabs) .tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===t))}
+
+// --- Schnelles Erfassen: Stepper, Mehrfachauswahl, Langdruck ---
+let selectMode=false,lastList=[];const selected=new Set();
+function bump(id,d){
+  const c=all.find(x=>x.id===id);if(!c)return;
+  const q=(c.owned?(c.qty||1):0)+d;
+  if(q<=0){c.owned=0;c.qty=0}else{if(!c.owned)c.added=Date.now();c.owned=1;c.qty=Math.min(999,q)}
+  saveState();stats();render();
+}
+function updateSelBar(){document.getElementById('selBar').classList.toggle('open',selectMode);document.getElementById('selCount').textContent=selected.size+' ausgewählt'}
+function setSelectMode(on){
+  selectMode=on;if(!on)selected.clear();
+  document.body.classList.toggle('selmode',on);
+  document.getElementById('selBtn').textContent=on?'✕ Beenden':'☑ Auswählen';
+  render();updateSelBar();
+}
+function selAll(){lastList.forEach(id=>selected.add(id));render();updateSelBar()}
+function bulkSet(v){
+  if(!selected.size){toast('Nichts ausgewählt.');return}
+  const now=Date.now(),n=selected.size;
+  all.forEach(c=>{if(!selected.has(c.id))return;
+    if(v){if(!c.owned)c.added=now;c.owned=1;c.qty=c.qty||1}else{c.owned=0;c.qty=0}});
+  saveState();stats();toast(n+(v?' Münzen als vorhanden markiert.':' Münzen als fehlend markiert.'));
+  setSelectMode(false);
+}
+(function(){
+  const grid=document.getElementById('grid');
+  let lpTimer=null,lpFired=false,sx=0,sy=0,ptype='mouse';
+  grid.addEventListener('click',e=>{
+    if(lpFired){lpFired=false;e.preventDefault();e.stopPropagation();return}
+    if(!selectMode)return;
+    const card=e.target.closest('.card[data-id]');if(!card)return;
+    e.preventDefault();e.stopPropagation();
+    const id=card.dataset.id;
+    if(selected.has(id))selected.delete(id);else selected.add(id);
+    card.classList.toggle('sel',selected.has(id));updateSelBar();
+  },true);
+  grid.addEventListener('pointerdown',e=>{
+    ptype=e.pointerType;sx=e.clientX;sy=e.clientY;
+    const card=e.target.closest('.card[data-id]');if(!card||e.target.closest('.stepper,a,button'))return;
+    clearTimeout(lpTimer);
+    lpTimer=setTimeout(()=>{
+      lpTimer=null;lpFired=true;setTimeout(()=>lpFired=false,600);
+      selected.add(card.dataset.id);
+      if(navigator.vibrate)navigator.vibrate(15);
+      if(!selectMode)setSelectMode(true);else{render();updateSelBar()}
+    },550);
+  });
+  const cancel=()=>{clearTimeout(lpTimer);lpTimer=null};
+  grid.addEventListener('pointermove',e=>{if(lpTimer&&Math.hypot(e.clientX-sx,e.clientY-sy)>8)cancel()});
+  ['pointerup','pointercancel','pointerleave'].forEach(t=>grid.addEventListener(t,cancel));
+  grid.addEventListener('contextmenu',e=>{if(ptype==='touch'&&e.target.closest('.card'))e.preventDefault()});
+})();
+
+// --- Modal: vor/zurück + Tastatur ---
+function stepCoin(d){if(!currentId)return;const i=lastList.indexOf(currentId);if(i<0)return;const n=lastList[i+d];if(n)openCoin(n)}
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){closeMenu();closeModal();return}
+  if(!document.getElementById('modal').classList.contains('open'))return;
+  if(['INPUT','SELECT','TEXTAREA'].includes(document.activeElement&&document.activeElement.tagName))return;
+  if(e.key==='ArrowRight')stepCoin(1);else if(e.key==='ArrowLeft')stepCoin(-1);
+});
+document.getElementById('menuModal').addEventListener('click',e=>{if(e.target.id==='menuModal')closeMenu()});
+
+// --- Übersicht ---
+let ovTab='countries';
+const bar=(o,t)=>`<div class="progress"><div style="width:${t?(o/t*100).toFixed(1):0}%"></div></div>`;
+function groupBy(arr,f){const m=new Map();arr.forEach(c=>{const k=f(c);if(k==null||k==='')return;if(!m.has(k))m.set(k,{o:0,t:0,items:[]});const g=m.get(k);g.t++;if(c.owned)g.o++;g.items.push(c)});return m}
+const JOINT=[
+  ['50 Jahre Römische Verträge',2007,/r[oö]m|rome/i],
+  ['10 Jahre Währungsunion (WWU)',2009,/w[aä]hrungsunion|wirtschafts|monetary|emu/i],
+  ['10 Jahre Euro-Bargeld',2012,/bargeld|euro cash|banknotes|10 years/i],
+  ['30 Jahre EU-Flagge',2015,/flagge|flag/i],
+  ['Baltische Gemeinschaftsausgabe',2018,/baltic|baltisch/i],
+  ['Erasmus-Programm',2022,/erasmus/i]
+];
+function deRows(){
+  const de=all.filter(c=>String(c.country||'').trim()==='Deutschland'&&c.mintmark);
+  const m=new Map();
+  de.forEach(c=>{const k=c.parentId||c.id;if(!m.has(k))m.set(k,{year:c.year,title:String(c.title||'').replace(/\s·\s*[ADFGJ]$/i,''),cells:{}});m.get(k).cells[String(c.mintmark).toUpperCase()]=c});
+  return [...m.values()].sort((a,b)=>(b.year||0)-(a.year||0)||a.title.localeCompare(b.title,'de'));
+}
+function badgeList(){
+  const owned=all.filter(c=>c.owned),n=owned.length;
+  const byC=[...groupBy(all,c=>String(c.country||'').trim())];
+  const complete=byC.filter(([k,g])=>g.t&&g.o===g.t).length, started=byC.filter(([k,g])=>g.o>0).length;
+  const comm=owned.filter(c=>c.type==='comm').length;
+  const deFull=deRows().filter(r=>Object.values(r.cells).length&&Object.values(r.cells).every(c=>c.owned)).length;
+  return [
+    ['🌱','Erste Münze','Sammle deine erste Münze',n,1],
+    ['🪙','Zehnerpack','10 Münzen',n,10],
+    ['📦','Halbes Hundert','50 Münzen',n,50],
+    ['💯','Hunderter','100 Münzen',n,100],
+    ['🏆','Großsammler','250 Münzen',n,250],
+    ['👑','Meistersammler','500 Münzen',n,500],
+    ['🌍','Europareisender','Münzen aus 5 Ländern',started,5],
+    ['🗺️','Weltenbummler','Münzen aus 15 Ländern',started,15],
+    ['✅','Land komplett','Ein Land vollständig',complete,1],
+    ['🎖️','Dreierpack','3 Länder vollständig',complete,3],
+    ['🏛️','Gedenk-Fan','25 Gedenkmünzen',comm,25],
+    ['⭐','Gedenk-Profi','100 Gedenkmünzen',comm,100],
+    ['🦅','Stempel-Kenner','5 DE-Motive mit allen Prägestätten',deFull,5]
+  ];
+}
+function checkBadges(){
+  if(!all.length)return;
+  const m=getMeta(),unlocked=badgeList().filter(b=>b[3]>=b[4]).map(b=>b[1]);
+  if(!m.badges){m.badges=unlocked;setMeta(m);return}
+  const fresh=unlocked.filter(x=>!m.badges.includes(x));
+  if(fresh.length){m.badges=[...new Set([...m.badges,...unlocked])];setMeta(m);toast('🏅 Neues Abzeichen: '+fresh.join(', '))}
+}
+function ovRows(map,attr,sortFn){
+  return `<div class="ovgrid">${[...map].sort(sortFn).map(([k,g])=>`<button class="ovrow${g.o===g.t?' done':''}" data-${attr}="${esc(k)}"><span>${attr==='country'?flagFor(k)+' ':''}<b>${esc(k)}</b></span><span>${g.o}/${g.t}${g.o===g.t?' ✓':''}</span>${bar(g.o,g.t)}</button>`).join('')}</div>`;
+}
+function renderOverview(){
+  document.querySelectorAll('#overviewSubTabs .tab').forEach(b=>b.classList.toggle('active',b.dataset.ov===ovTab));
+  const body=document.getElementById('overviewBody');let h='';
+  if(ovTab==='countries'){
+    const m=groupBy(all,c=>String(c.country||'').trim());
+    const near=[...m].filter(([k,g])=>g.t-g.o>0&&g.t-g.o<=3).sort((a,b)=>(a[1].t-a[1].o)-(b[1].t-b[1].o));
+    h=(near.length?`<div class="note"><b>Fast geschafft:</b> ${near.map(([k,g])=>`${flagFor(k)} ${esc(k)} (noch ${g.t-g.o})`).join(' · ')}</div>`:'')+ovRows(m,'country',(a,b)=>a[0].localeCompare(b[0],'de'));
+  }else if(ovTab==='years'){
+    h=ovRows(groupBy(all,c=>c.year||null),'year',(a,b)=>b[0]-a[0]);
+  }else if(ovTab==='stats'){
+    const owned=all.filter(c=>c.owned),pieces=owned.reduce((s,c)=>s+(c.qty||1),0),dup=pieces-owned.length;
+    const reg=all.filter(c=>c.type==='regular'),cm=all.filter(c=>c.type==='comm');
+    const byC=[...groupBy(all,c=>String(c.country||'').trim())];
+    const card=(v,l)=>`<div class="stat"><strong>${v}</strong><span>${l}</span></div>`;
+    h=`<div class="stats">${card(owned.length+' / '+all.length,'Einträge gesammelt')}${card(pieces,'Münzen insgesamt')}${card(dup,'Doubletten (Tauschmasse)')}${card(reg.filter(c=>c.owned).length+' / '+reg.length,'Umlaufmünzen')}${card(cm.filter(c=>c.owned).length+' / '+cm.length,'Gedenkmünzen')}${card(byC.filter(([k,g])=>g.o===g.t).length+' / '+byC.length,'Länder komplett')}</div>`;
+  }else if(ovTab==='joint'){
+    h='<div class="ovgrid">'+JOINT.map(([name,y,re])=>{
+      const items=all.filter(c=>c.type==='comm'&&Number(c.year)===y&&re.test(String(c.title||'')+' '+String(c.desc||'')));
+      const o=items.filter(c=>c.owned).length,miss=[...new Set(items.filter(c=>!c.owned).map(c=>c.country))];
+      return `<div class="ovrow static${items.length&&o===items.length?' done':''}"><span><b>${name}</b> (${y})</span><span>${o}/${items.length}</span>${bar(o,items.length)}<small style="grid-column:1/-1;color:var(--muted)">${items.length?(miss.length?'Fehlt: '+esc(miss.join(', ')):'Komplett ✓'):'Keine Daten geladen'}</small></div>`}).join('')+'</div>';
+  }else if(ovTab==='mints'){
+    const rows=deRows(),M=['A','D','F','G','J'];
+    h=rows.length?`<div class="note">Tippe auf ein Feld, um die Prägestätte als vorhanden/fehlend zu markieren. A = Berlin · D = München · F = Stuttgart · G = Karlsruhe · J = Hamburg</div><div class="scroll"><table class="ovtable"><thead><tr><th>Jahr</th><th>Motiv</th>${M.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr><td>${r.year||'–'}</td><td>${esc(r.title)}</td>${M.map(x=>{const c=r.cells[x];return c?`<td><button class="mintcell${c.owned?' on':''}" onclick="toggle('${c.id}')">${c.owned?'✓':'–'}</button></td>`:'<td><button class="mintcell" disabled>·</button></td>'}).join('')}</tr>`).join('')}</tbody></table></div>`:'<div class="empty">Noch keine deutschen Münzen geladen.</div>';
+  }else if(ovTab==='badges'){
+    const b=badgeList();
+    h=`<div class="note"><b>${b.filter(x=>x[3]>=x[4]).length} / ${b.length}</b> Abzeichen freigeschaltet</div><div class="badges">${b.map(([ic,n,d,cur,goal])=>`<div class="bdg${cur>=goal?'':' locked'}"><div class="ic">${ic}</div><b>${n}</b><small>${d}</small>${bar(Math.min(cur,goal),goal)}<small>${Math.min(cur,goal)} / ${goal}</small></div>`).join('')}</div>`;
+  }
+  body.innerHTML=h;
+}
+document.querySelectorAll('#overviewSubTabs .tab').forEach(b=>b.onclick=()=>{ovTab=b.dataset.ov;renderOverview()});
+document.getElementById('overviewBody').addEventListener('click',e=>{
+  const r=e.target.closest('[data-country],[data-year]');if(!r)return;
+  setActiveTab('all');
+  document.getElementById('country').value=r.dataset.country||'';
+  document.getElementById('year').value=r.dataset.year||'';
+  render();window.scrollTo({top:0,behavior:'smooth'});
+});
+
+// --- PWA ---
+if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+}
+
 load();
 </script>
 </body>
