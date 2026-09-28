@@ -130,22 +130,6 @@ button{cursor:pointer}
     <button class="iconbtn" id="importBtn" title="Sicherung importieren">↧</button>
     <input type="file" id="fileInput" accept=".json" hidden>
   </div>
-  <!-- Tablet-Steuerung: Raster-Zoom -->
-<div class="zoom-control">
-  <label for="grid-zoom">Raster:</label>
-  <input type="range" id="grid-zoom" min="2" max="6" value="4" step="1">
-</div>
-
-<!-- Fortschrittsanzeige für Vollständigkeit -->
-<div class="progress-container">
-  <div class="progress-info">
-    <span id="progress-label">Gesamtsammlung</span>
-    <span id="progress-text">0 / 0 (0%)</span>
-  </div>
-  <div class="progress-bar-bg">
-    <div id="progress-bar-fill" class="progress-bar-fill" style="width: 0%;"></div>
-  </div>
-</div>
 </header>
 
 <main class="wrap">
@@ -392,20 +376,6 @@ function saveState(){
 
 const imageCache={};
 const imageBusy=new Set();
-
-// Lokale Bilder (liegen im /images-Ordner neben index.html). Werden bevorzugt
-// vor der Online-Bildersuche geprüft, damit eigene Fotos nie überschrieben werden.
-const LOCAL_IMAGES=[
-  {country:'Andorra', match:/staatswappen|wappen andorras/, image:'images/andorra_staatswappen.png'},
-  {country:'Andorra', match:/frauenwahlrecht/, image:'images/andorra_frauenwahlrecht_2020.png'},
-  {country:'Andorra', match:/iberoamerika/, image:'images/andorra_gipfel_2020.png'}
-];
-function localImageFor(c){
-  const country=String(c.country||'').trim();
-  const t=normText(c.title||'');
-  for(const e of LOCAL_IMAGES){ if(e.country===country && e.match.test(t)) return e.image; }
-  return null;
-}
 
 function normText(s){
   return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
@@ -786,8 +756,6 @@ async function load(){
   if(!all.some(c => c.mintmark)) all = expandMintVariants(all);
   all.forEach(c=>{ if(String(c.country||'').trim()==='Deutschland' && c.mintmark && !c.image) c.image=deFixedImage(c); });
   applyExcelOwnership();
-  all.forEach(c=>{ if(!c.image){ const li=localImageFor(c); if(li) c.image=li; } });
-  excelCollection.forEach(x=>{ if(!x.image){ const li=localImageFor(x); if(li) x.image=li; } });
   attachExcelImages();
   applySaved();rebuildFilters();stats();render();
 }
@@ -867,106 +835,6 @@ function exportHTML(){
   const html = `<!DOCTYPE html>
 <html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>2€ Sammlung Export</title>
-/* Styling für den Zoom-Slider */
-.zoom-control {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.9rem;
-}
-
-/* Dynamisches Grid-Raster (Standard 4 Spalten) */
-.coin-grid {
-  display: grid;
-  grid-template-columns: repeat(var(--grid-columns, 4), 1fr);
-  gap: 16px;
-}
-
-/* Styling für den Fortschrittsbalken */
-.progress-container {
-  margin: 15px 0;
-  padding: 10px;
-  background: rgba(0, 0, 0, 0.05);
-  border-radius: 8px;
-}
-
-.progress-info {
-  display: flex;
-  justify-content: space-between;
-  font-weight: bold;
-  font-size: 0.9rem;
-  margin-bottom: 6px;
-}
-
-.progress-bar-bg {
-  width: 100%;
-  height: 12px;
-  background-color: #e0e0e0;
-  border-radius: 6px;
-  overflow: hidden;
-}
-
-.progress-bar-fill {
-  height: 100%;
-  background-color: #2eb85c; /* Grün für Fortschritt */
-  width: 0%;
-  transition: width 0.3s ease-in-out;
-}
-
-/* Vergrößerte Touch-Flächen für Tablet-Optimierung */
-button, select, input {
-  min-height: 44px; /* Apple/Android Mindeststandard für Finger-Taps */
-}
-/* Styling für den Zoom-Slider */
-.zoom-control {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.9rem;
-}
-
-/* Dynamisches Grid-Raster (Standard 4 Spalten) */
-.coin-grid {
-  display: grid;
-  grid-template-columns: repeat(var(--grid-columns, 4), 1fr);
-  gap: 16px;
-}
-
-/* Styling für den Fortschrittsbalken */
-.progress-container {
-  margin: 15px 0;
-  padding: 10px;
-  background: rgba(0, 0, 0, 0.05);
-  border-radius: 8px;
-}
-
-.progress-info {
-  display: flex;
-  justify-content: space-between;
-  font-weight: bold;
-  font-size: 0.9rem;
-  margin-bottom: 6px;
-}
-
-.progress-bar-bg {
-  width: 100%;
-  height: 12px;
-  background-color: #e0e0e0;
-  border-radius: 6px;
-  overflow: hidden;
-}
-
-.progress-bar-fill {
-  height: 100%;
-  background-color: #2eb85c; /* Grün für Fortschritt */
-  width: 0%;
-  transition: width 0.3s ease-in-out;
-}
-
-/* Vergrößerte Touch-Flächen für Tablet-Optimierung */
-button, select, input {
-  min-height: 44px; /* Apple/Android Mindeststandard für Finger-Taps */
-}
 <style>
   body{font-family:system-ui,sans-serif;background:#f3f1ea;color:#3a3630;margin:0;padding:24px}
   h1{margin:0 0 8px} .meta{color:#7c7568;margin-bottom:20px}
@@ -995,61 +863,6 @@ document.getElementById('fileInput').onchange=e=>{
   const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const p=JSON.parse(rd.result);Object.assign(saved,p.owned||{});all.forEach(c=>{if(saved[c.id]){c.owned=!!saved[c.id].owned;c.qty=saved[c.id].qty||0}});saveState();stats();render();alert('Sammlung importiert.')}catch(_){alert('Die Datei konnte nicht gelesen werden.')}};rd.readAsText(f);
 };
 load();
-// 1. DYNAMISCHER GRID-ZOOM (SLIDER)
-const zoomInput = document.getElementById('grid-zoom');
-const coinGrid = document.querySelector('.coin-grid'); // Sicherstellen, dass die Galerie diese Klasse hat
-
-if (zoomInput && coinGrid) {
-  zoomInput.addEventListener('input', (e) => {
-    coinGrid.style.setProperty('--grid-columns', e.target.value);
-  });
-}
-
-// 2. FORTSCHRITTSBALKEN BERECHNEN UND UPDATE
-// Diese Funktion aufrufen, wann immer Münzen geladen, gefiltert oder hinzugefügt werden!
-function updateProgressBar(currentCount, totalPossible, label = "Sammlung") {
-  const labelEl = document.getElementById('progress-label');
-  const textEl = document.getElementById('progress-text');
-  const fillEl = document.getElementById('progress-bar-fill');
-
-  if (!labelEl || !textEl || !fillEl) return;
-
-  const percentage = totalPossible > 0 ? Math.round((currentCount / totalPossible) * 100) : 0;
-
-  labelEl.textContent = label;
-  textEl.textContent = `${currentCount} / ${totalPossible} (${percentage}%)`;
-  fillEl.style.width = `${percentage}%`;
-}
-
-// 3. TABLET TOUCH-SWIPE FÜR DAS DETAIL-MODAL
-const modal = document.getElementById('coin-modal'); // Name deines Modals anpassen
-let touchStartX = 0;
-let touchEndX = 0;
-
-if (modal) {
-  modal.addEventListener('touchstart', (e) => {
-    touchStartX = e.changedTouches[0].screenX;
-  }, { passive: true });
-
-  modal.addEventListener('touchend', (e) => {
-    touchEndX = e.changedTouches[0].screenX;
-    handleSwipe();
-  }, { passive: true });
-}
-
-function handleSwipe() {
-  const swipeThreshold = 50; // Mindestdistanz in Pixeln für einen Swipe
-  
-  if (touchEndX < touchStartX - swipeThreshold) {
-    // nach links gewischt -> NÄCHSTE MÜNZE
-    if (typeof showNextCoin === 'function') showNextCoin(); 
-  }
-  
-  if (touchEndX > touchStartX + swipeThreshold) {
-    // nach rechts gewischt -> VORHERIGE MÜNZE
-    if (typeof showPreviousCoin === 'function') showPreviousCoin();
-  }
-}
 </script>
 </body>
 </html>
