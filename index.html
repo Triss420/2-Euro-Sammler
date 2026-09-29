@@ -231,7 +231,7 @@ button.stat[data-go]{cursor:pointer}button.stat[data-go]:hover{border-color:var(
 
   <div class="note" id="backupNote" style="display:none"><span id="backupText"></span><span style="display:flex;gap:8px"><button class="smallbtn primary" style="flex:none;padding:6px 12px" onclick="exportJSON()">Jetzt sichern</button><button class="smallbtn" style="flex:none;padding:6px 12px" onclick="snoozeBackup()">Später</button></span></div>
   <div class="note" id="dataNote">Gedenkmünzen werden aus einer öffentlichen Datensammlung geladen. Die Sammlung selbst bleibt lokal auf deinem Gerät.</div>
-  <div class="sectionHead"><h2 id="heading">Katalog</h2><div style="display:flex;gap:10px;align-items:center"><div class="count" id="resultCount"></div><button class="smallbtn" id="selBtn" style="flex:none;padding:7px 12px" onclick="setSelectMode(!selectMode)">☑ Auswählen</button></div></div>
+  <div class="sectionHead"><h2 id="heading">Katalog</h2><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span id="stChips" style="display:flex;gap:6px"><button class="smallbtn" data-st="" style="flex:none;padding:6px 11px">Alle</button><button class="smallbtn" data-st="owned" style="flex:none;padding:6px 11px">✓ Vorhanden</button><button class="smallbtn" data-st="missing" style="flex:none;padding:6px 11px">Fehlt</button></span><div class="count" id="resultCount"></div><button class="smallbtn" id="selBtn" style="flex:none;padding:7px 12px" onclick="setSelectMode(!selectMode)">☑ Auswählen</button></div></div>
   <div class="grid" id="grid"></div>
     <div id="overviewPanel" style="display:none">
     <div class="tabs" id="overviewSubTabs" style="margin-top:0">
@@ -557,6 +557,7 @@ function render(){
   ['filters','dataNote','grid'].forEach(i=>document.getElementById(i).style.display=isOv?'none':'');
   document.querySelector('.sectionHead').style.display=isOv?'none':'';
   if(isOv){renderOverview();return}
+  document.getElementById('stChips').style.display=activeTab==='mine'?'none':'flex';
   const q=(document.getElementById('search').value+' '+document.getElementById('globalSearch').value).trim().toLowerCase();
   const country=document.getElementById('country').value, year=document.getElementById('year').value, sort=document.getElementById('sort').value;
 
@@ -593,6 +594,8 @@ function render(){
     if(activeTab==='rare'&&!rarity(c))return false;
     if(activeTab==='rarem'&&!(rarity(c)&&!c.owned))return false;
     if(activeTab==='dups'&&!(c.owned&&(c.qty||1)>1))return false;
+    if(stFilter==='owned'&&!c.owned)return false;
+    if(stFilter==='missing'&&c.owned)return false;
     if(activeTab==='owned'&&!c.owned)return false;
     if(activeTab==='missing'&&c.owned)return false;
     if(country&&c.country!==country)return false;
@@ -601,7 +604,7 @@ function render(){
     return true;
   });
   list.sort((a,b)=>sort==='recent'?((b.added||0)-(a.added||0)||b.year-a.year):sort==='rarity'?(volSort(a)-volSort(b)):sort==='yearAsc'?a.year-b.year:sort==='country'?a.country.localeCompare(b.country,'de'):sort==='title'?a.title.localeCompare(b.title,'de'):b.year-a.year);
-  document.getElementById('resultCount').textContent=`${list.length} Treffer`;lastList=list.map(c=>c.id);updateSelBar();
+  document.getElementById('resultCount').textContent=`${list.length} Treffer`;lastList=list.map(c=>c.id);updateSelBar();syncSt();
   document.getElementById('heading').textContent=activeTab==='regular'?'Umlaufmünzen':activeTab==='comm'?'Gedenkmünzen':activeTab==='rare'?'Seltene Münzen':activeTab==='rarem'?'Seltene Münzen – fehlen noch':activeTab==='dups'?'Doubletten (Tauschmasse)':activeTab==='owned'?'Meine Sammlung':activeTab==='missing'?'Noch fehlend':'Katalog';
   const grid=document.getElementById('grid');
   if(!list.length){grid.innerHTML='<div class="empty">Keine Münzen gefunden.<br>Ändere Suche oder Filter.</div>';return}
@@ -1007,7 +1010,10 @@ function syncPhotoBtn(){const b=document.getElementById('photoBtn');if(b)b.style
 syncPhotoBtn();
 
 // --- Tabs ---
-function setActiveTab(t){activeTab=t;document.querySelectorAll('.tabs:not(#overviewSubTabs) .tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===t))}
+let stFilter='';
+function syncSt(){document.querySelectorAll('#stChips [data-st]').forEach(b=>b.classList.toggle('primary',b.dataset.st===stFilter))}
+document.getElementById('stChips').addEventListener('click',e=>{const b=e.target.closest('[data-st]');if(!b)return;stFilter=b.dataset.st;render()});
+function setActiveTab(t){activeTab=t;stFilter='';document.querySelectorAll('.tabs:not(#overviewSubTabs) .tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===t))}
 
 // --- Schnelles Erfassen: Stepper, Mehrfachauswahl, Langdruck ---
 let selectMode=false,lastList=[];const selected=new Set();
@@ -1136,7 +1142,7 @@ function renderOverview(){
     const reg=all.filter(c=>c.type==='regular'),cm=all.filter(c=>c.type==='comm');
     const byC=[...groupBy(all,c=>String(c.country||'').trim())];
     const card=(v,l,go)=>`<button class="stat"${go?` data-go="${go}" title="Anzeigen"`:''}><strong>${v}</strong><span>${l}${go?' ›':''}</span></button>`;
-    h=`<div class="stats">${card(owned.length+' / '+all.length,'Einträge gesammelt','owned')}${card(pieces,'Münzen insgesamt','owned')}${card(dup,'Doubletten (Tauschmasse)','dups')}${card(reg.filter(c=>c.owned).length+' / '+reg.length,'Umlaufmünzen','regular')}${card(cm.filter(c=>c.owned).length+' / '+cm.length,'Gedenkmünzen','comm')}${card(byC.filter(([k,g])=>g.o===g.t).length+' / '+byC.length,'Länder komplett','countries')}${(()=>{const r=all.filter(c=>rarity(c));return card(r.filter(c=>c.owned).length+' / '+r.length,'Seltene Münzen','rare')+card(r.filter(c=>!c.owned).length,'Seltene fehlen noch','rarem')})()}</div>`;
+    h=`<div class="stats">${card(owned.length+' / '+all.length,'Einträge gesammelt','owned')}${card(pieces,'Münzen insgesamt','owned')}${card(dup,'Doubletten (Tauschmasse)','dups')}${card(reg.filter(c=>c.owned).length+' / '+reg.length,'Umlaufmünzen','regular:owned')}${card(cm.filter(c=>c.owned).length+' / '+cm.length,'Gedenkmünzen','comm:owned')}${card(byC.filter(([k,g])=>g.o===g.t).length+' / '+byC.length,'Länder komplett','countries')}${(()=>{const r=all.filter(c=>rarity(c));return card(r.filter(c=>c.owned).length+' / '+r.length,'Seltene Münzen','rare:owned')+card(r.filter(c=>!c.owned).length,'Seltene fehlen noch','rare:missing')})()}</div>`;
   }else if(ovTab==='joint'){
     h='<div class="ovgrid">'+JOINT.map(([name,y,re])=>{
       const items=all.filter(c=>c.type==='comm'&&Number(c.year)===y&&re.test(String(c.title||'')+' '+String(c.desc||'')));
@@ -1155,8 +1161,9 @@ document.querySelectorAll('#overviewSubTabs .tab').forEach(b=>b.onclick=()=>{ovT
 function goStat(k){
   ['country','year','search','globalSearch'].forEach(id=>document.getElementById(id).value='');
   if(k==='countries'){ovTab='countries';renderOverview();return}
-  document.getElementById('sort').value=(k==='rare'||k==='rarem')?'rarity':'yearDesc';
-  setActiveTab(k);render();window.scrollTo({top:0,behavior:'smooth'});
+  const [tab,st]=k.split(':');
+  document.getElementById('sort').value=tab==='rare'?'rarity':'yearDesc';
+  setActiveTab(tab);stFilter=st||'';render();window.scrollTo({top:0,behavior:'smooth'});
 }
 document.getElementById('overviewBody').addEventListener('click',e=>{
   const go=e.target.closest('[data-go]');if(go){goStat(go.dataset.go);return}
