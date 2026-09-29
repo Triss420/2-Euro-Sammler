@@ -777,10 +777,22 @@ function buildRegularCatalog(){
     ["Vatikan",2002,2005,"Papst Johannes Paul II.","VA",1],["Vatikan",2005,2005,"Sede Vacante","VA",2],["Vatikan",2006,2013,"Papst Benedikt XVI.","VA",3],["Vatikan",2014,2016,"Papst Franziskus","VA",4],["Vatikan",2017,2025,"Wappen des Staates / Papst Franziskus","VA",5],["Vatikan",2026,2026,"Papst Leo XIV.","VA",0]
   ];
   const out=[]; let id=0;
+  // Länder, die nur in bestimmten Jahren 2-€-Umlaufmünzen geprägt haben (geprüft: Numista/Münzstätten-Angaben)
+  const REG_ONLY={"Estland":[2011,2016,2018,2022,2023]};
+  const mk=(g,y,cid)=>{let image=IMG[g[0]]; if(image&&typeof image==='object') image=image[g[5]]||null;
+    return {id:cid,type:'regular',country:g[0],year:y,title:g[3]+' ('+y+')',code:g[4],desc:'Reguläre 2-€-Umlaufmünze; nationales Motiv.',volume:'–',release:String(y),image,owned:0,qty:0,catalog:true}};
+  // IDs bleiben stabil: übersprungene Jahre verbrauchen trotzdem ihre Nummer
   cfg.forEach(g=>{for(let y=g[1];y<=g[2];y++){
-    let image=IMG[g[0]]; if(image&&typeof image==='object') image=image[g[5]]||null;
-    out.push({id:'regcat'+(id++),type:'regular',country:g[0],year:y,title:g[3]+' ('+y+')',code:g[4],desc:'Reguläre 2-€-Umlaufmünze; nationales Motiv.',volume:'–',release:String(y),image,owned:0,qty:0,catalog:true});
-  }}); return out;
+    const cid='regcat'+(id++);
+    if(REG_ONLY[g[0]]&&!REG_ONLY[g[0]].includes(y))continue;
+    out.push(mk(g,y,cid));
+  }});
+  // Frühe Jahrgänge 1999–2001 (Euro-Bargeld kam 2002, die Münzen tragen aber schon frühere Jahreszahlen)
+  [["Belgien",1999,2001,"König Albert II","BE",1],["Finnland",1999,2001,"Moltebeere / Moltebeerblüte","FI",0],
+   ["Frankreich",1999,2001,"Baum des Lebens","FR",1],["Niederlande",1999,2001,"Königin Beatrix","NL",1],
+   ["Spanien",1999,2001,"König Juan Carlos I – erste Serie","ES",1],["Monaco",2001,2001,"Fürst Rainier III","MC",1]
+  ].forEach(g=>{for(let y=g[1];y<=g[2];y++)out.push(mk(g,y,'regcat-'+g[4]+'-'+y))});
+  return out;
 }
 
 async function load(){
