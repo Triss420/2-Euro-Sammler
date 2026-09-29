@@ -870,6 +870,14 @@ async function load(){
   }catch(e){
     document.getElementById('dataNote').innerHTML=`<b>${all.length}</b> reguläre 2-€-Ausgaben geladen. Die Gedenkmünzen werden bei bestehender Internetverbindung ergänzt.`;
   }
+  // Nachträge: neue Gedenkmünzen, die im Liebeck-Datensatz noch fehlen (Datei nachtraege.json)
+  try{
+    const rn=await fetch('nachtraege.json',{cache:'no-store'});
+    if(rn.ok){
+      const nn=mergeNachtraege(await rn.json());
+      if(nn)document.getElementById('dataNote').innerHTML+=` <br>+ <b>${nn}</b> Nachträge aus <code>nachtraege.json</code> (neueste Ausgaben).`;
+    }
+  }catch(e){}
     all = expandMintVariants(all);
   all.forEach(c=>{ if(String(c.country||'').trim()==='Deutschland' && c.mintmark && !c.image) c.image=deFixedImage(c); });
   applyExcelOwnership();
@@ -1210,6 +1218,23 @@ document.getElementById('overviewBody').addEventListener('click',e=>{
 
 /* ============ V11: Europakarte + Wechselgeld-Check ============ */
 const canon=n=>n==='Vatikanstadt'?'Vatikan':n;
+function mergeNachtraege(sup){
+  if(!Array.isArray(sup))return 0;
+  const slug=t=>String(t).toLowerCase().replace(/[^a-z0-9äöüß]+/g,'-').replace(/^-|-$/g,'');
+  const by=new Map();
+  sup.forEach(s=>{if(!s||!s.country||!s.year||!s.title)return;const k=String(s.country).trim()+'|'+Number(s.year);if(!by.has(k))by.set(k,[]);by.get(k).push(s)});
+  let n=0;
+  by.forEach((list,k)=>{
+    const cc=k.split('|')[0],y=Number(k.split('|')[1]);
+    // schon im Datensatz vorhanden? (zählt pro Land+Jahr, damit es unabhängig von der Sprache der Titel klappt)
+    const existing=all.filter(c=>c.type==='comm'&&canon(String(c.country||'').trim())===canon(cc)&&Number(c.year)===y);
+    const need=list.length-existing.length;if(need<=0)return;
+    list.map(s=>({s,sim:Math.max(0,...existing.map(c=>titleSimilarity(c.title,s.title)))})).sort((a,b)=>a.sim-b.sim).slice(0,need).forEach(({s})=>{
+      all.push({id:'nach-'+slug(cc)+'-'+y+'-'+slug(s.title),type:'comm',country:cc,year:y,title:s.title,code:'',desc:s.desc||'Nachtrag (V11) – Angaben nach Händler-/Behördenlisten',volume:s.volume||'–',release:s.release||'–',image:s.image||null,owned:false,qty:0,excelId:null,catalog:true,supplement:true});n++;
+    });
+  });
+  return n;
+}
 
 // ---- Europakarte mit echten Umrissen (Natural-Earth-Daten via jsDelivr, wird gecacht) ----
 const GEO_URL='https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json';

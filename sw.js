@@ -47,7 +47,7 @@ self.addEventListener('fetch', e => {
   }
 
   // Katalogdaten (GitHub-JSON): stale-while-revalidate
-  if (url.hostname === 'raw.githubusercontent.com' || url.hostname === 'cdn.jsdelivr.net') {
+  if (url.hostname === 'raw.githubusercontent.com' || url.hostname === 'cdn.jsdelivr.net' || url.pathname.endsWith('/nachtraege.json')) {
     e.respondWith(caches.open(DATA).then(async c => {
       const hit = await c.match(req);
       const net = fetch(req).then(r => { if (r.ok) c.put(req, r.clone()); return r; }).catch(() => hit);
