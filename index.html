@@ -168,6 +168,34 @@ button{cursor:pointer}
 .rare.r1{background:var(--warn)}.rare.r2{background:var(--bad)}
 button.stat{text-align:left;color:var(--text);font:inherit;cursor:default}
 button.stat[data-go]{cursor:pointer}button.stat[data-go]:hover{border-color:var(--accent)}
+.fab{position:fixed;right:16px;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:12;border:0;border-radius:999px;padding:14px 18px;background:var(--accent);color:#fff;font-weight:800;font-size:15px;box-shadow:var(--shadow)}
+body.selmode .fab{display:none}
+.ckgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.ckcty{display:flex;flex-direction:column;align-items:center;gap:2px;padding:12px 6px;border:1px solid var(--line);border-radius:14px;background:var(--panel2);color:var(--text)}
+.ckcty .fl{font-size:28px}.ckcty small{color:var(--muted)}.ckcty:hover{border-color:var(--accent)}
+.ckrow{border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:10px;background:var(--panel2)}
+.ckrow.miss{border-color:var(--good);background:color-mix(in srgb,var(--good) 12%,var(--panel))}
+.ckrow.have{border-color:var(--warn)}
+.ckv{font-size:20px;font-weight:900;margin-top:8px}.ckv.miss{color:var(--good)}.ckv.have{color:var(--warn)}
+.ckrow.miss .ckv{color:var(--good)}.ckrow.have .ckv{color:var(--warn)}
+.ckadd{margin-top:10px;width:100%;padding:12px}
+.ckchips{display:flex;flex-wrap:wrap;gap:6px}
+.ckchip{position:relative;min-width:46px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-weight:700}
+.ckchip.miss{box-shadow:inset 0 -3px 0 var(--good)}
+.ckchip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.ckyears .ckchip i{position:absolute;top:4px;right:5px;width:7px;height:7px;border-radius:50%;background:var(--good)}
+.mapwrap{background:var(--panel2);border:1px solid var(--line);border-radius:16px;padding:8px}
+.mapwrap svg{display:block;width:100%;max-width:760px;max-height:78vh;margin:0 auto;height:auto}
+.geo-bg{fill:var(--panel);stroke:var(--line);stroke-width:.8}
+.geo-c{stroke:var(--panel);stroke-width:1.2;cursor:pointer}
+.geo-c:hover,.geo-c.sel{stroke:var(--accent);stroke-width:2.6;filter:brightness(1.08)}
+.geo-lbl{font:700 14px system-ui,sans-serif;fill:var(--text);text-anchor:middle;pointer-events:none;paint-order:stroke;stroke:var(--panel);stroke-width:3.5px}
+.geo-dot{cursor:pointer;stroke:var(--text);stroke-width:1.2}
+.geo-dot:hover,.geo-dot.sel{stroke:var(--accent);stroke-width:3}
+.maplegend{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px;color:var(--muted);font-size:13px}
+.maplegend .lg{width:120px;height:10px;border-radius:6px;background:linear-gradient(90deg,color-mix(in srgb,var(--good) 14%,var(--panel)),var(--good));border:1px solid var(--line)}
+.maplegend .gold{width:14px;height:14px;border-radius:4px;background:#c9a24c;margin-left:8px}
+@media print{.fab{display:none!important}}
 .menuBtns{padding:16px;display:grid;gap:10px}.menuBtns .smallbtn{padding:14px;text-align:left}
 @media print{.selbar,.toast,#backupNote,#selBtn{display:none!important}}
 </style>
@@ -235,7 +263,8 @@ button.stat[data-go]{cursor:pointer}button.stat[data-go]:hover{border-color:var(
   <div class="grid" id="grid"></div>
     <div id="overviewPanel" style="display:none">
     <div class="tabs" id="overviewSubTabs" style="margin-top:0">
-      <button class="tab active" data-ov="countries">Länder</button>
+      <button class="tab active" data-ov="map">Karte</button>
+      <button class="tab" data-ov="countries">Länder</button>
       <button class="tab" data-ov="years">Jahre</button>
       <button class="tab" data-ov="stats">Statistik</button>
       <button class="tab" data-ov="joint">Gemeinschaft</button>
@@ -278,6 +307,10 @@ button.stat[data-go]{cursor:pointer}button.stat[data-go]:hover{border-color:var(
     <button class="smallbtn" onclick="exportHTML();closeMenu()">🖼️ HTML-Galerie (mit Bildern)</button>
   </div></div></div>
 <div class="selbar" id="selBar"><span id="selCount">0 ausgewählt</span><button onclick="selAll()">Alle sichtbaren</button><button class="ok" onclick="bulkSet(1)">✅ Vorhanden</button><button onclick="bulkSet(0)">❌ Fehlt</button><button onclick="setSelectMode(false)">✕</button></div>
+<div class="modal" id="checkModal"><div class="modalbox" style="max-width:640px">
+  <div class="modalhead"><div><b>🪙 Wechselgeld-Check</b><div class="country" id="ckSub">Aus welchem Land ist die Münze?</div></div><button class="close" onclick="closeCheck()" title="Schließen (Esc)">✕</button></div>
+  <div style="padding:16px" id="ckBody"></div></div></div>
+<button class="fab" id="checkBtn" onclick="openCheck()" title="Münze in der Hand? Schnell prüfen, ob sie dir fehlt">🪙 Check</button>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1071,7 +1104,7 @@ function bulkSet(v){
 // --- Modal: vor/zurück + Tastatur ---
 function stepCoin(d){if(!currentId)return;const i=lastList.indexOf(currentId);if(i<0)return;const n=lastList[i+d];if(n)openCoin(n)}
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){closeMenu();closeModal();return}
+  if(e.key==='Escape'){closeMenu();closeCheck();closeModal();return}
   if(!document.getElementById('modal').classList.contains('open'))return;
   if(['INPUT','SELECT','TEXTAREA'].includes(document.activeElement&&document.activeElement.tagName))return;
   if(e.key==='ArrowRight')stepCoin(1);else if(e.key==='ArrowLeft')stepCoin(-1);
@@ -1079,7 +1112,7 @@ document.addEventListener('keydown',e=>{
 document.getElementById('menuModal').addEventListener('click',e=>{if(e.target.id==='menuModal')closeMenu()});
 
 // --- Übersicht ---
-let ovTab='countries';
+let ovTab='map';
 const bar=(o,t)=>`<div class="progress"><div style="width:${t?(o/t*100).toFixed(1):0}%"></div></div>`;
 function groupBy(arr,f){const m=new Map();arr.forEach(c=>{const k=f(c);if(k==null||k==='')return;if(!m.has(k))m.set(k,{o:0,t:0,items:[]});const g=m.get(k);g.t++;if(c.owned)g.o++;g.items.push(c)});return m}
 const JOINT=[
@@ -1131,6 +1164,7 @@ function ovRows(map,attr,sortFn){
 function renderOverview(){
   document.querySelectorAll('#overviewSubTabs .tab').forEach(b=>b.classList.toggle('active',b.dataset.ov===ovTab));
   const body=document.getElementById('overviewBody');let h='';
+  if(ovTab==='map'){renderMap(body);return}
   if(ovTab==='countries'){
     const m=groupBy(all,c=>String(c.country||'').trim());
     const near=[...m].filter(([k,g])=>g.t-g.o>0&&g.t-g.o<=3).sort((a,b)=>(a[1].t-a[1].o)-(b[1].t-b[1].o));
@@ -1173,6 +1207,187 @@ document.getElementById('overviewBody').addEventListener('click',e=>{
   document.getElementById('year').value=r.dataset.year||'';
   render();window.scrollTo({top:0,behavior:'smooth'});
 });
+
+/* ============ V11: Europakarte + Wechselgeld-Check ============ */
+const canon=n=>n==='Vatikanstadt'?'Vatikan':n;
+
+// ---- Europakarte mit echten Umrissen (Natural-Earth-Daten via jsDelivr, wird gecacht) ----
+const GEO_URL='https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json';
+const GEO=[ // [Katalogname, Name in den Kartendaten, Kürzel, weitere Katalognamen, weitere Kartennamen]
+ ['Deutschland','Germany','DE'],['Österreich','Austria','AT'],['Belgien','Belgium','BE'],
+ ['Zypern','Cyprus','CY',[],['N. Cyprus']],['Estland','Estonia','EE'],['Finnland','Finland','FI'],
+ ['Frankreich','France','FR'],['Griechenland','Greece','GR'],['Irland','Ireland','IE'],
+ ['Italien','Italy','IT'],['Lettland','Latvia','LV'],['Litauen','Lithuania','LT'],
+ ['Luxemburg','Luxembourg','LU'],['Niederlande','Netherlands','NL'],['Portugal','Portugal','PT'],
+ ['Slowakei','Slovakia','SK'],['Slowenien','Slovenia','SI'],['Spanien','Spain','ES'],
+ ['Kroatien','Croatia','HR'],['Bulgarien','Bulgaria','BG']
+];
+const MICRO=[ // Kleinstaaten: Marker an ihrer echten Position
+ ['Malta','MT',14.4,35.9],['Andorra','AD',1.6,42.5],['Monaco','MC',7.4,43.75],
+ ['San Marino','SM',12.46,43.94],['Vatikan','VA',12.45,41.9,['Vatikanstadt']]
+];
+const GEO_SKIP=new Set(['Malta','Andorra','Monaco','San Marino','Vatican']);
+const GEO_LBL={IT:[15.6,40.6]};
+let geo=null,geoPromise=null,mapSel=null;
+
+function buildGeo(topo){
+  const tr=topo.transform||{scale:[1,1],translate:[0,0]};
+  const arcs=topo.arcs.map(a=>{let x=0,y=0;return a.map(p=>{x+=p[0];y+=p[1];return [x*tr.scale[0]+tr.translate[0],y*tr.scale[1]+tr.translate[1]]})});
+  const arc=i=>i<0?arcs[~i].slice().reverse():arcs[i];
+  const ring=ix=>{let pts=[];ix.forEach((i,k)=>{const a=arc(i);pts=pts.concat(k?a.slice(1):a)});return pts};
+  // Lambert-Kegelprojektion (Europa)
+  const D=Math.PI/180,p1=35*D,p2=65*D,p0=50*D,l0=13*D;
+  const n=Math.log(Math.cos(p1)/Math.cos(p2))/Math.log(Math.tan(Math.PI/4+p2/2)/Math.tan(Math.PI/4+p1/2));
+  const F=Math.cos(p1)*Math.pow(Math.tan(Math.PI/4+p1/2),n)/n;
+  const rho=p=>F/Math.pow(Math.tan(Math.PI/4+p/2),n),r0=rho(p0),S=1000;
+  const proj=(lo,la)=>{const r=rho(la*D),t=n*(lo*D-l0);return [r*Math.sin(t)*S,(r*Math.cos(t)-r0)*S]};
+  const euro={};GEO.forEach(g=>{euro[g[1]]=g;(g[4]||[]).forEach(x=>euro[x]=g)});
+  let minX=1e9,maxX=-1e9,minY=1e9,maxY=-1e9;const items=[];
+  (topo.objects.countries.geometries||[]).forEach(g=>{
+    const nm=g.properties&&g.properties.name;if(!nm||GEO_SKIP.has(nm)||!g.arcs)return;
+    const polys=g.type==='Polygon'?[g.arcs]:g.type==='MultiPolygon'?g.arcs:[];
+    const e=euro[nm];let d='',best=null;
+    polys.forEach(pr=>{
+      const outer=ring(pr[0]);let a=1e9,b=-1e9,c=1e9,dd=-1e9;
+      outer.forEach(p=>{if(p[0]<a)a=p[0];if(p[0]>b)b=p[0];if(p[1]<c)c=p[1];if(p[1]>dd)dd=p[1]});
+      const cx=(a+b)/2,cy=(c+dd)/2;
+      if(cx<-12||cx>42||cy<33.5||cy>71.5)return; // Übersee-Gebiete, Svalbard usw. weglassen
+      pr.forEach((r,ri)=>{
+        const pts=ring(r);let last=null,s='';
+        pts.forEach((p,i)=>{
+          const q=proj(p[0],p[1]);
+          if(last&&Math.abs(q[0]-last[0])+Math.abs(q[1]-last[1])<0.8&&i<pts.length-1)return;
+          last=q;s+=(s?'L':'M')+q[0].toFixed(1)+' '+q[1].toFixed(1);
+          if(e&&ri===0){if(q[0]<minX)minX=q[0];if(q[0]>maxX)maxX=q[0];if(q[1]<minY)minY=q[1];if(q[1]>maxY)maxY=q[1]}
+        });
+        d+=s+'Z';
+      });
+      if(e){const ar=(b-a)*(dd-c);if(!best||ar>best.ar)best={ar,cx,cy}}
+    });
+    if(!d)return;
+    let lbl=null;if(e&&best){const o=GEO_LBL[e[2]]||[best.cx,best.cy];lbl=proj(o[0],o[1])}
+    items.push({name:nm,e,d,lbl});
+  });
+  const dots=MICRO.map(m=>({de:m[0],code:m[1],alias:m[4]||[],xy:proj(m[2],m[3])}));
+  dots.forEach(m=>{minX=Math.min(minX,m.xy[0]-16);maxX=Math.max(maxX,m.xy[0]+16);minY=Math.min(minY,m.xy[1]-16);maxY=Math.max(maxY,m.xy[1]+16)});
+  const pad=22;
+  return {items,dots,vb:[minX-pad,minY-pad,maxX-minX+2*pad,maxY-minY+2*pad].map(v=>Math.round(v))};
+}
+function loadGeo(){
+  if(geo)return Promise.resolve(geo);
+  if(!geoPromise)geoPromise=fetch(GEO_URL).then(r=>{if(!r.ok)throw new Error('geo');return r.json()}).then(t=>{geo=buildGeo(t);return geo}).catch(e=>{geoPromise=null;throw e});
+  return geoPromise;
+}
+function renderMap(body){
+  if(!geo){
+    body.innerHTML='<div class="empty">🗺️ Karte wird geladen …</div>';
+    loadGeo().then(()=>{if(activeTab==='overview'&&ovTab==='map')renderMap(document.getElementById('overviewBody'))})
+      .catch(()=>{if(activeTab==='overview'&&ovTab==='map'){ovTab='countries';renderOverview();toast('Karte konnte nicht geladen werden (offline?).')}});
+    return;
+  }
+  const byC=groupBy(all,c=>String(c.country||'').trim());
+  const stat=names=>{let o=0,t=0,nav=names[0],mx=-1;names.forEach(n=>{const g=byC.get(n);if(g){o+=g.o;t+=g.t;if(g.t>mx){mx=g.t;nav=n}}});return{o,t,nav}};
+  const fill=(o,t)=>!t?'var(--panel)':o===t?'#c9a24c':`color-mix(in srgb,var(--good) ${Math.round(14+o/t*72)}%,var(--panel))`;
+  const tip=(de,s)=>`${flagFor(de)} ${de}: ${s.o} / ${s.t}${s.t?' ('+Math.round(s.o/s.t*100)+' %)':''}${s.t&&s.o===s.t?' – komplett ✓':''}`;
+  const regions=[...GEO.map(g=>stat([g[0],...(g[3]||[])])),...MICRO.map(m=>stat([m[0],...(m[4]||[])]))].filter(s=>s.t);
+  const complete=regions.filter(s=>s.o===s.t).length,total=regions.length;
+  const paths=geo.items.map(it=>{
+    if(!it.e)return `<path class="geo-bg" d="${it.d}"/>`;
+    const g=it.e,s=stat([g[0],...(g[3]||[])]);
+    return `<path class="geo-c${mapSel===s.nav?' sel':''}" data-country="${esc(s.nav)}" data-tip="${esc(tip(g[0],s))}" style="fill:${fill(s.o,s.t)}" d="${it.d}"/>`;
+  }).join('');
+  const labels=geo.items.filter(it=>it.e&&it.lbl&&it.name===it.e[1]&&it.e[2]!=='LU').map(it=>`<text class="geo-lbl" x="${it.lbl[0].toFixed(1)}" y="${(it.lbl[1]+5).toFixed(1)}">${it.e[2]}</text>`).join('');
+  const dots=geo.dots.map(m=>{const s=stat([m.de,...m.alias]);const x=m.xy[0].toFixed(1),y=m.xy[1].toFixed(1);
+    return `<circle class="geo-dot${mapSel===s.nav?' sel':''}" data-country="${esc(s.nav)}" data-tip="${esc(tip(m.de,s))}" cx="${x}" cy="${y}" r="13" style="fill:${fill(s.o,s.t)}"/><text class="geo-lbl" style="font-size:10px;stroke-width:2.5px" x="${x}" y="${(+y+3.5).toFixed(1)}">${m.code}</text>`}).join('');
+  body.innerHTML=`<div class="note" id="mapCap"></div><div class="mapwrap"><svg viewBox="${geo.vb.join(' ')}" role="img" aria-label="Europakarte deiner Sammlung">${paths}${labels}${dots}</svg></div><div class="maplegend"><span>0 %</span><span class="lg"></span><span>100 %</span><span class="gold"></span><span>Land komplett</span></div>`;
+  const cap=document.getElementById('mapCap'),svg=body.querySelector('svg'),touch=matchMedia('(hover: none)').matches;
+  const setCap=el=>{
+    if(!el){cap.innerHTML=`<b>${complete} von ${total}</b> Ländern komplett. ${touch?'Tippe':'Fahre mit der Maus über'} ein Land${touch?' an':''}, um den Stand zu sehen.`;return}
+    cap.innerHTML=`<b>${esc(el.dataset.tip)}</b> <button class="smallbtn primary" data-country="${esc(el.dataset.country)}" style="flex:none;padding:6px 12px;margin-left:8px">Münzen anzeigen ›</button>`;
+  };
+  svg.addEventListener('mouseover',e=>{if(touch)return;const el=e.target.closest('[data-tip]');if(el)setCap(el)});
+  svg.addEventListener('mouseleave',()=>{if(!touch)setCap(null)});
+  svg.addEventListener('click',e=>{
+    const el=e.target.closest('[data-tip]');if(!el||!touch||mapSel===el.dataset.country)return;
+    e.stopPropagation(); // Handy: erster Tipp zeigt den Stand, zweiter öffnet die Münzen
+    mapSel=el.dataset.country;
+    svg.querySelectorAll('.sel').forEach(x=>x.classList.remove('sel'));
+    svg.querySelectorAll('[data-country]').forEach(x=>{if(x.dataset.country===mapSel)x.classList.add('sel')});
+    setCap(el);
+  });
+  const cur=touch&&mapSel?[...svg.querySelectorAll('[data-tip]')].find(x=>x.dataset.country===mapSel):null;
+  setCap(cur||null);
+}
+
+// ---- Wechselgeld-Check ----
+const ck={country:null,type:'regular',year:null,sel:null,q:''};
+function openCheck(){document.getElementById('checkModal').classList.add('open');renderCheck()}
+function closeCheck(){document.getElementById('checkModal').classList.remove('open')}
+function ckGrid(){
+  const q=ck.q.trim().toLowerCase();
+  const m=[...groupBy(all,c=>canon(String(c.country||'').trim()))].filter(([k])=>!q||k.toLowerCase().includes(q)).sort((a,b)=>a[0].localeCompare(b[0],'de'));
+  return m.map(([k,g])=>`<button class="ckcty" data-ckc="${esc(k)}"><span class="fl">${flagFor(k)}</span><b>${esc(k)}</b><small>${g.o} / ${g.t}</small></button>`).join('')||'<div class="empty">Kein Land gefunden.</div>';
+}
+function ckGroups(list){const m=new Map();list.forEach(c=>{const k=c.parentId||c.id;if(!m.has(k))m.set(k,[]);m.get(k).push(c)});return [...m.values()]}
+function ckStatus(c){return c.owned?['have',`Hast du schon (${c.qty||1}×)`]:['miss','FEHLT DIR – behalten!']}
+function ckRow(g){
+  const c0=g[0],v=parseVolume(c0.volume);
+  const title=String(c0.title||'').replace(/\s·\s*[ADFGJ]$/i,'');
+  const head=`<div><b>${esc(title)}</b> <small style="color:var(--muted)">${c0.year||''}${v&&!c0.parentId?' · Auflage '+v.toLocaleString('de-DE'):''}</small>${rareChip(c0)}</div>`;
+  if(g.length===1&&!c0.mintmark){
+    const [cls,txt]=ckStatus(c0);
+    return `<div class="ckrow ${cls}">${head}<div class="ckv">${txt}</div><button class="smallbtn primary ckadd" data-ckadd="${c0.id}">${c0.owned?'＋1 Doublette notieren':'＋ Eintragen'}</button></div>`;
+  }
+  const vs=[...g].sort((a,b)=>String(a.mintmark).localeCompare(String(b.mintmark)));
+  const sel=vs.find(c=>c.id===ck.sel);
+  let h=`<div class="ckrow">${head}<div class="ckchips">${vs.map(c=>`<button class="ckchip${c.owned?'':' miss'}${sel&&sel.id===c.id?' on':''}" data-cksel="${c.id}">${esc(c.mintmark||'?')}</button>`).join('')}</div>`;
+  if(sel){const [cls,txt]=ckStatus(sel);h+=`<div class="ckv ${cls}">${sel.mintmark}: ${txt}</div><button class="smallbtn primary ckadd" data-ckadd="${sel.id}">${sel.owned?'＋1 Doublette notieren':'＋ Eintragen'}</button>`}
+  else h+=`<div style="margin-top:8px;color:var(--muted);font-size:13px">Prägezeichen (Buchstabe) der Münze wählen · <span style="color:var(--good)">grün unterstrichen = fehlt dir</span></div>`;
+  return h+'</div>';
+}
+function renderCheck(){
+  const body=document.getElementById('ckBody'),sub=document.getElementById('ckSub');
+  if(!all.length){body.innerHTML='<div class="empty">Katalog wird noch geladen …</div>';return}
+  if(!ck.country){
+    sub.textContent='Aus welchem Land ist die Münze?';
+    body.innerHTML=`<input id="ckSearch" type="search" placeholder="Land suchen …" value="${esc(ck.q)}" style="width:100%;margin-bottom:12px"><div class="ckgrid" id="ckGrid">${ckGrid()}</div>`;
+    return;
+  }
+  const items=all.filter(c=>canon(String(c.country||'').trim())===ck.country);
+  const reg=items.filter(c=>c.type!=='comm'),com=items.filter(c=>c.type==='comm');
+  if(ck.type==='regular'&&!reg.length&&com.length)ck.type='comm';
+  if(ck.type==='comm'&&!com.length&&reg.length)ck.type='regular';
+  sub.textContent=`${flagFor(ck.country)} ${ck.country}`;
+  let h=`<button class="smallbtn" data-ckback style="flex:none;margin-bottom:10px">‹ Anderes Land</button><div class="tabs" style="margin:0 0 12px"><button class="tab${ck.type==='regular'?' active':''}" data-ckt="regular">Umlaufmünze</button><button class="tab${ck.type==='comm'?' active':''}" data-ckt="comm">Gedenkmünze</button></div>`;
+  const list=ck.type==='comm'?com:reg,groups=ckGroups(list);
+  if(ck.type==='regular'){
+    const years=[...new Set(groups.map(g=>g[0].year).filter(Boolean))].sort((a,b)=>b-a);
+    if(ck.year&&!years.includes(ck.year))ck.year=null;
+    const missY=new Set(list.filter(c=>!c.owned).map(c=>c.year));
+    h+=`<div style="font-weight:700;margin-bottom:8px">Jahr der Münze</div><div class="ckchips ckyears">${years.map(y=>`<button class="ckchip${ck.year===y?' on':''}" data-ckyear="${y}">${y}${missY.has(y)?'<i></i>':''}</button>`).join('')||'<span style="color:var(--muted)">Keine Umlaufmünzen im Katalog.</span>'}</div>`;
+    if(ck.year)h+=groups.filter(g=>g[0].year===ck.year).map(ckRow).join('');
+    else if(years.length)h+='<div style="margin-top:10px;color:var(--muted);font-size:13px">Grüner Punkt = in diesem Jahr fehlt dir noch etwas.</div>';
+  }else{
+    h+=groups.sort((a,b)=>(b[0].year||0)-(a[0].year||0)).map(ckRow).join('')||'<div class="empty">Keine Gedenkmünzen im Katalog.</div>';
+  }
+  body.innerHTML=h;
+}
+(function(){
+  const body=document.getElementById('ckBody');
+  body.addEventListener('input',e=>{if(e.target.id==='ckSearch'){ck.q=e.target.value;document.getElementById('ckGrid').innerHTML=ckGrid()}});
+  body.addEventListener('click',e=>{
+    const t=e.target.closest('[data-ckc],[data-ckback],[data-ckt],[data-ckyear],[data-cksel],[data-ckadd]');if(!t)return;
+    const d=t.dataset;
+    if(d.ckc!==undefined){ck.country=d.ckc;ck.year=null;ck.sel=null;ck.type='regular'}
+    else if('ckback' in d){ck.country=null;ck.q=''}
+    else if(d.ckt){ck.type=d.ckt;ck.year=null;ck.sel=null}
+    else if(d.ckyear){ck.year=+d.ckyear;ck.sel=null}
+    else if(d.cksel){ck.sel=d.cksel}
+    else if(d.ckadd){const c=all.find(x=>x.id===d.ckadd);const was=c&&c.owned;bump(d.ckadd,1);if(c)toast(was?'Doublette notiert ('+(c.qty||1)+'×).':'✓ Neu in deiner Sammlung!')}
+    renderCheck();
+  });
+  document.getElementById('checkModal').addEventListener('click',e=>{if(e.target.id==='checkModal')closeCheck()});
+})();
 
 // --- PWA ---
 if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)){

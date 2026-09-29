@@ -1,5 +1,5 @@
 // 2€ Sammler – Service Worker (V10)
-const SHELL = 'sammler-shell-v10';
+const SHELL = 'sammler-shell-v11';
 const IMGS  = 'sammler-img-v1';
 const DATA  = 'sammler-data-v1';
 const FILES = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
@@ -47,7 +47,7 @@ self.addEventListener('fetch', e => {
   }
 
   // Katalogdaten (GitHub-JSON): stale-while-revalidate
-  if (url.hostname === 'raw.githubusercontent.com') {
+  if (url.hostname === 'raw.githubusercontent.com' || url.hostname === 'cdn.jsdelivr.net') {
     e.respondWith(caches.open(DATA).then(async c => {
       const hit = await c.match(req);
       const net = fetch(req).then(r => { if (r.ok) c.put(req, r.clone()); return r; }).catch(() => hit);
